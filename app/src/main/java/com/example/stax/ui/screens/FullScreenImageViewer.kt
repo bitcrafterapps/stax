@@ -4,6 +4,8 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -11,13 +13,11 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import coil.compose.rememberAsyncImagePainter
@@ -28,11 +28,17 @@ import java.io.File
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FullScreenImageViewer(
-    photo: Photo,
+    photos: List<Photo>,
+    initialPhotoIndex: Int,
     onNavigateUp: () -> Unit,
-    onRatingChanged: (Int) -> Unit
+    onRatingChanged: (Photo, Int) -> Unit
 ) {
-    var currentRating by remember { mutableStateOf(photo.rating) }
+    val pagerState = rememberPagerState(
+        initialPage = initialPhotoIndex,
+        initialPageOffsetFraction = 0f
+    ) {
+        photos.size
+    }
 
     Scaffold(
         topBar = {
@@ -42,34 +48,48 @@ fun FullScreenImageViewer(
                     IconButton(onClick = onNavigateUp) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
+                            contentDescription = "Back",
+                            tint = Color.White
                         )
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color.Transparent
+                )
             )
-        }
+        },
+        containerColor = Color.Transparent
     ) { innerPadding ->
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            Image(
-                painter = rememberAsyncImagePainter(model = File(photo.imagePath)),
-                contentDescription = "Full Screen Photo",
-                modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Fit
-            )
-            RatingBar(
-                rating = currentRating,
-                onRatingChanged = { newRating ->
-                    currentRating = newRating
-                    onRatingChanged(newRating)
-                },
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .padding(16.dp)
-            )
+            HorizontalPager(
+                state = pagerState,
+                modifier = Modifier.fillMaxSize()
+            ) { page ->
+                val photo = photos[page]
+                Image(
+                    painter = rememberAsyncImagePainter(model = File(photo.imagePath)),
+                    contentDescription = "Full Screen Photo",
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Fit
+                )
+            }
+
+            if (pagerState.pageCount > 0) {
+                val currentPhoto = photos[pagerState.currentPage]
+                RatingBar(
+                    rating = currentPhoto.rating,
+                    onRatingChanged = { newRating ->
+                        onRatingChanged(currentPhoto, newRating)
+                    },
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .padding(16.dp)
+                )
+            }
         }
     }
 } 

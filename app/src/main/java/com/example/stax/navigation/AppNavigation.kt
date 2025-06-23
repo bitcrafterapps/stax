@@ -138,14 +138,18 @@ fun AppNavigation(photosJson: MutableState<String>) {
                         }
                     }
                 )
+                val livePhotos by viewModel.photos.collectAsState()
 
-                FullScreenImageViewer(
-                    photo = photo,
-                    onNavigateUp = { navController.navigateUp() },
-                    onRatingChanged = { rating ->
-                        viewModel.updatePhoto(photo.copy(rating = rating))
-                    }
-                )
+                if (livePhotos.isNotEmpty()) {
+                    FullScreenImageViewer(
+                        photos = livePhotos,
+                        initialPhotoIndex = photoIndex,
+                        onNavigateUp = { navController.navigateUp() },
+                        onRatingChanged = { ratedPhoto, rating ->
+                            viewModel.updatePhoto(ratedPhoto.copy(rating = rating))
+                        }
+                    )
+                }
             }
         }
     }
