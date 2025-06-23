@@ -4,16 +4,47 @@ import android.app.Application
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.io.File
 import java.io.FileOutputStream
+import java.io.InputStreamReader
 
-class DashboardViewModel(private val dao: StaxDao) : ViewModel() {
+class DashboardViewModel(
+    private val dao: StaxDao,
+    private val application: Application
+) : ViewModel() {
     val sessions: StateFlow<List<SessionWithLatestPhoto>> = dao.getSessionsWithLatestPhoto()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    private val _casinoData = MutableStateFlow<Map<String, List<String>>>(emptyMap())
+    val casinoData: StateFlow<Map<String, List<String>>> = _casinoData.asStateFlow()
+
+    init {
+        loadCasinoData()
+    }
+
+    private fun loadCasinoData() {
+        viewModelScope.launch {
+            try {
+                application.assets.open("casinos.json").use { inputStream ->
+                    InputStreamReader(inputStream).use { reader ->
+                        val type = object : TypeToken<Map<String, List<String>>>() {}.type
+                        val data: Map<String, List<String>> = Gson().fromJson(reader, type)
+                        _casinoData.value = data
+                    }
+                }
+            } catch (e: Exception) {
+                // Handle exception
+            }
+        }
+    }
 
     fun addSession(casinoName: String, sessionType: String, gameType: String) {
         viewModelScope.launch {

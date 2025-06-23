@@ -32,6 +32,10 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -39,6 +43,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -54,6 +60,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
 import com.example.stax.R
+import com.example.stax.data.DashboardViewModel
 import com.example.stax.data.SessionWithLatestPhoto
 import java.io.File
 import java.text.SimpleDateFormat
@@ -65,10 +72,12 @@ fun DashboardScreen(
     sessions: List<SessionWithLatestPhoto>,
     onSessionClick: (Long) -> Unit,
     onAddSession: () -> Unit,
-    onDeleteSession: (Long) -> Unit
+    onDeleteSession: (Long) -> Unit,
+    viewModel: DashboardViewModel
 ) {
     var longPressedSessionId by remember { mutableStateOf<Long?>(null) }
     var showDeleteDialog by remember { mutableStateOf(false) }
+    val casinoData by viewModel.casinoData.collectAsState()
 
     if (showDeleteDialog && longPressedSessionId != null) {
         ConfirmDeleteDialog(
@@ -239,31 +248,98 @@ fun SessionFolder(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddSessionDialog(onConfirm: (String, String, String) -> Unit, onDismiss: () -> Unit) {
-    var casinoName by remember { mutableStateOf("") }
+fun AddSessionDialog(
+    casinoData: Map<String, List<String>>,
+    onConfirm: (String, String, String) -> Unit,
+    onDismiss: () -> Unit
+) {
+    var selectedState by remember { mutableStateOf("") }
+    var selectedCasino by remember { mutableStateOf("") }
     var gameType by remember { mutableStateOf("") }
     var sessionType by remember { mutableStateOf("Cash") }
+    var casinosInState by remember { mutableStateOf<List<String>>(emptyList()) }
+    var isStateDropdownExpanded by remember { mutableStateOf(false) }
+    var isCasinoDropdownExpanded by remember { mutableStateOf(false) }
+
+    LaunchedEffect(selectedState) {
+        casinosInState = casinoData[selectedState] ?: emptyList()
+        selectedCasino = ""
+    }
 
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("Add New Session") },
         text = {
             Column {
-                Text("Enter the details for this session.")
+                ExposedDropdownMenuBox(
+                    expanded = isStateDropdownExpanded,
+                    onExpandedChange = { isStateDropdownExpanded = it }
+                ) {
+                    TextField(
+                        value = selectedState,
+                        onValueChange = {},
+                        readOnly = true,
+                        label = { Text("State") },
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = isStateDropdownExpanded) },
+                        modifier = Modifier
+                            .menuAnchor()
+                            .fillMaxWidth()
+                    )
+                    ExposedDropdownMenu(
+                        expanded = isStateDropdownExpanded,
+                        onDismissRequest = { isStateDropdownExpanded = false }
+                    ) {
+                        casinoData.keys.sorted().forEach { state ->
+                            DropdownMenuItem(
+                                text = { Text(state) },
+                                onClick = {
+                                    selectedState = state
+                                    isStateDropdownExpanded = false
+                                }
+                            )
+                        }
+                    }
+                }
                 Spacer(modifier = Modifier.height(16.dp))
-                TextField(
-                    value = casinoName,
-                    onValueChange = { casinoName = it },
-                    label = { Text("Casino Name") },
-                    singleLine = true
-                )
-                Spacer(modifier = Modifier.height(8.dp))
+                ExposedDropdownMenuBox(
+                    expanded = isCasinoDropdownExpanded,
+                    onExpandedChange = { isCasinoDropdownExpanded = it }
+                ) {
+                    TextField(
+                        value = selectedCasino,
+                        onValueChange = {},
+                        readOnly = true,
+                        label = { Text("Casino Name") },
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = isCasinoDropdownExpanded) },
+                        modifier = Modifier
+                            .menuAnchor()
+                            .fillMaxWidth(),
+                        enabled = casinosInState.isNotEmpty()
+                    )
+                    ExposedDropdownMenu(
+                        expanded = isCasinoDropdownExpanded,
+                        onDismissRequest = { isCasinoDropdownExpanded = false }
+                    ) {
+                        casinosInState.forEach { casino ->
+                            DropdownMenuItem(
+                                text = { Text(casino) },
+                                onClick = {
+                                    selectedCasino = casino
+                                    isCasinoDropdownExpanded = false
+                                }
+                            )
+                        }
+                    }
+                }
+                Spacer(modifier = Modifier.height(16.dp))
                 TextField(
                     value = gameType,
                     onValueChange = { gameType = it },
                     label = { Text("Game Type") },
-                    singleLine = true
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 Row(
@@ -293,10 +369,11 @@ fun AddSessionDialog(onConfirm: (String, String, String) -> Unit, onDismiss: () 
         confirmButton = {
             Button(
                 onClick = {
-                    if (casinoName.isNotBlank() && gameType.isNotBlank()) {
-                        onConfirm(casinoName, sessionType, gameType)
+                    if (selectedCasino.isNotBlank() && gameType.isNotBlank()) {
+                        onConfirm(selectedCasino, sessionType, gameType)
                     }
-                }
+                },
+                enabled = selectedCasino.isNotBlank() && gameType.isNotBlank()
             ) {
                 Text("Add")
             }

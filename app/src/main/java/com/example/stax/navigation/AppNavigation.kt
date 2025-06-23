@@ -59,11 +59,15 @@ fun AppNavigation(photosJson: MutableState<String>) {
                 factory = object : ViewModelProvider.Factory {
                     override fun <T : ViewModel> create(modelClass: Class<T>): T {
                         @Suppress("UNCHECKED_CAST")
-                        return DashboardViewModel(AppDatabase.getDatabase(application).staxDao()) as T
+                        return DashboardViewModel(
+                            AppDatabase.getDatabase(application).staxDao(),
+                            application
+                        ) as T
                     }
                 }
             )
             val sessions by viewModel.sessions.collectAsState()
+            val casinoData by viewModel.casinoData.collectAsState()
 
             DashboardScreen(
                 sessions = sessions,
@@ -73,11 +77,13 @@ fun AppNavigation(photosJson: MutableState<String>) {
                 onAddSession = { showAddSessionDialog = true },
                 onDeleteSession = { sessionId ->
                     viewModel.deleteSession(sessionId)
-                }
+                },
+                viewModel = viewModel
             )
 
             if (showAddSessionDialog) {
                 AddSessionDialog(
+                    casinoData = casinoData,
                     onConfirm = { casinoName, sessionType, gameType ->
                         viewModel.addSession(casinoName, sessionType, gameType)
                         showAddSessionDialog = false

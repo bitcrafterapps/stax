@@ -183,7 +183,7 @@ fun PhotoGalleryScreen(
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(60.dp)
+                                .height(80.dp)
                                 .align(Alignment.BottomCenter)
                                 .background(
                                     brush = Brush.verticalGradient(

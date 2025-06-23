@@ -18,7 +18,7 @@ private val DarkColorScheme = darkColorScheme(
     secondary = PurpleGrey80,
     tertiary = Pink80,
     background = Color.Transparent,
-    surface = Color.Transparent,
+    surface = Slate900,
     onPrimary = Color.White,
     onSecondary = Color.White,
     onTertiary = Color.White,
@@ -62,7 +62,12 @@ fun StaxTheme(
                 .fillMaxSize()
                 .background(PurpleGradient)
         ) {
-            content()
+            Surface(
+                modifier = Modifier.fillMaxSize(),
+                color = Color.Transparent
+            ) {
+                content()
+            }
         }
     }
 }
