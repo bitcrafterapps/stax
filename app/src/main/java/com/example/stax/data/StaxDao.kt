@@ -16,6 +16,9 @@ interface StaxDao {
     @Query("SELECT s.*, (SELECT COUNT(*) FROM photos p WHERE p.sessionId = s.id) as photoCount, (SELECT imagePath FROM photos p WHERE p.sessionId = s.id ORDER BY id DESC LIMIT 1) as latestPhotoPath FROM sessions s ORDER BY s.id DESC")
     fun getSessionsWithLatestPhoto(): Flow<List<SessionWithLatestPhoto>>
 
+    @Query("SELECT * FROM sessions WHERE id = :sessionId")
+    fun getSessionById(sessionId: Long): Flow<Session?>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertPhoto(photo: Photo)
 

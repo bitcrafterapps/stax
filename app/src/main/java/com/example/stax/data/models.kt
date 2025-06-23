@@ -37,5 +37,6 @@ data class Photo(
     val id: Long = 0,
     val sessionId: Long,
     val imagePath: String,
-    val rating: Int = 0
+    val rating: Int = 0,
+    val dateCreated: Long
 ) : Parcelable 

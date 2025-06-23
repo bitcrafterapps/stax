@@ -104,9 +104,11 @@ fun AppNavigation(photosJson: MutableState<String>) {
                 }
             )
             val photos by viewModel.photos.collectAsState()
+            val session by viewModel.session.collectAsState()
             photosJson.value = Gson().toJson(photos)
 
             PhotoGalleryScreen(
+                session = session,
                 photos = photos,
                 onNavigateUp = { navController.navigateUp() },
                 onAddPhoto = { uri -> viewModel.addPhoto(uri) },

@@ -13,6 +13,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -51,6 +53,7 @@ import androidx.compose.ui.unit.sp
 import androidx.core.content.FileProvider
 import coil.compose.rememberAsyncImagePainter
 import com.example.stax.data.Photo
+import com.example.stax.data.Session
 import com.example.stax.ui.composables.RatingBar
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
@@ -63,6 +66,7 @@ import java.util.Locale
 @OptIn(ExperimentalPermissionsApi::class, ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun PhotoGalleryScreen(
+    session: Session?,
     photos: List<Photo>,
     onNavigateUp: () -> Unit,
     onAddPhoto: (Uri) -> Unit,
@@ -94,7 +98,7 @@ fun PhotoGalleryScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Chip Porn", color = Color.White) },
+                title = { Text(session?.name ?: "Gallery", color = Color.White) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateUp) {
                         Icon(
@@ -158,7 +162,7 @@ fun PhotoGalleryScreen(
                 items(photos) { photo ->
                     Box(
                         modifier = Modifier
-                            .aspectRatio(1f)
+                            .aspectRatio(0.75f)
                             .pointerInput(Unit) {
                                 detectTapGestures(
                                     onLongPress = {
@@ -178,34 +182,25 @@ fun PhotoGalleryScreen(
                         )
                         Box(
                             modifier = Modifier
-                                .fillMaxSize()
+                                .fillMaxWidth()
+                                .height(60.dp)
+                                .align(Alignment.BottomCenter)
                                 .background(
-                                    Brush.verticalGradient(
-                                        colors = listOf(Color.Transparent, Color.Black),
-                                        startY = 300f,
-                                        endY = 500f
+                                    brush = Brush.verticalGradient(
+                                        colors = listOf(
+                                            Color.Transparent,
+                                            Color.Black.copy(alpha = 0.8f)
+                                        )
                                     )
                                 )
-                                .align(Alignment.BottomCenter)
                         )
-                        Column(
+                        RatingBar(
+                            rating = photo.rating,
                             modifier = Modifier
                                 .align(Alignment.BottomStart)
-                                .padding(8.dp)
-                        ) {
-                            Text(
-                                text = File(photo.imagePath).name,
-                                color = Color.White,
-                                style = MaterialTheme.typography.bodySmall,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                            RatingBar(
-                                rating = photo.rating,
-                                modifier = Modifier.padding(top = 4.dp),
-                                starSize = 16.dp
-                            )
-                        }
+                                .padding(8.dp),
+                            starSize = 16.dp
+                        )
                         if (photoToDelete == photo) {
                             Box(
                                 modifier = Modifier

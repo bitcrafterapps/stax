@@ -50,11 +50,13 @@ class PhotoGalleryViewModel(
 ) : ViewModel() {
     val photos: StateFlow<List<Photo>> = dao.getPhotosForSession(sessionId)
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+    val session: StateFlow<Session?> = dao.getSessionById(sessionId)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
     fun addPhoto(uri: Uri) {
         viewModelScope.launch {
             val permanentFile = saveImagePermanently(uri)
-            dao.insertPhoto(Photo(sessionId = sessionId, imagePath = permanentFile.absolutePath))
+            dao.insertPhoto(Photo(sessionId = sessionId, imagePath = permanentFile.absolutePath, dateCreated = System.currentTimeMillis()))
         }
     }
 
