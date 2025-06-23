@@ -78,8 +78,8 @@ fun AppNavigation(photosJson: MutableState<String>) {
 
             if (showAddSessionDialog) {
                 AddSessionDialog(
-                    onConfirm = { location ->
-                        viewModel.addSession(location)
+                    onConfirm = { casinoName, sessionType, gameType ->
+                        viewModel.addSession(casinoName, sessionType, gameType)
                         showAddSessionDialog = false
                     },
                     onDismiss = { showAddSessionDialog = false }

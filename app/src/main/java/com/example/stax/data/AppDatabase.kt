@@ -5,7 +5,7 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 
-@Database(entities = [Session::class, Photo::class], version = 2, exportSchema = false)
+@Database(entities = [Session::class, Photo::class], version = 4, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun staxDao(): StaxDao
 
@@ -20,7 +20,7 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "stax_database"
                 ).fallbackToDestructiveMigration()
-                 .build()
+                    .build()
                 INSTANCE = instance
                 instance
             }

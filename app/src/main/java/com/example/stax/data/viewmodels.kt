@@ -15,9 +15,16 @@ class DashboardViewModel(private val dao: StaxDao) : ViewModel() {
     val sessions: StateFlow<List<SessionWithLatestPhoto>> = dao.getSessionsWithLatestPhoto()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    fun addSession(name: String) {
+    fun addSession(casinoName: String, sessionType: String, gameType: String) {
         viewModelScope.launch {
-            dao.insertSession(Session(name = name, date = System.currentTimeMillis()))
+            dao.insertSession(
+                Session(
+                    name = casinoName,
+                    date = System.currentTimeMillis(),
+                    sessionType = sessionType,
+                    gameType = gameType
+                )
+            )
         }
     }
 

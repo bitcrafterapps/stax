@@ -4,6 +4,7 @@ import android.os.Parcelable
 import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import androidx.room.ColumnInfo
 import kotlinx.parcelize.Parcelize
 
 @Entity(tableName = "sessions")
@@ -11,7 +12,9 @@ data class Session(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
     val name: String,
-    val date: Long
+    val date: Long,
+    val sessionType: String,
+    val gameType: String
 )
 
 data class SessionWithPhotoCount(

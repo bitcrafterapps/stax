@@ -23,10 +23,13 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.AttachMoney
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Folder
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FloatingActionButton
@@ -192,23 +195,33 @@ fun SessionFolder(
                     .align(Alignment.BottomCenter)
             )
 
-            Column(
+            Row(
                 modifier = Modifier
                     .align(Alignment.BottomStart)
-                    .padding(8.dp)
+                    .padding(8.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = sessionWithLatest.session.name,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    color = Color.White
+                Icon(
+                    imageVector = if (sessionWithLatest.session.sessionType == "Cash") Icons.Default.AttachMoney else Icons.Default.Star,
+                    contentDescription = "Session Type",
+                    tint = Color.White,
+                    modifier = Modifier.size(16.dp)
                 )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = "${sessionWithLatest.photoCount} photos",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = Color.White.copy(alpha = 0.7f)
-                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Column {
+                    Text(
+                        text = sessionWithLatest.session.name,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        color = Color.White
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "${sessionWithLatest.session.gameType} - ${sessionWithLatest.photoCount} photos",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color.White.copy(alpha = 0.7f)
+                    )
+                }
             }
 
             if (isSelected) {
@@ -227,29 +240,61 @@ fun SessionFolder(
 }
 
 @Composable
-fun AddSessionDialog(onConfirm: (String) -> Unit, onDismiss: () -> Unit) {
-    var location by remember { mutableStateOf("") }
+fun AddSessionDialog(onConfirm: (String, String, String) -> Unit, onDismiss: () -> Unit) {
+    var casinoName by remember { mutableStateOf("") }
+    var gameType by remember { mutableStateOf("") }
+    var sessionType by remember { mutableStateOf("Cash") }
 
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("Add New Session") },
         text = {
             Column {
-                Text("Enter the name of the location for this session.")
+                Text("Enter the details for this session.")
                 Spacer(modifier = Modifier.height(16.dp))
                 TextField(
-                    value = location,
-                    onValueChange = { location = it },
-                    label = { Text("Location") },
+                    value = casinoName,
+                    onValueChange = { casinoName = it },
+                    label = { Text("Casino Name") },
                     singleLine = true
                 )
+                Spacer(modifier = Modifier.height(8.dp))
+                TextField(
+                    value = gameType,
+                    onValueChange = { gameType = it },
+                    label = { Text("Game Type") },
+                    singleLine = true
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Button(
+                        onClick = { sessionType = "Cash" },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = if (sessionType == "Cash") MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface
+                        )
+                    ) {
+                        Text("Cash")
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Button(
+                        onClick = { sessionType = "Tourney" },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = if (sessionType == "Tourney") MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface
+                        )
+                    ) {
+                        Text("Tourney")
+                    }
+                }
             }
         },
         confirmButton = {
             Button(
                 onClick = {
-                    if (location.isNotBlank()) {
-                        onConfirm(location)
+                    if (casinoName.isNotBlank() && gameType.isNotBlank()) {
+                        onConfirm(casinoName, sessionType, gameType)
                     }
                 }
             ) {
