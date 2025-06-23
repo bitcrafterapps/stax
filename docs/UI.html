@@ -1,0 +1,1210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WSOP Crusher UI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background-color: #f0f2f5;
+            display: grid;
+            grid-template-columns: repeat(5, auto);
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 2rem;
+            gap: 2rem;
+        }
+        .mobile-frame {
+            width: 375px;
+            height: 812px;
+            border: 8px solid #1a1a1a;
+            border-radius: 40px;
+            background-color: #ffffff;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            flex-shrink: 0;
+            position: relative; /* Required for absolute positioning of the nav bar */
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Common Bottom Navigation Component -->
+    <div id="common-nav" class="absolute bottom-0 left-0 right-0 h-16 z-30" style="display: none;">
+        <div class="w-full h-full bg-slate-800/80 backdrop-blur-sm flex justify-around items-center p-2">
+            <!-- Home / Dashboard -->
+            <a href="#" class="flex flex-col items-center text-center p-1 w-20 text-purple-400">
+                <svg class="w-6 h-6 mb-1" fill="currentColor" viewBox="0 0 20 20"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path></svg>
+                <span class="text-xs">Dashboard</span>
+            </a>
+            <!-- Sessions -->
+            <a href="#" class="flex flex-col items-center text-center p-1 w-20 text-slate-400 hover:text-white">
+                <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
+                <span class="text-xs">Sessions</span>
+            </a>
+            <!-- Add Session -->
+            <a href="#" class="flex flex-col items-center text-center p-1 w-20 text-slate-400 hover:text-white">
+                <svg class="w-7 h-7 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <span class="text-xs">Add</span>
+            </a>
+            <!-- Training -->
+            <a href="#" class="flex flex-col items-center text-center p-1 w-20 text-slate-400 hover:text-white">
+                <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
+                <span class="text-xs">Training</span>
+            </a>
+            <!-- Community -->
+            <a href="#" class="flex flex-col items-center text-center p-1 w-20 text-slate-400 hover:text-white">
+                <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.653-.184-1.268-.5-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.653.184-1.268.5-1.857m0 0a5.002 5.002 0 019 0m0 0a5 5 0 00-9 0m9 0h.008v.008h-.008v-.008zm-9 0h-.008v.008h.008v-.008z" /></svg>
+                <span class="text-xs">Community</span>
+            </a>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const navTemplate = document.getElementById('common-nav');
+            const frames = document.querySelectorAll('.mobile-frame');
+            
+            frames.forEach(frame => {
+                const navClone = navTemplate.cloneNode(true);
+                navClone.style.display = 'block';
+                navClone.removeAttribute('id');
+                frame.appendChild(navClone);
+
+                // Add padding to scrollable content to avoid overlap
+                const scrollableContent = frame.querySelector('.overflow-y-auto');
+                if (scrollableContent) {
+                    scrollableContent.classList.add('pb-16');
+                } else {
+                    // If no specific scrollable area, add padding to the main container
+                    // This might not be perfect for all layouts, but it's a good fallback
+                    const mainContainer = frame.firstElementChild;
+                    if(mainContainer) {
+                        mainContainer.classList.add('pb-16');
+                    }
+                }
+            });
+        });
+    </script>
+
+    <!-- Page 1: Welcome Screen -->
+    <div class="mobile-frame">
+        <div class="w-full h-full flex flex-col bg-gradient-to-b from-black to-slate-900 text-white p-10">
+            <div class="flex-grow flex flex-col justify-center items-center text-center">
+                <div class="mb-12">
+                    <svg class="w-24 h-24 mx-auto" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <g stroke-width="1.2" fill="none" class="text-purple-800" stroke="currentColor">
+                            <ellipse cx="7" cy="12" rx="4" ry="1.5" fill="black"/><path d="M3 12v6c0 .828 1.79 1.5 4 1.5s4-.672 4-1.5v-6" fill="black"/>
+                            <ellipse cx="7" cy="12" rx="4" ry="1.5"/><path d="M3 12v6c0 .828 1.79 1.5 4 1.5s4-.672 4-1.5v-6"/>
+                            <path d="M3 14v1c0 .828 1.79 1.5 4 1.5s4-.672 4-1.5v-1"/>
+                            
+                            <ellipse cx="17" cy="12" rx="4" ry="1.5" fill="black"/><path d="M13 12v6c0 .828 1.79 1.5 4 1.5s4-.672 4-1.5v-6" fill="black"/>
+                            <ellipse cx="17" cy="12" rx="4" ry="1.5"/><path d="M13 12v6c0 .828 1.79 1.5 4 1.5s4-.672 4-1.5v-6"/>
+                            <path d="M13 14v1c0 .828 1.79 1.5 4 1.5s4-.672 4-1.5v-1"/>
+                        </g>
+                        <g stroke-width="1.2" fill="none" class="text-purple-600" stroke="currentColor">
+                            <ellipse cx="10" cy="10" rx="5" ry="2" fill="black"/><path d="M5 10v8c0 1.104 2.239 2 5 2s5-.896 5-2v-8" fill="black"/>
+                            <ellipse cx="10" cy="10" rx="5" ry="2"/><path d="M5 10v8c0 1.104 2.239 2 5 2s5-.896 5-2v-8"/>
+                            <path d="M5 12v1c0 1.104 2.239 2 5 2s5-.896 5-2v-1"/><path d="M5 14v1c0 1.104 2.239 2 5 2s5-.896 5-2v-1"/>
+
+                            <ellipse cx="14" cy="10" rx="5" ry="2" fill="black"/><path d="M9 10v8c0 1.104 2.239 2 5 2s5-.896 5-2v-8" fill="black"/>
+                            <ellipse cx="14" cy="10" rx="5" ry="2"/><path d="M9 10v8c0 1.104 2.239 2 5 2s5-.896 5-2v-8"/>
+                            <path d="M9 12v1c0 1.104 2.239 2 5 2s5-.896 5-2v-1"/><path d="M9 14v1c0 1.104 2.239 2 5 2s5-.896 5-2v-1"/>
+                        </g>
+                        <g class="text-purple-400" stroke="currentColor" stroke-width="1.5" fill="none">
+                            <ellipse cx="12" cy="8" rx="8" ry="3" fill="black"/>
+                            <path d="M4 8v10c0 1.657 3.582 3 8 3s8-1.343 8-3V8" fill="black"/>
+                            <ellipse cx="12" cy="8" rx="8" ry="3"/>
+                            <path d="M4 8v10c0 1.657 3.582 3 8 3s8-1.343 8-3V8"/>
+                            <path d="M4 10v1c0 1.657 3.582 3 8 3s8-1.343 8-3v-1"/>
+                            <path d="M4 12v1c0 1.657 3.582 3 8 3s8-1.343 8-3v-1"/>
+                            <path d="M4 14v1c0 1.657 3.582 3 8 3s8-1.343 8-3v-1"/>
+                        </g>
+                    </svg>
+                </div>
+                <h1 class="text-5xl font-bold tracking-tight mb-4">WSOP Crusher</h1>
+                <p class="text-xl text-slate-400 font-light">The ultimate AI-powered poker tracker and trainer.</p>
+            </div>
+            <div class="w-full space-y-3">
+                <button class="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-4 px-4 rounded-full text-lg">
+                    Get Started
+                </button>
+                <button class="w-full text-slate-200 hover:bg-slate-800 font-semibold py-4 px-4 rounded-full text-lg">
+                    Log In
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Page 2: Account Creation -->
+    <div class="mobile-frame">
+        <div class="w-full h-full flex flex-col bg-gradient-to-b from-slate-900 to-black text-white p-8">
+            <div class="text-left mb-10">
+                 <h2 class="text-3xl font-bold text-white">Create Account</h2>
+                 <p class="text-slate-400">Become a winning player today.</p>
+            </div>
+
+            <div class="space-y-4">
+                <button class="w-full flex items-center justify-center border border-slate-700 bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold py-3 px-4 rounded-full text-md transition-colors">
+                    <svg class="w-5 h-5 mr-3" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303c-1.649 4.657-6.08 8-11.303 8c-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4C12.955 4 4 12.955 4 24s8.955 20 20 20s20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z"/><path fill="#FF3D00" d="M6.306 14.691l6.571 4.819C14.655 15.108 18.961 12 24 12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4C16.318 4 9.656 8.337 6.306 14.691z"/><path fill="#4CAF50" d="M24 44c5.166 0 9.86-1.977 13.409-5.192l-6.19-5.238A11.91 11.91 0 0124 36c-5.202 0-9.619-3.317-11.283-7.946l-6.522 5.025C9.505 39.556 16.227 44 24 44z"/><path fill="#1976D2" d="M43.611 20.083H42V20H24v8h11.303a12.04 12.04 0 01-4.087 5.571l6.19 5.238C44.438 36.372 48 30.656 48 24c0-1.341-.138-2.65-.389-3.917z"/></svg>
+                    Sign Up with Google
+                </button>
+                 <button class="w-full flex items-center justify-center bg-slate-800 hover:bg-slate-700 text-white font-semibold py-3 px-4 rounded-full text-md transition-colors">
+                     <svg class="w-5 h-5 mr-3" viewBox="0 0 24 24"><path fill="currentColor" d="M12.01,2.05C10.12,2.05,8.49,3.08,7.75,4.87C6.7,4.7,5.56,5.1,4.86,6.07C3.3,8,4.1,10.7,5.92,11.83 C5.84,12.5,5.8,13.2,5.8,13.92C5.8,18.33,9.45,22,14.2,22c1.93,0,3.67-0.67,5.08-1.76c1.23-0.06,2.41-0.62,3.03-1.62 c1.12-1.87,0.47-4.3-1.25-5.34c-0.12-1.26-0.53-2.45-1.18-3.52C18.23,5.27,15.3,2.05,12.01,2.05M12.01,3.47 c2.34,0,4.5,2.15,5.5,4.78c0.5,1.23,0.76,2.55,0.76,3.86c0,0.46-0.04,0.92-0.1,1.37c0.23,0.08,0.46,0.18,0.66,0.3 c1.03,0.58,1.4,1.96,0.72,2.91c-0.49,0.69-1.28,1-2.03,0.84c-1.1,1.03-2.58,1.64-4.21,1.64c-3.6,0-6.52-2.64-6.52-6.16 c0,-0.64,0.06,-1.27,0.16,-1.88c-1.12-0.6-1.58-2.09-0.96-3.13c0.43-0.73,1.23-1.03,1.96-0.84C9.1,5.6,10.45,3.47,12.01,3.47z"/></svg>
+                    Sign Up with Apple
+                </button>
+            </div>
+
+            <div class="my-6 flex items-center">
+                <div class="flex-grow border-t border-slate-700"></div>
+                <span class="mx-4 text-slate-400 text-sm">or sign up with email</span>
+                <div class="flex-grow border-t border-slate-700"></div>
+            </div>
+            
+            <form class="space-y-5">
+                <div>
+                    <label for="email-dark" class="block text-sm font-medium text-slate-400">Email</label>
+                    <input type="email" name="email-dark" id="email-dark" class="mt-1 block w-full px-3 py-3 bg-slate-800 border-slate-700 rounded-xl shadow-sm placeholder-slate-500 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm" placeholder="you@example.com">
+                </div>
+                <div>
+                    <label for="password-dark" class="block text-sm font-medium text-slate-400">Password</label>
+                    <input type="password" name="password-dark" id="password-dark" class="mt-1 block w-full px-3 py-3 bg-slate-800 border-slate-700 rounded-xl shadow-sm placeholder-slate-500 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm" placeholder="••••••••">
+                </div>
+                 <button type="submit" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 px-4 rounded-full text-lg">
+                    Create Account
+                </button>
+            </form>
+
+            <div class="mt-auto text-center text-xs text-slate-400">
+                <p>By signing up, you agree to our <a href="#" class="font-medium hover:underline text-purple-600">Terms of Service</a> and <a href="#" class="font-medium hover:underline text-purple-600">Privacy Policy</a>.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Page 3: Poker Experience Assessment -->
+    <div class="mobile-frame">
+        <div class="w-full h-full flex flex-col bg-gradient-to-b from-slate-900 to-black text-white p-8">
+            <div class="text-left mb-8">
+                 <h2 class="text-3xl font-bold text-white">Your Experience</h2>
+                 <p class="text-slate-400">Tell us a bit about your poker journey.</p>
+            </div>
+            
+            <div class="flex-grow space-y-6">
+                <div>
+                    <label class="block text-sm font-medium text-slate-400 mb-2">How long have you been playing?</label>
+                    <div class="grid grid-cols-2 gap-3">
+                        <button class="w-full border border-slate-700 bg-slate-800 hover:border-purple-500 text-slate-300 font-semibold py-3 px-2 rounded-xl text-sm transition-colors">Less than a year</button>
+                        <button class="w-full border border-slate-700 bg-slate-800 hover:border-purple-500 text-slate-300 font-semibold py-3 px-2 rounded-xl text-sm transition-colors">1-3 years</button>
+                        <button class="w-full border border-purple-500 bg-purple-600 text-white font-semibold py-3 px-2 rounded-xl text-sm transition-colors">3-5 years</button>
+                        <button class="w-full border border-slate-700 bg-slate-800 hover:border-purple-500 text-slate-300 font-semibold py-3 px-2 rounded-xl text-sm transition-colors">5+ years</button>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-400 mb-2">What is your primary game?</label>
+                    <div class="space-y-3">
+                        <button class="w-full border border-purple-500 bg-purple-600 text-white font-semibold py-3 px-4 rounded-xl text-md transition-colors text-left flex items-center">Tournaments</button>
+                        <button class="w-full border border-slate-700 bg-slate-800 hover:border-purple-500 text-slate-300 font-semibold py-3 px-4 rounded-xl text-md transition-colors text-left flex items-center">Cash Games</button>
+                        <button class="w-full border border-slate-700 bg-slate-800 hover:border-purple-500 text-slate-300 font-semibold py-3 px-4 rounded-xl text-md transition-colors text-left flex items-center">Both</button>
+                    </div>
+                </div>
+                 <div>
+                    <label class="block text-sm font-medium text-slate-400 mb-2">What's your skill level?</label>
+                    <div class="space-y-3">
+                        <button class="w-full border border-slate-700 bg-slate-800 hover:border-purple-500 text-slate-300 font-semibold py-3 px-4 rounded-xl text-md transition-colors text-left flex items-center">Beginner</button>
+                        <button class="w-full border border-purple-500 bg-purple-600 text-white font-semibold py-3 px-4 rounded-xl text-md transition-colors text-left flex items-center">Intermediate</button>
+                        <button class="w-full border border-slate-700 bg-slate-800 hover:border-purple-500 text-slate-300 font-semibold py-3 px-4 rounded-xl text-md transition-colors text-left flex items-center">Advanced</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="w-full pt-4">
+                 <button class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 px-4 rounded-full text-lg">
+                    Continue
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Page 4: Goal Setting -->
+    <div class="mobile-frame">
+        <div class="w-full h-full flex flex-col bg-gradient-to-b from-black to-slate-900 text-white p-8">
+            <div class="text-left mb-8">
+                 <h2 class="text-3xl font-bold">What's Your Goal?</h2>
+                 <p class="text-slate-400 font-light">Select your primary objective to get started.</p>
+            </div>
+            
+            <div class="flex-grow space-y-4">
+                <button class="w-full border border-slate-700 bg-slate-800 hover:border-purple-500 text-left p-4 rounded-xl transition-colors">
+                    <h3 class="font-bold text-lg">Prepare for the WSOP</h3>
+                    <p class="text-sm text-slate-400 font-light">Get ready for the big stage with tournament-specific training.</p>
+                </button>
+                 <button class="w-full border-2 border-purple-500 bg-slate-800 text-left p-4 rounded-xl transition-colors">
+                    <h3 class="font-bold text-lg">Crush Cash Games</h3>
+                    <p class="text-sm text-slate-400 font-light">Improve your win-rate and move up in stakes.</p>
+                </button>
+                 <button class="w-full border border-slate-700 bg-slate-800 hover:border-purple-500 text-left p-4 rounded-xl transition-colors">
+                    <h3 class="font-bold text-lg">Analyze My Performance</h3>
+                    <p class="text-sm text-slate-400 font-light">Use AI to find leaks and track your progress.</p>
+                </button>
+                 <button class="w-full border border-slate-700 bg-slate-800 hover:border-purple-500 text-left p-4 rounded-xl transition-colors">
+                    <h3 class="font-bold text-lg">Just Track My Sessions</h3>
+                    <p class="text-sm text-slate-400 font-light">Simple and powerful bankroll management.</p>
+                </button>
+            </div>
+
+            <div class="w-full pt-4">
+                 <button class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 px-4 rounded-full text-lg">
+                    Finish Setup
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Page 5: Dashboard with First Session Tutorial -->
+    <div class="mobile-frame">
+        <div class="w-full h-full flex flex-col bg-gradient-to-b from-black to-slate-900 text-white relative">
+            <!-- Header -->
+            <div class="p-6 flex justify-between items-center z-20">
+                <h2 class="text-3xl font-bold">Dashboard</h2>
+                <svg class="w-6 h-6 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+            </div>
+
+            <!-- Stats -->
+            <div class="grid grid-cols-2 gap-4 px-6 z-20">
+                <div class="bg-slate-800 p-4 rounded-xl">
+                    <p class="text-sm text-slate-400">Total Profit</p>
+                    <p class="text-2xl font-bold text-green-400">$0.00</p>
+                </div>
+                <div class="bg-slate-800 p-4 rounded-xl">
+                    <p class="text-sm text-slate-400">Sessions Played</p>
+                    <p class="text-2xl font-bold">0</p>
+                </div>
+            </div>
+
+            <!-- Recent Sessions -->
+            <div class="flex-grow px-6 mt-8 z-20">
+                <h3 class="text-xl font-bold mb-4">Recent Sessions</h3>
+                <div class="text-center text-slate-500 py-10">
+                    <p>You have no sessions yet.</p>
+                    <p class="text-sm">Start a session to see it here.</p>
+                </div>
+            </div>
+            
+            <!-- Tutorial Overlay -->
+            <div class="absolute inset-0 bg-black bg-opacity-80 flex flex-col justify-end items-center p-8 z-30">
+                <div class="text-center mb-4">
+                    <p class="text-lg font-semibold">Welcome to your Dashboard!</p>
+                    <p class="text-slate-300">This is where you'll see your progress.</p>
+                </div>
+                <svg class="w-16 h-16 text-white animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path></svg>
+                <p class="mt-4 text-lg">Tap the '+' button to start your first session.</p>
+            </div>
+            
+            <!-- Bottom Nav with Action Button -->
+            <!-- REMOVED OLD NAV -->
+        </div>
+    </div>
+
+    <!-- Page 6: Permission Request -->
+    <div class="mobile-frame">
+        <div class="w-full h-full flex flex-col justify-center items-center bg-gradient-to-b from-black to-slate-900 text-white p-10 text-center">
+            <div class="mb-8">
+                <svg class="w-24 h-24 mx-auto text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+            </div>
+            <h2 class="text-3xl font-bold mb-4">Enable Notifications</h2>
+            <p class="text-slate-400 font-light mb-12">Get notified about your session summaries, AI analysis reports, and community updates.</p>
+            <div class="w-full space-y-3">
+                <button class="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-4 px-4 rounded-full text-lg">
+                    Allow Notifications
+                </button>
+                <button class="w-full text-slate-400 hover:text-white font-semibold py-4 px-4 rounded-full text-lg">
+                    Maybe Later
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Page 7: Start New Session -->
+    <div class="mobile-frame">
+        <div class="w-full h-full flex flex-col bg-gradient-to-b from-slate-900 to-black text-white">
+            <div class="p-6 border-b border-slate-700">
+                <h2 class="text-3xl font-bold text-white">New Session</h2>
+                <p class="text-slate-400">Log your game details.</p>
+            </div>
+            <form class="flex-grow p-8 space-y-6">
+                <div>
+                    <label class="block text-sm font-medium text-slate-400 mb-2">Game Type</label>
+                    <div class="grid grid-cols-2 gap-3">
+                        <button type="button" class="w-full border border-purple-500 bg-purple-600 text-white font-semibold py-3 px-2 rounded-xl text-sm">Tournament</button>
+                        <button type="button" class="w-full border border-slate-700 bg-slate-800 hover:border-purple-500 text-slate-300 font-semibold py-3 px-2 rounded-xl text-sm">Cash Game</button>
+                    </div>
+                </div>
+                <div>
+                    <label for="location-dark" class="block text-sm font-medium text-slate-400">Location</label>
+                    <input type="text" name="location-dark" id="location-dark" class="mt-1 block w-full px-3 py-3 bg-slate-800 border-slate-700 rounded-xl focus:outline-none focus:ring-purple-500 focus:border-purple-500" placeholder="e.g., Bellagio, Las Vegas">
+                </div>
+                <div>
+                    <label for="buyin-dark" class="block text-sm font-medium text-slate-400">Buy-in ($)</label>
+                    <input type="number" name="buyin-dark" id="buyin-dark" class="mt-1 block w-full px-3 py-3 bg-slate-800 border-slate-700 rounded-xl focus:outline-none focus:ring-purple-500 focus:border-purple-500" placeholder="1000">
+                </div>
+                 <div>
+                    <label for="blinds-dark" class="block text-sm font-medium text-slate-400">Stakes / Blinds</label>
+                    <input type="text" name="blinds-dark" id="blinds-dark" class="mt-1 block w-full px-3 py-3 bg-slate-800 border-slate-700 rounded-xl focus:outline-none focus:ring-purple-500 focus:border-purple-500" placeholder="5/10">
+                </div>
+                <div>
+                    <label for="notes-dark" class="block text-sm font-medium text-slate-400">Notes (Optional)</label>
+                    <textarea name="notes-dark" id="notes-dark" rows="3" class="mt-1 block w-full px-3 py-3 bg-slate-800 border-slate-700 rounded-xl focus:outline-none focus:ring-purple-500 focus:border-purple-500" placeholder="e.g., Aggressive table, playing tight."></textarea>
+                </div>
+            </form>
+            <div class="p-6">
+                 <button type="submit" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 px-4 rounded-full text-lg">
+                    Start Session
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Page 8: Active Session -->
+    <div class="mobile-frame">
+        <div class="w-full h-full flex flex-col bg-slate-900 text-white">
+            <!-- Header -->
+            <div class="p-6 flex justify-between items-center bg-black">
+                <div>
+                    <h2 class="text-2xl font-bold">Live Session</h2>
+                    <p class="text-sm text-slate-400">Bellagio - $5/$10 NLH</p>
+                </div>
+                <div class="text-right">
+                    <p class="text-lg font-mono text-purple-400">00:47:12</p>
+                    <p class="text-sm text-slate-400">Elapsed Time</p>
+                </div>
+            </div>
+
+            <!-- Profit/Loss -->
+            <div class="p-8 text-center">
+                <p class="text-lg text-slate-400">Current Profit</p>
+                <p class="text-6xl font-bold text-green-400 tracking-tight">$1,250</p>
+            </div>
+
+            <!-- Key Stats -->
+            <div class="grid grid-cols-2 gap-4 px-6">
+                <div class="bg-slate-800 p-4 rounded-xl text-center">
+                    <p class="text-sm text-slate-400">Hands Played</p>
+                    <p class="text-3xl font-bold">32</p>
+                </div>
+                <div class="bg-slate-800 p-4 rounded-xl text-center">
+                    <p class="text-sm text-slate-400">VPIP</p>
+                    <p class="text-3xl font-bold">21%</p>
+                </div>
+            </div>
+            
+            <!-- Hand History -->
+            <div class="flex-grow p-6 mt-4">
+                <h3 class="text-xl font-bold mb-4">Recent Hands</h3>
+                <div class="space-y-3 overflow-y-auto max-h-48">
+                    <div class="flex justify-between items-center p-3 bg-slate-800 rounded-lg">
+                        <p class="font-mono">Ad Ac</p>
+                        <p class="text-sm text-slate-400">Raised to $30 pre-flop</p>
+                        <p class="font-bold text-green-400">+$65</p>
+                    </div>
+                    <div class="flex justify-between items-center p-3 bg-slate-800 rounded-lg">
+                        <p class="font-mono">Ks Qh</p>
+                        <p class="text-sm text-slate-400">Called flop, folded turn</p>
+                        <p class="font-bold text-red-500">-$50</p>
+                    </div>
+                     <div class="flex justify-between items-center p-3 bg-slate-800 rounded-lg">
+                        <p class="font-mono">7s 7d</p>
+                        <p class="text-sm text-slate-400">Won at showdown</p>
+                        <p class="font-bold text-green-400">+$120</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="p-6 grid grid-cols-2 gap-4 bg-black">
+                <button class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-4 rounded-full text-md">Add Hand</button>
+                <button class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded-full text-md">End Session</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Page 9: End of Session Summary -->
+    <div class="mobile-frame">
+        <div class="w-full h-full flex flex-col bg-gradient-to-b from-black to-slate-900 text-white p-6">
+            <div class="text-center my-8">
+                <h2 class="text-4xl font-bold">Session Over</h2>
+                <p class="text-slate-400 mt-2">Nice game!</p>
+            </div>
+            
+            <div class="bg-slate-800 p-6 rounded-2xl w-full max-w-sm mx-auto space-y-5">
+                <div class="flex justify-between items-baseline">
+                    <span class="text-slate-400">Result</span>
+                    <span class="text-3xl font-bold text-green-400">$1,875</span>
+                </div>
+                <div class="border-t border-slate-700"></div>
+                <div class="flex justify-between">
+                    <span class="text-slate-400">Duration</span>
+                    <span class="font-semibold">3h 15m</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-slate-400">Location</span>
+                    <span class="font-semibold">Bellagio</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-slate-400">Hands Played</span>
+                    <span class="font-semibold">82</span>
+                </div>
+            </div>
+
+            <div class="w-full max-w-sm mx-auto mt-8 space-y-3">
+                <button class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-4 rounded-full text-md">Get AI Analysis</button>
+                <button class="w-full bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 px-4 rounded-full text-md">View Hand History</button>
+            </div>
+
+            <div class="mt-auto text-center">
+                 <button class="w-full text-slate-200 hover:bg-slate-800 font-semibold py-4 px-4 rounded-full text-lg">
+                    Back to Dashboard
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Page 10: AI Analysis Report -->
+    <div class="mobile-frame">
+        <div class="w-full h-full flex flex-col bg-gradient-to-b from-slate-900 to-black text-white">
+            <div class="p-6 border-b border-slate-700 sticky top-0 bg-slate-900/80 backdrop-blur-sm z-10">
+                <h2 class="text-3xl font-bold text-white">AI Analysis</h2>
+                <p class="text-slate-400">Session from July 26, 2024</p>
+            </div>
+            <div class="flex-grow p-6 overflow-y-auto">
+                <div class="bg-green-900/50 border border-green-700 text-green-300 p-4 rounded-xl mb-6">
+                    <p class="font-bold">Key Takeaway:</p>
+                    <p>Your pre-flop aggression is profitable, but you're over-valuing suited connectors from early position, leading to tricky post-flop spots.</p>
+                </div>
+
+                <h3 class="text-xl font-bold mb-4 text-white">Performance Score</h3>
+                <div class="text-center mb-6">
+                    <div class="relative w-32 h-32 mx-auto">
+                        <svg class="w-full h-full" viewBox="0 0 36 36">
+                            <path class="text-slate-700" stroke-width="3" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"></path>
+                            <path class="text-green-500" stroke-width="3" fill="none" stroke-dasharray="82, 100" stroke-linecap="round" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"></path>
+                        </svg>
+                        <div class="absolute inset-0 flex flex-col justify-center items-center">
+                            <span class="text-4xl font-bold text-white">82</span>
+                            <span class="text-sm text-slate-400">/100</span>
+                        </div>
+                    </div>
+                </div>
+
+                <h3 class="text-xl font-bold mb-2 text-white">Identified Leaks</h3>
+                <div class="space-y-3">
+                    <div class="bg-slate-800 p-4 rounded-lg">
+                        <p class="font-bold text-slate-100">Leak: Calling 3-bets too wide</p>
+                        <p class="text-sm text-slate-400">You called 3-bets with hands like A5s and KJo out of position, which is costing you money against tight ranges.</p>
+                        <a href="#" class="text-sm font-semibold text-purple-600 hover:underline">View 3 Hands ></a>
+                    </div>
+                    <div class="bg-slate-800 p-4 rounded-lg">
+                        <p class="font-bold text-slate-100">Leak: Inconsistent C-Bet Sizing</p>
+                        <p class="text-sm text-slate-400">Your continuation bet sizing varied from 33% to 75% pot on similar board textures, which can be exploited.</p>
+                         <a href="#" class="text-sm font-semibold text-purple-600 hover:underline">View 5 Hands ></a>
+                    </div>
+                </div>
+                 <h3 class="text-xl font-bold mt-6 mb-2 text-white">Strengths</h3>
+                <div class="space-y-3">
+                    <div class="bg-slate-800 p-4 rounded-lg">
+                        <p class="font-bold text-slate-100">Strength: Blind Defense</p>
+                        <p class="text-sm text-slate-400">You effectively defended your big blind against late position steals with a well-balanced range.</p>
+                        <a href="#" class="text-sm font-semibold text-purple-600 hover:underline">View 4 Hands ></a>
+                    </div>
+                </div>
+            </div>
+            <div class="p-6 border-t border-slate-700">
+                 <button class="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-4 px-4 rounded-full text-lg">
+                    Back to Session Summary
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Page 11: Hand History List -->
+    <div class="mobile-frame">
+        <div class="w-full h-full flex flex-col bg-slate-900 text-white">
+            <!-- Header -->
+            <div class="p-6 flex justify-between items-center bg-black sticky top-0 z-10">
+                <div>
+                    <h2 class="text-2xl font-bold">Hand History</h2>
+                    <p class="text-sm text-slate-400">82 Hands from July 26</p>
+                </div>
+                <svg class="w-6 h-6 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v10a1 1 0 01-1 1H4a1 1 0 01-1-1V10zM15 10a1 1 0 011-1h2a1 1 0 011 1v10a1 1 0 01-1 1h-2a1 1 0 01-1-1V10z"></path></svg>
+            </div>
+
+            <!-- Hand List -->
+            <div class="flex-grow p-4 overflow-y-auto">
+                <div class="space-y-2">
+                    <!-- Hand Item -->
+                    <div class="flex justify-between items-center p-3 bg-slate-800 rounded-lg">
+                        <div class="flex items-center space-x-3">
+                            <div class="flex flex-col items-center justify-center w-10 h-10 rounded-full bg-green-500 text-white font-bold text-xs">
+                                <span>WIN</span>
+                                <span>+$65</span>
+                            </div>
+                            <div>
+                                <p class="font-bold font-mono">Ad Ac</p>
+                                <p class="text-xs text-slate-400">vs. 3 players</p>
+                            </div>
+                        </div>
+                        <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                    </div>
+                    <!-- Hand Item -->
+                    <div class="flex justify-between items-center p-3 bg-slate-800 rounded-lg">
+                         <div class="flex items-center space-x-3">
+                            <div class="flex flex-col items-center justify-center w-10 h-10 rounded-full bg-red-500 text-white font-bold text-xs">
+                                <span>LOSS</span>
+                                <span>-$50</span>
+                            </div>
+                            <div>
+                                <p class="font-bold font-mono">Ks Qh</p>
+                                <p class="text-xs text-slate-400">vs. 1 player</p>
+                            </div>
+                        </div>
+                        <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                    </div>
+                    <!-- Hand Item -->
+                     <div class="flex justify-between items-center p-3 bg-slate-800 rounded-lg">
+                         <div class="flex items-center space-x-3">
+                            <div class="flex flex-col items-center justify-center w-10 h-10 rounded-full bg-green-500 text-white font-bold text-xs">
+                                <span>WIN</span>
+                                <span>+$120</span>
+                            </div>
+                            <div>
+                                <p class="font-bold font-mono">7s 7d</p>
+                                <p class="text-xs text-slate-400">vs. 2 players</p>
+                            </div>
+                        </div>
+                        <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                    </div>
+                     <!-- Hand Item -->
+                    <div class="flex justify-between items-center p-3 bg-slate-800 rounded-lg">
+                         <div class="flex items-center space-x-3">
+                            <div class="flex flex-col items-center justify-center w-10 h-10 rounded-full bg-slate-600 text-white font-bold text-xs">
+                                <span>FOLD</span>
+                                <span>$0</span>
+                            </div>
+                            <div>
+                                <p class="font-bold font-mono">Td 9d</p>
+                                <p class="text-xs text-slate-400">Pre-flop</p>
+                            </div>
+                        </div>
+                        <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                    </div>
+                </div>
+            </div>
+            <!-- Bottom Nav -->
+            <!-- REMOVED OLD NAV -->
+        </div>
+    </div>
+
+    <!-- Page 12: Training Hub -->
+    <div class="mobile-frame">
+        <div class="w-full h-full flex flex-col bg-gradient-to-b from-slate-900 to-black text-white">
+            <div class="p-6 border-b border-slate-700">
+                <h2 class="text-3xl font-bold text-white">Training Hub</h2>
+            </div>
+            <div class="flex-grow p-6 overflow-y-auto space-y-6">
+                <div class="bg-purple-600 text-white p-6 rounded-2xl shadow-lg">
+                    <h3 class="text-2xl font-bold">Personalized Learning Path</h3>
+                    <p class="mt-2 opacity-90">Based on your AI analysis, we recommend focusing on 3-bet pots.</p>
+                    <button class="mt-4 bg-white text-purple-600 font-bold py-2 px-4 rounded-full text-sm">Start Learning</button>
+                </div>
+                <div>
+                    <h4 class="text-xl font-bold mb-3 text-white">Featured Content</h4>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="rounded-xl overflow-hidden">
+                            <img src="https://via.placeholder.com/150x100.png/000000/FFFFFF/?text=Poker" alt="Video thumbnail">
+                            <div class="p-3 bg-slate-800">
+                                <h5 class="font-semibold text-slate-100">GTO Play</h5>
+                                <p class="text-xs text-slate-400">Daniel Negreanu</p>
+                            </div>
+                        </div>
+                        <div class="rounded-xl overflow-hidden">
+                           <img src="https://via.placeholder.com/150x100.png/000000/FFFFFF/?text=Poker" alt="Video thumbnail">
+                            <div class="p-3 bg-slate-800">
+                                <h5 class="font-semibold text-slate-100">Exploitative Play</h5>
+                                <p class="text-xs text-slate-400">Phil Ivey</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <h4 class="text-xl font-bold mb-3 text-white">Browse by Category</h4>
+                    <div class="space-y-3">
+                        <button class="w-full text-left font-semibold p-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-100">Pre-Flop Strategy</button>
+                        <button class="w-full text-left font-semibold p-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-100">Post-Flop Play</button>
+                        <button class="w-full text-left font-semibold p-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-100">Tournament Mastery</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Page 13: Personalized Learning Path -->
+    <div class="mobile-frame">
+        <div class="w-full h-full flex flex-col bg-slate-900 text-white">
+            <div class="p-6 bg-black">
+                <h2 class="text-3xl font-bold">3-Bet Pot Mastery</h2>
+                <p class="text-slate-400">Your path to conquering 3-bet situations.</p>
+            </div>
+            <div class="flex-grow p-6 overflow-y-auto space-y-4">
+                <div class="flex items-center space-x-4 p-4 bg-slate-800 rounded-lg border-l-4 border-purple-500">
+                    <div class="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center font-bold">1</div>
+                    <div>
+                        <h4 class="font-bold">Core Concepts Video</h4>
+                        <p class="text-xs text-slate-400">15 min video</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4 p-4 bg-slate-800 rounded-lg">
+                    <div class="w-10 h-10 bg-slate-700 rounded-full flex items-center justify-center font-bold text-slate-400">2</div>
+                    <div>
+                        <h4 class="font-bold">Interactive Quiz</h4>
+                        <p class="text-xs text-slate-400">10 questions</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4 p-4 bg-slate-800 rounded-lg">
+                    <div class="w-10 h-10 bg-slate-700 rounded-full flex items-center justify-center font-bold text-slate-400">3</div>
+                    <div>
+                        <h4 class="font-bold">Hand Review Simulation</h4>
+                        <p class="text-xs text-slate-400">Analyze 5 hands</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Page 14: Training Video Player -->
+    <div class="mobile-frame">
+        <div class="w-full h-full flex flex-col bg-black text-white">
+            <div class="w-full bg-slate-800 aspect-video flex items-center justify-center">
+                <p>Video Player Area</p>
+            </div>
+            <div class="p-6">
+                <h2 class="text-2xl font-bold">GTO for Beginners</h2>
+                <p class="text-slate-400">with Daniel Negreanu</p>
+            </div>
+            <div class="flex-grow p-6 border-t border-slate-700 overflow-y-auto">
+                <h3 class="font-bold mb-2">Video Description</h3>
+                <p class="text-sm text-slate-300">Learn the fundamentals of Game Theory Optimal play to build a balanced and unexploitable strategy from one of the world's best.</p>
+            </div>
+            <div class="p-4 bg-slate-900 flex justify-around">
+                <button class="text-purple-500 font-semibold">Up Next</button>
+                <button class="text-slate-400">Details</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Page 15: Community Hub -->
+    <div class="mobile-frame">
+        <div class="w-full h-full flex flex-col bg-gradient-to-b from-slate-900 to-black text-white">
+            <div class="p-6 border-b border-slate-700">
+                <h2 class="text-3xl font-bold text-white">Community</h2>
+            </div>
+            <div class="flex-grow p-6 overflow-y-auto space-y-6">
+                <div class="bg-slate-800 p-4 rounded-xl flex items-center space-x-4">
+                    <img src="https://via.placeholder.com/48x48.png/000000/FFFFFF/?text=U" alt="User Avatar" class="rounded-full">
+                    <p class="text-slate-400">Share your thoughts or post a hand...</p>
+                </div>
+                <div class="space-y-4">
+                    <div class="bg-slate-800 border border-slate-700 rounded-xl p-4">
+                        <div class="flex items-center space-x-3 mb-3">
+                            <img src="https://via.placeholder.com/40x40.png/000000/FFFFFF/?text=A" alt="User Avatar" class="rounded-full">
+                            <div>
+                                <h4 class="font-bold text-slate-100">AlexP_Poker</h4>
+                                <p class="text-xs text-slate-400">2 hours ago</p>
+                            </div>
+                        </div>
+                        <p class="text-slate-300 mb-3">Tough spot on the river with top pair. Hero call or fold? My analysis says fold but it felt weak.</p>
+                        <div class="text-xs text-slate-400 flex space-x-4">
+                            <span>12 Comments</span>
+                            <span>5 Likes</span>
+                        </div>
+                    </div>
+                     <div class="bg-slate-800 border border-slate-700 rounded-xl p-4">
+                        <div class="flex items-center space-x-3 mb-3">
+                            <img src="https://via.placeholder.com/40x40.png/000000/FFFFFF/?text=J" alt="User Avatar" class="rounded-full">
+                            <div>
+                                <h4 class="font-bold text-slate-100">JessicaW</h4>
+                                <p class="text-xs text-slate-400">5 hours ago</p>
+                            </div>
+                        </div>
+                        <p class="text-slate-300 mb-3">Just won my first live tournament using strategies from the Training Hub! #wsopcrusher</p>
+                        <div class="text-xs text-slate-400 flex space-x-4">
+                            <span>33 Comments</span>
+                            <span>150 Likes</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Page 16: Public User Profile -->
+    <div class="mobile-frame">
+        <div class="w-full h-full flex flex-col bg-slate-900 text-white">
+            <div class="p-8 bg-black flex flex-col items-center text-center">
+                <img src="https://via.placeholder.com/96x96.png/000000/FFFFFF/?text=A" alt="User Avatar" class="rounded-full border-4 border-purple-500">
+                <h2 class="text-3xl font-bold mt-4">AlexP_Poker</h2>
+                <p class="text-slate-400">"Grinding my way to the top"</p>
+                <div class="mt-4 flex space-x-4">
+                    <div class="text-center">
+                        <p class="text-xl font-bold">1.2k</p>
+                        <p class="text-xs text-slate-500">Followers</p>
+                    </div>
+                    <div class="text-center">
+                        <p class="text-xl font-bold">345</p>
+                        <p class="text-xs text-slate-500">Following</p>
+                    </div>
+                </div>
+            </div>
+            <div class="flex-grow p-6 overflow-y-auto space-y-4">
+                <h3 class="text-xl font-bold">Shared Hands (12)</h3>
+                <div class="bg-slate-800 p-3 rounded-lg">
+                    <p class="font-mono">As Ks</p>
+                    <p class="text-xs text-slate-400">Won $580 in a 4-bet pot.</p>
+                </div>
+                <div class="bg-slate-800 p-3 rounded-lg">
+                    <p class="font-mono">Qh Qd</p>
+                    <p class="text-xs text-slate-400">Folded to river aggression.</p>
+                </div>
+            </div>
+            <div class="p-4 bg-black">
+                <button class="w-full bg-purple-600 hover:bg-purple-700 font-semibold py-3 rounded-full">Follow</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Page 17: WSOP Preparation Hub -->
+    <div class="mobile-frame">
+        <div class="w-full h-full flex flex-col bg-gradient-to-b from-purple-900 via-black to-black text-white">
+            <div class="p-8 text-center">
+                <img src="https://via.placeholder.com/80x80.png/FFFFFF/000000/?text=WSOP" alt="WSOP Logo" class="mx-auto mb-4 rounded-lg">
+                <h2 class="text-4xl font-extrabold tracking-tight">WSOP Prep Hub</h2>
+                <p class="text-purple-300 font-semibold">Your edge for the World Series of Poker.</p>
+            </div>
+            <div class="flex-grow p-6 overflow-y-auto space-y-4">
+                <div class="bg-black/50 backdrop-blur-sm p-4 rounded-xl border border-purple-500/50">
+                    <h4 class="font-bold text-purple-400">Main Event Countdown</h4>
+                    <p class="text-3xl font-mono">42d 11h 23m 05s</p>
+                </div>
+                <div class="bg-black/50 backdrop-blur-sm p-4 rounded-xl">
+                    <h4 class="font-bold">ICM & Final Table Sims</h4>
+                    <p class="text-sm text-slate-300">Practice crucial late-stage tournament situations.</p>
+                </div>
+                <div class="bg-black/50 backdrop-blur-sm p-4 rounded-xl">
+                    <h4 class="font-bold">Expert Masterclass</h4>
+                    <p class="text-sm text-slate-300">Exclusive videos from WSOP bracelet winners.</p>
+                </div>
+            </div>
+            <div class="p-6">
+                 <button class="w-full bg-gradient-to-r from-purple-500 to-purple-700 text-white font-bold py-4 rounded-full">
+                    Start Your Prep
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Page 18: Advanced Analytics -->
+    <div class="mobile-frame">
+        <div class="w-full h-full flex flex-col bg-slate-900 text-white">
+            <div class="p-6 bg-black">
+                <h2 class="text-3xl font-bold">Advanced Analytics</h2>
+            </div>
+            <div class="flex-grow p-6 overflow-y-auto">
+                <div class="mb-6">
+                    <h4 class="text-xl font-bold mb-3 text-purple-400">Win Rate by Position</h4>
+                    <!-- Chart placeholder -->
+                    <div class="bg-slate-800 p-4 rounded-lg h-40 flex items-center justify-center">
+                        <p class="text-slate-500">Chart.js component here</p>
+                    </div>
+                </div>
+                <div class="mb-6">
+                    <h4 class="text-xl font-bold mb-3 text-purple-400">3-Bet Success Rate</h4>
+                     <div class="bg-slate-800 p-4 rounded-lg h-40 flex items-center justify-center">
+                        <p class="text-slate-500">Chart.js component here</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Page 19: Leaderboards -->
+    <div class="mobile-frame">
+        <div class="w-full h-full flex flex-col bg-gradient-to-b from-slate-900 to-black text-white">
+            <div class="p-6 border-b border-slate-700">
+                <h2 class="text-3xl font-bold text-white">Leaderboards</h2>
+            </div>
+            <div class="p-6 overflow-y-auto">
+                 <div class="flex justify-around mb-6 bg-slate-800 p-1 rounded-full">
+                    <button class="flex-1 py-2 px-4 rounded-full text-sm font-semibold bg-purple-600 text-white">Profit</button>
+                    <button class="flex-1 py-2 px-4 rounded-full text-sm font-semibold text-slate-300">Win Rate</button>
+                    <button class="flex-1 py-2 px-4 rounded-full text-sm font-semibold text-slate-300">ITM %</button>
+                </div>
+                <div class="space-y-3">
+                    <div class="flex items-center space-x-4 bg-slate-800 p-3 rounded-lg">
+                        <span class="font-bold text-lg text-purple-600">1.</span>
+                        <img src="https://via.placeholder.com/40x40.png/000000/FFFFFF/?text=J" alt="User Avatar" class="rounded-full">
+                        <div>
+                            <p class="font-semibold text-slate-100">JessicaW</p>
+                            <p class="text-sm text-green-500 font-bold">$25,840</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-4 bg-slate-800 p-3 rounded-lg">
+                        <span class="font-bold text-lg text-slate-100">2.</span>
+                        <img src="https://via.placeholder.com/40x40.png/000000/FFFFFF/?text=A" alt="User Avatar" class="rounded-full">
+                        <div>
+                            <p class="font-semibold text-slate-100">AlexP_Poker</p>
+                            <p class="text-sm text-slate-300 font-bold">$19,230</p>
+                        </div>
+                    </div>
+                     <div class="flex items-center space-x-4 bg-slate-800 p-3 rounded-lg">
+                        <span class="font-bold text-lg text-slate-100">3.</span>
+                        <img src="https://via.placeholder.com/40x40.png/000000/FFFFFF/?text=T" alt="User Avatar" class="rounded-full">
+                        <div>
+                            <p class="font-semibold text-slate-100">TomDwan</p>
+                            <p class="text-sm text-slate-300 font-bold">$15,110</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Page 20: Settings -->
+    <div class="mobile-frame">
+        <div class="w-full h-full flex flex-col bg-gradient-to-b from-slate-900 to-black text-white">
+            <div class="p-6 bg-black/50 border-b border-slate-700">
+                <h2 class="text-3xl font-bold text-white">Settings</h2>
+            </div>
+            <div class="flex-grow overflow-y-auto">
+                <div class="p-6 space-y-6">
+                    <div class="space-y-2">
+                        <h4 class="font-semibold text-slate-400 text-sm">Account</h4>
+                        <div class="bg-slate-800 rounded-lg p-4 flex justify-between items-center">
+                            <span class="text-slate-100">Profile</span>
+                             <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                        </div>
+                         <div class="bg-slate-800 rounded-lg p-4 flex justify-between items-center">
+                            <span class="text-slate-100">Subscription</span>
+                             <span class="text-sm font-semibold text-purple-600">Premium</span>
+                        </div>
+                    </div>
+                     <div class="space-y-2">
+                        <h4 class="font-semibold text-slate-400 text-sm">Preferences</h4>
+                        <div class="bg-slate-800 rounded-lg p-4 flex justify-between items-center">
+                            <span class="text-slate-100">Currency</span>
+                             <span class="text-sm text-slate-400">USD ($)</span>
+                        </div>
+                         <div class="bg-slate-800 rounded-lg p-4 flex justify-between items-center">
+                            <span class="text-slate-100">Notifications</span>
+                             <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="p-6">
+                <button class="w-full py-3 text-center text-red-500 font-semibold bg-slate-800 rounded-lg">Log Out</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Page 21: Hand Entry System -->
+    <div class="mobile-frame">
+        <div class="w-full h-full flex flex-col bg-slate-900 text-white">
+            <div class="p-6 bg-black flex justify-between items-center">
+                <h2 class="text-2xl font-bold">Add Hand Details</h2>
+                <button class="text-purple-500 font-bold">Save</button>
+            </div>
+            <div class="flex-grow p-6 overflow-y-auto space-y-6">
+                <div>
+                    <label class="block text-sm font-medium text-slate-400 mb-2">My Cards</label>
+                    <div class="flex space-x-2">
+                        <input type="text" class="w-1/2 bg-slate-800 border border-slate-700 rounded-lg text-center p-4 text-2xl font-bold" value="Ad">
+                        <input type="text" class="w-1/2 bg-slate-800 border border-slate-700 rounded-lg text-center p-4 text-2xl font-bold" value="Ac">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-400 mb-2">Position</label>
+                    <select class="w-full bg-slate-800 border border-slate-700 rounded-lg p-3">
+                        <option>UTG</option>
+                        <option selected>Button</option>
+                        <option>SB</option>
+                    </select>
+                </div>
+                <div>
+                    <h4 class="text-lg font-bold text-purple-400">Action</h4>
+                    <div class="space-y-2 mt-2">
+                        <p><span class="font-semibold">Pre-flop:</span> Raise to $30, 2 callers.</p>
+                        <p><span class="font-semibold">Flop (Ah Ks 7d):</span> Bet $50, 1 caller.</p>
+                        <p><span class="font-semibold">Turn (2c):</span> Check.</p>
+                        <p><span class="font-semibold">River (Js):</span> Check, opponent checks.</p>
+                    </div>
+                </div>
+                 <div>
+                    <label class="block text-sm font-medium text-slate-400 mb-2">Result</label>
+                    <input type="number" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-3" placeholder="Enter amount won/lost" value="65">
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Page 22: Individual Hand Analysis -->
+    <div class="mobile-frame">
+        <div class="w-full h-full flex flex-col bg-gradient-to-b from-slate-900 to-black text-white">
+             <div class="p-6 border-b border-slate-700 flex justify-between items-center">
+                <h2 class="text-xl font-bold text-white">Hand Analysis: Ad Ac</h2>
+                <span class="px-2 py-1 text-xs font-semibold text-purple-200 bg-purple-900/50 rounded-full">Pro Tip</span>
+            </div>
+            <div class="flex-grow p-6 overflow-y-auto">
+                <div class="flex justify-center items-center space-x-2 mb-6">
+                    <div class="w-16 h-24 bg-white border-2 border-slate-400 rounded-lg flex flex-col justify-center items-center">
+                        <span class="text-2xl text-red-600">A♦</span>
+                    </div>
+                    <div class="w-16 h-24 bg-white border-2 border-slate-400 rounded-lg flex flex-col justify-center items-center">
+                         <span class="text-2xl text-slate-800">A♣</span>
+                    </div>
+                </div>
+                <div class="space-y-4">
+                    <h3 class="font-bold text-slate-100">AI Suggestion: Bet the Turn</h3>
+                    <p class="text-slate-300">Checking the turn with top set on a dry board (Ah Ks 7d 2c) is a missed opportunity for value. A bet of 50-75% of the pot would apply pressure and build a bigger pot against draws and weaker pairs.</p>
+                    <div class="bg-green-900/50 border-green-700 p-4 rounded-lg">
+                        <p class="text-sm text-green-300"><span class="font-bold">Optimal Play:</span> Bet ~$90 on the turn to extract maximum value from hands like KQ, AJ, or flush draws.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Page 23: Study Group Hub -->
+    <div class="mobile-frame">
+        <div class="w-full h-full flex flex-col bg-gradient-to-b from-slate-900 to-black text-white">
+             <div class="p-6 bg-black/50 border-b border-slate-700">
+                <h2 class="text-3xl font-bold text-white">WSOP Warriors</h2>
+                <p class="text-slate-400">Private Study Group</p>
+            </div>
+            <div class="flex-grow p-6 overflow-y-auto space-y-4">
+                <!-- Chat message -->
+                <div class="flex items-start space-x-3">
+                     <img src="https://via.placeholder.com/40x40.png/000000/FFFFFF/?text=J" alt="User Avatar" class="rounded-full">
+                     <div class="bg-slate-700 p-3 rounded-lg rounded-tl-none">
+                         <p class="font-semibold text-purple-600">JessicaW</p>
+                         <p class="text-slate-200">Anyone else struggling with bubble play in satellites?</p>
+                     </div>
+                </div>
+                <!-- Chat message -->
+                <div class="flex items-start flex-row-reverse space-x-3 space-x-reverse">
+                     <img src="https://via.placeholder.com/40x40.png/000000/FFFFFF/?text=Me" alt="User Avatar" class="rounded-full">
+                     <div class="bg-purple-600 text-white p-3 rounded-lg rounded-br-none">
+                         <p>Definitely. The ICM pressure is insane. I've been running sims in the training hub.</p>
+                     </div>
+                </div>
+            </div>
+             <div class="p-4 bg-black/50 border-t border-slate-700">
+                <input type="text" class="w-full bg-slate-800 rounded-full px-4 py-3 placeholder:text-slate-400" placeholder="Type a message...">
+            </div>
+        </div>
+    </div>
+    
+    <!-- Page 24: Coaching Marketplace -->
+    <div class="mobile-frame">
+        <div class="w-full h-full flex flex-col bg-gradient-to-b from-slate-900 to-black text-white">
+             <div class="p-6 border-b border-slate-700">
+                <h2 class="text-3xl font-bold text-white">Coaching</h2>
+                <p class="text-slate-400">Book a session with a pro.</p>
+            </div>
+            <div class="flex-grow p-6 overflow-y-auto space-y-4">
+                <div class="bg-slate-800 border border-slate-700 rounded-xl p-4 flex items-center space-x-4">
+                     <img src="https://via.placeholder.com/64x64.png/000000/FFFFFF/?text=D" alt="Coach Avatar" class="rounded-full">
+                     <div>
+                         <h4 class="font-bold text-slate-100">Daniel Negreanu</h4>
+                         <p class="text-sm text-slate-400">WSOP Hall of Famer</p>
+                         <p class="text-sm font-bold text-green-500">$1,500/hr</p>
+                     </div>
+                </div>
+                 <div class="bg-slate-800 border border-slate-700 rounded-xl p-4 flex items-center space-x-4">
+                     <img src="https://via.placeholder.com/64x64.png/000000/FFFFFF/?text=P" alt="Coach Avatar" class="rounded-full">
+                     <div>
+                         <h4 class="font-bold text-slate-100">Phil Ivey</h4>
+                         <p class="text-sm text-slate-400">10x Bracelet Winner</p>
+                         <p class="text-sm font-bold text-green-500">$2,000/hr</p>
+                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Page 25: Premium Upsell -->
+    <div class="mobile-frame">
+        <div class="w-full h-full flex flex-col bg-gradient-to-b from-purple-900 via-slate-900 to-black text-white p-8 text-center">
+            <h2 class="text-4xl font-bold">Go Premium</h2>
+            <p class="text-purple-300 mt-2">Unlock your full potential.</p>
+            <ul class="text-left space-y-3 my-8">
+                <li class="flex items-center"><svg class="w-5 h-5 text-purple-500 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg> Unlimited AI Analysis</li>
+                <li class="flex items-center"><svg class="w-5 h-5 text-purple-500 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg> Full Training Video Library</li>
+                <li class="flex items-center"><svg class="w-5 h-5 text-purple-500 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg> WSOP Prep Hub Access</li>
+            </ul>
+             <button class="w-full bg-gradient-to-r from-purple-500 to-purple-700 text-white font-bold py-4 rounded-full text-lg mt-auto">
+                Upgrade Now - $29.99/mo
+            </button>
+        </div>
+    </div>
+    
+    <!-- Page 26: My Stacks (Folders View) -->
+    <div class="mobile-frame">
+        <div class="w-full h-full flex flex-col bg-gradient-to-b from-slate-900 to-black text-white relative">
+            <!-- Header -->
+            <div class="p-6 flex items-center justify-between border-b border-slate-700 bg-black/50 backdrop-blur-sm sticky top-0 z-10">
+                <h2 class="text-2xl font-bold">My Stacks</h2>
+                <button class="text-purple-400 hover:text-purple-300">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+                </button>
+            </div>
+
+            <!-- Folders List -->
+            <div class="flex-grow p-4 overflow-y-auto space-y-3">
+                <!-- Folder Item -->
+                <div class="bg-slate-800 p-4 rounded-xl flex items-center space-x-4 hover:bg-slate-700 cursor-pointer">
+                    <svg class="w-10 h-10 text-purple-400" fill="currentColor" viewBox="0 0 20 20"><path d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"></path></svg>
+                    <div class="flex-grow">
+                        <p class="font-bold text-slate-100">WSOP 2024</p>
+                        <p class="text-sm text-slate-400">12 stacks</p>
+                    </div>
+                    <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                </div>
+                 <!-- Folder Item -->
+                <div class="bg-slate-800 p-4 rounded-xl flex items-center space-x-4 hover:bg-slate-700 cursor-pointer">
+                    <svg class="w-10 h-10 text-purple-400" fill="currentColor" viewBox="0 0 20 20"><path d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"></path></svg>
+                    <div class="flex-grow">
+                        <p class="font-bold text-slate-100">Bellagio Cash Games</p>
+                        <p class="text-sm text-slate-400">38 stacks</p>
+                    </div>
+                    <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                </div>
+                 <!-- Folder Item -->
+                <div class="bg-slate-800 p-4 rounded-xl flex items-center space-x-4 hover:bg-slate-700 cursor-pointer">
+                    <svg class="w-10 h-10 text-purple-400" fill="currentColor" viewBox="0 0 20 20"><path d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"></path></svg>
+                    <div class="flex-grow">
+                        <p class="font-bold text-slate-100">Home Games</p>
+                        <p class="text-sm text-slate-400">5 stacks</p>
+                    </div>
+                    <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                </div>
+                 <!-- Uncategorized Photos -->
+                 <div class="pt-4">
+                     <h3 class="px-1 text-lg font-bold text-slate-300 mb-2">Uncategorized</h3>
+                     <div class="grid grid-cols-3 gap-1">
+                         <img src="https://images.unsplash.com/photo-1598634226315-46743b49a5b1?ixlib=rb-4.0.3&q=85&fm=jpg&crop=entropy&cs=srgb&w=600" alt="Chip stack" class="w-full h-32 object-cover rounded-md cursor-pointer">
+                         <img src="https://images.unsplash.com/photo-1588629842472-a5e2f3a67a57?ixlib=rb-4.0.3&q=85&fm=jpg&crop=entropy&cs=srgb&w=600" alt="Chip stack" class="w-full h-32 object-cover rounded-md cursor-pointer">
+                     </div>
+                 </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Page 27: Folder Detail -->
+    <div class="mobile-frame">
+        <div class="w-full h-full flex flex-col bg-gradient-to-b from-slate-900 to-black text-white relative">
+            <!-- Header -->
+            <div class="p-6 flex items-center border-b border-slate-700 bg-black/50 backdrop-blur-sm sticky top-0 z-10">
+                <button class="mr-4 text-slate-400">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                </button>
+                <div>
+                    <h2 class="text-2xl font-bold">WSOP 2024</h2>
+                    <p class="text-sm text-slate-400">12 stacks</p>
+                </div>
+            </div>
+            
+            <!-- Gallery Grid -->
+            <div class="flex-grow p-2 overflow-y-auto">
+                <div class="grid grid-cols-3 gap-1">
+                    <img src="https://images.unsplash.com/photo-1542749421-3539b84a1850?ixlib=rb-4.0.3&q=85&fm=jpg&crop=entropy&cs=srgb&w=600" alt="Chip stack" class="w-full h-40 object-cover rounded-md">
+                    <img src="https://images.unsplash.com/photo-1616091173874-12a141bd74a5?ixlib=rb-4.0.3&q=85&fm=jpg&crop=entropy&cs=srgb&w=600" alt="Chip stack" class="w-full h-40 object-cover rounded-md">
+                    <img src="https://images.unsplash.com/photo-1517244956977-104a60471f45?ixlib=rb-4.0.3&q=85&fm=jpg&crop=entropy&cs=srgb&w=600" alt="Chip stack" class="w-full h-40 object-cover rounded-md">
+                    <img src="https://images.unsplash.com/photo-1604104930219-4c54452cf7c1?ixlib=rb-4.0.3&q=85&fm=jpg&crop=entropy&cs=srgb&w=600" alt="Chip stack" class="w-full h-40 object-cover rounded-md">
+                </div>
+            </div>
+
+            <!-- FAB -->
+            <button class="absolute bottom-8 right-8 w-16 h-16 bg-purple-600 rounded-full text-white shadow-lg flex items-center justify-center border-4 border-slate-900 hover:bg-purple-700">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+            </button>
+        </div>
+    </div>
+    
+    <!-- Page 28: Photo Capture -->
+    <div class="mobile-frame">
+        <div class="w-full h-full flex flex-col bg-black text-white relative">
+            <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1517244956977-104a60471f45?ixlib=rb-4.0.3&q=85&fm=jpg&crop=entropy&cs=srgb&w=600');">
+                <div class="absolute inset-0 bg-black/30"></div>
+            </div>
+            
+            <!-- Controls -->
+            <div class="absolute inset-x-0 top-0 p-6 flex justify-between items-center bg-gradient-to-b from-black/60 z-10">
+                <button class="text-white rounded-full bg-black/30 p-2"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+                <button class="text-white rounded-full bg-black/30 p-2"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg></button>
+            </div>
+            
+            <div class="absolute inset-x-0 bottom-0 p-8 flex justify-center items-center z-10">
+                <button class="w-20 h-20 bg-white rounded-full border-4 border-black ring-4 ring-white/50"></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Page 29: Photo Detail & Edit -->
+    <div class="mobile-frame">
+        <div class="w-full h-full flex flex-col bg-slate-900 text-white">
+            <!-- Header -->
+            <div class="p-6 flex justify-between items-center bg-black/50 backdrop-blur-sm sticky top-0 z-10">
+                <button class="text-slate-300">Cancel</button>
+                <h2 class="text-xl font-bold">Stack Details</h2>
+                <button class="font-bold text-purple-500">Save</button>
+            </div>
+            
+            <!-- Image -->
+            <div class="px-4">
+                <img src="https://images.unsplash.com/photo-1542749421-3539b84a1850?ixlib=rb-4.0.3&q=85&fm=jpg&crop=entropy&cs=srgb&w=600" alt="Chip stack" class="w-full h-56 object-cover rounded-xl">
+            </div>
+
+            <!-- Form -->
+            <div class="flex-grow p-6 overflow-y-auto space-y-5">
+                <div>
+                    <label class="block text-sm font-medium text-slate-400">Title</label>
+                    <input type="text" class="mt-1 block w-full px-3 py-3 bg-slate-800 border-slate-700 rounded-xl" value="Huge win in the 5/10 game">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-400">Folder</label>
+                    <select class="mt-1 block w-full px-3 py-3 bg-slate-800 border-slate-700 rounded-xl">
+                        <option>Uncategorized</option>
+                        <option selected>Bellagio Cash Games</option>
+                        <option>WSOP 2024</option>
+                        <option>Home Games</option>
+                    </select>
+                </div>
+                 <div>
+                    <label class="block text-sm font-medium text-slate-400">Casino / Location</label>
+                    <input type="text" class="mt-1 block w-full px-3 py-3 bg-slate-800 border-slate-700 rounded-xl" value="Bellagio, Las Vegas">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-400">Notes</label>
+                    <textarea rows="3" class="mt-1 block w-full px-3 py-3 bg-slate-800 border-slate-700 rounded-xl">Table was super loose. Got paid off with the boat.</textarea>
+                </div>
+                 <div class="flex justify-between items-center">
+                    <span class="font-medium text-slate-200">Add to Favorites</span>
+                    <button class="w-12 h-7 rounded-full p-1 flex items-center transition-colors bg-purple-600">
+                        <span class="w-5 h-5 rounded-full bg-white shadow-md transform transition-transform translate-x-5"></span>
+                    </button>
+                 </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html> 
