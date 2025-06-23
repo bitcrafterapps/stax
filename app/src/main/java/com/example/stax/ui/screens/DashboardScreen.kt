@@ -2,6 +2,7 @@ package com.example.stax.ui.screens
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
@@ -10,6 +11,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -40,6 +42,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -109,9 +112,6 @@ fun DashboardScreen(
             }
             LazyVerticalGrid(
                 columns = GridCells.Fixed(2),
-                contentPadding = PaddingValues(8.dp),
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 items(sessions) { session ->
                     SessionFolder(
@@ -146,14 +146,10 @@ fun SessionFolder(
     onDeleteClick: () -> Unit,
     isSelected: Boolean
 ) {
-    val formattedDate = remember(sessionWithLatest.session.date) {
-        val sdf = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
-        sdf.format(Date(sessionWithLatest.session.date))
-    }
-
     Card(
         modifier = Modifier
             .fillMaxWidth()
+            .aspectRatio(1f)
             .combinedClickable(
                 onClick = onClick,
                 onLongClick = onLongClick
@@ -164,28 +160,43 @@ fun SessionFolder(
         )
     ) {
         Box(
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxSize()
         ) {
+            if (sessionWithLatest.latestPhotoPath != null) {
+                Image(
+                    painter = rememberAsyncImagePainter(model = File(sessionWithLatest.latestPhotoPath)),
+                    contentDescription = "Session Photo",
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
+                )
+            } else {
+                Icon(
+                    imageVector = Icons.Default.Folder,
+                    contentDescription = "Folder",
+                    modifier = Modifier
+                        .size(80.dp)
+                        .align(Alignment.Center),
+                    tint = Color.White.copy(alpha = 0.3f)
+                )
+            }
+
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(
+                        Brush.verticalGradient(
+                            colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.8f)),
+                            startY = 300f
+                        )
+                    )
+                    .align(Alignment.BottomCenter)
+            )
+
             Column(
-                modifier = Modifier.padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
+                modifier = Modifier
+                    .align(Alignment.BottomStart)
+                    .padding(8.dp)
             ) {
-                if (sessionWithLatest.latestPhotoPath != null) {
-                    Image(
-                        painter = rememberAsyncImagePainter(model = File(sessionWithLatest.latestPhotoPath)),
-                        contentDescription = "Session Photo",
-                        modifier = Modifier.size(64.dp),
-                        contentScale = ContentScale.Crop
-                    )
-                } else {
-                    Icon(
-                        imageVector = Icons.Filled.Folder,
-                        contentDescription = "Folder",
-                        modifier = Modifier.size(64.dp)
-                    )
-                }
-                Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = sessionWithLatest.session.name,
                     style = MaterialTheme.typography.titleMedium,
@@ -194,17 +205,12 @@ fun SessionFolder(
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = formattedDate,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = Color.White.copy(alpha = 0.7f)
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
                     text = "${sessionWithLatest.photoCount} photos",
                     style = MaterialTheme.typography.bodySmall,
                     color = Color.White.copy(alpha = 0.7f)
                 )
             }
+
             if (isSelected) {
                 Icon(
                     imageVector = Icons.Filled.Delete,
