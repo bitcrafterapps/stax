@@ -12,6 +12,7 @@ data class Session(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
     val name: String,
+    val casinoName: String = "",
     val date: String,
     val type: String,
     val game: String,
@@ -36,6 +37,12 @@ data class SessionWithLatestPhoto(
     @Embedded
     val session: Session,
     val photoCount: Int,
+    val latestPhotoPath: String?
+)
+
+data class CasinoFolder(
+    val casinoName: String,
+    val sessionCount: Int,
     val latestPhotoPath: String?
 )
 

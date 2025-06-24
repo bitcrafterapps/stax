@@ -61,8 +61,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
 import com.example.stax.R
-import com.example.stax.data.DashboardViewModel
-import com.example.stax.data.SessionWithLatestPhoto
+import com.example.stax.data.CasinoFolder
 import com.example.stax.ui.composables.DropdownSelector
 import java.io.File
 import java.text.SimpleDateFormat
@@ -71,34 +70,18 @@ import java.util.Locale
 
 @Composable
 fun DashboardScreen(
-    sessions: List<SessionWithLatestPhoto>,
-    onSessionClick: (Long) -> Unit,
-    onDeleteSession: (Long) -> Unit,
+    casinoFolders: List<CasinoFolder>,
+    onCasinoClick: (String) -> Unit,
     casinoData: Map<String, List<String>>,
-    onAddSession: (String, String, String, String, String, String) -> Unit,
+    onAddSession: (String, String, String, String, String, String, String) -> Unit,
 ) {
-    var longPressedSessionId by remember { mutableStateOf<Long?>(null) }
-    var showDeleteDialog by remember { mutableStateOf(false) }
     var showAddSessionDialog by remember { mutableStateOf(false) }
-
-    if (showDeleteDialog && longPressedSessionId != null) {
-        ConfirmDeleteDialog(
-            onConfirm = {
-                onDeleteSession(longPressedSessionId!!)
-                showDeleteDialog = false
-                longPressedSessionId = null
-            },
-            onDismiss = {
-                showDeleteDialog = false
-            }
-        )
-    }
 
     if (showAddSessionDialog) {
         AddSessionDialog(
             casinoData = casinoData,
-            onConfirm = { casinoName, sessionType, game, gameType, stakes, antes ->
-                onAddSession(casinoName, sessionType, game, gameType, stakes, antes)
+            onConfirm = { name, casinoName, sessionType, game, gameType, stakes, antes ->
+                onAddSession(name, casinoName, sessionType, game, gameType, stakes, antes)
                 showAddSessionDialog = false
             },
             onDismiss = { showAddSessionDialog = false }
@@ -130,23 +113,10 @@ fun DashboardScreen(
         LazyVerticalGrid(
             columns = GridCells.Fixed(2),
         ) {
-            items(sessions) { session ->
-                SessionFolder(
-                    sessionWithLatest = session,
-                    onClick = {
-                        if (longPressedSessionId == null) {
-                            onSessionClick(session.session.id)
-                        } else {
-                            longPressedSessionId = null
-                        }
-                    },
-                    onLongClick = {
-                        longPressedSessionId = session.session.id
-                    },
-                    onDeleteClick = {
-                        showDeleteDialog = true
-                    },
-                    isSelected = longPressedSessionId == session.session.id
+            items(casinoFolders) { casinoFolder ->
+                CasinoFolderItem(
+                    casinoFolder = casinoFolder,
+                    onClick = { onCasinoClick(casinoFolder.casinoName) }
                 )
             }
         }
@@ -155,21 +125,15 @@ fun DashboardScreen(
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun SessionFolder(
-    sessionWithLatest: SessionWithLatestPhoto,
-    onClick: () -> Unit,
-    onLongClick: () -> Unit,
-    onDeleteClick: () -> Unit,
-    isSelected: Boolean
+fun CasinoFolderItem(
+    casinoFolder: CasinoFolder,
+    onClick: () -> Unit
 ) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .aspectRatio(1f)
-            .combinedClickable(
-                onClick = onClick,
-                onLongClick = onLongClick
-            ),
+            .clickable(onClick = onClick),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         colors = CardDefaults.cardColors(
             containerColor = Color.Black.copy(alpha = 0.2f)
@@ -178,10 +142,10 @@ fun SessionFolder(
         Box(
             modifier = Modifier.fillMaxSize()
         ) {
-            if (sessionWithLatest.latestPhotoPath != null) {
+            if (casinoFolder.latestPhotoPath != null) {
                 Image(
-                    painter = rememberAsyncImagePainter(model = File(sessionWithLatest.latestPhotoPath)),
-                    contentDescription = "Session Photo",
+                    painter = rememberAsyncImagePainter(model = File(casinoFolder.latestPhotoPath)),
+                    contentDescription = "Casino Photo",
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Crop
                 )
@@ -214,39 +178,20 @@ fun SessionFolder(
                     .padding(8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(
-                    imageVector = if (sessionWithLatest.session.type == "Cash") Icons.Default.AttachMoney else Icons.Default.Star,
-                    contentDescription = "Session Type",
-                    tint = Color.White,
-                    modifier = Modifier.size(16.dp)
-                )
-                Spacer(modifier = Modifier.width(4.dp))
                 Column {
                     Text(
-                        text = sessionWithLatest.session.name,
+                        text = casinoFolder.casinoName,
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold,
                         color = Color.White
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "${sessionWithLatest.session.game} - ${sessionWithLatest.photoCount} photos",
+                        text = "${casinoFolder.sessionCount} sessions",
                         style = MaterialTheme.typography.bodySmall,
                         color = Color.White.copy(alpha = 0.7f)
                     )
                 }
-            }
-
-            if (isSelected) {
-                Icon(
-                    imageVector = Icons.Filled.Delete,
-                    contentDescription = "Delete Session",
-                    tint = Color.White,
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(8.dp)
-                        .clickable(onClick = onDeleteClick)
-                )
             }
         }
     }
@@ -256,12 +201,13 @@ fun SessionFolder(
 @Composable
 fun AddSessionDialog(
     casinoData: Map<String, List<String>>,
-    onConfirm: (String, String, String, String, String, String) -> Unit,
+    onConfirm: (String, String, String, String, String, String, String) -> Unit,
     onDismiss: () -> Unit
 ) {
-    var selectedState by remember { mutableStateOf(casinoData.keys.firstOrNull() ?: "") }
+    var sessionName by remember { mutableStateOf("") }
+    var selectedState by remember(casinoData) { mutableStateOf(casinoData.keys.firstOrNull() ?: "") }
     var expandedState by remember { mutableStateOf(false) }
-    var selectedCasino by remember { mutableStateOf(casinoData[selectedState]?.firstOrNull() ?: "") }
+    var selectedCasino by remember(selectedState) { mutableStateOf(casinoData[selectedState]?.firstOrNull() ?: "") }
     var expandedCasino by remember { mutableStateOf(false) }
     var type by remember { mutableStateOf("Cash") }
     var game by remember { mutableStateOf("") }
@@ -273,11 +219,6 @@ fun AddSessionDialog(
     val stakesList = listOf("1/2", "2/3", "2/5", "5/5", "5/10", "10/20", "20/40", "25/50", "50/100", "100/200", "200/400", "500/1000")
     val antesList = listOf("None", "10", "20", "40", "50", "100", "200", "400", "1000")
 
-    if (casinoData.isEmpty()) {
-        // Handle empty casino data case if necessary
-        return
-    }
-
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(text = "Add New Session") },
@@ -285,6 +226,11 @@ fun AddSessionDialog(
             Column(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
+                OutlinedTextField(
+                    value = sessionName,
+                    onValueChange = { sessionName = it },
+                    label = { Text("Session Name") }
+                )
                 // State/Region Dropdown
                 ExposedDropdownMenuBox(
                     expanded = expandedState,
@@ -323,7 +269,7 @@ fun AddSessionDialog(
                     onExpandedChange = { expandedCasino = !expandedCasino }
                 ) {
                     OutlinedTextField(
-                        value = selectedCasino,
+                        value = selectedCasino ?: "",
                         onValueChange = {},
                         readOnly = true,
                         label = { Text("Casino") },
@@ -373,7 +319,7 @@ fun AddSessionDialog(
                 OutlinedTextField(
                     value = game,
                     onValueChange = { game = it },
-                    label = { Text("Name") }
+                    label = { Text("Game") }
                 )
                 DropdownSelector(label = "Game Type", options = gameTypes, selectedOption = gameType, onOptionSelected = { gameType = it })
                 if (type == "Cash") {
@@ -386,7 +332,7 @@ fun AddSessionDialog(
             Button(
                 onClick = {
                     if (selectedCasino.isNotBlank()) {
-                        onConfirm(selectedCasino, type, game, gameType, stakes, antes)
+                        onConfirm(sessionName, selectedCasino, type, game, gameType, stakes, antes)
                     }
                 }
             ) {
@@ -402,13 +348,19 @@ fun AddSessionDialog(
 }
 
 @Composable
-fun ConfirmDeleteDialog(onConfirm: () -> Unit, onDismiss: () -> Unit) {
+fun ConfirmDeleteDialog(
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit
+) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Delete") },
-        text = { Text("Are you sure you want to delete this item?") },
+        title = { Text("Confirm Deletion") },
+        text = { Text("Are you sure you want to delete this session and all its photos?") },
         confirmButton = {
-            Button(onClick = onConfirm) {
+            Button(
+                onClick = onConfirm,
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+            ) {
                 Text("Delete")
             }
         },

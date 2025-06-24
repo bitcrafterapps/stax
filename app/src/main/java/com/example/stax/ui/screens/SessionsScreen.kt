@@ -53,7 +53,7 @@ import java.util.Locale
 @Composable
 fun SessionsScreen(
     sessions: List<Session>,
-    onAddSession: (String, String, String, String, String, String, String, Double, Double) -> Unit,
+    onAddSession: (String, String, String, String, String, String, String, String, Double, Double) -> Unit,
     onSessionClick: (Long) -> Unit,
     sessionsViewModel: SessionsViewModel
 ) {
@@ -64,6 +64,7 @@ fun SessionsScreen(
     var selectedCasino by remember(selectedState) { mutableStateOf(casinoData[selectedState]?.firstOrNull() ?: "") }
     var expandedCasino by remember { mutableStateOf(false) }
 
+    var sessionName by remember { mutableStateOf("") }
     var sessionDate by remember { mutableStateOf(SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())) }
     var sessionType by remember { mutableStateOf("Cash") }
     var sessionGame by remember { mutableStateOf("") }
@@ -110,6 +111,13 @@ fun SessionsScreen(
                         Text("Add New Session", style = MaterialTheme.typography.headlineSmall)
                         Spacer(modifier = Modifier.height(16.dp))
 
+                        OutlinedTextField(
+                            value = sessionName,
+                            onValueChange = { sessionName = it },
+                            label = { Text("Session Name") },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
                         ExposedDropdownMenuBox(
                             expanded = expandedState,
                             onExpandedChange = { expandedState = !expandedState }
@@ -120,7 +128,7 @@ fun SessionsScreen(
                                 readOnly = true,
                                 label = { Text("State/Region") },
                                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedState) },
-                                modifier = Modifier.menuAnchor()
+                                modifier = Modifier.fillMaxWidth().menuAnchor()
                             )
                             ExposedDropdownMenu(
                                 expanded = expandedState,
@@ -149,7 +157,7 @@ fun SessionsScreen(
                                 readOnly = true,
                                 label = { Text("Casino") },
                                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedCasino) },
-                                modifier = Modifier.menuAnchor()
+                                modifier = Modifier.fillMaxWidth().menuAnchor()
                             )
                             ExposedDropdownMenu(
                                 expanded = expandedCasino,
@@ -190,7 +198,7 @@ fun SessionsScreen(
                                 Text("Tourney")
                             }
                         }
-                        OutlinedTextField(value = sessionGame, onValueChange = { sessionGame = it }, label = { Text("Name") })
+                        OutlinedTextField(value = sessionGame, onValueChange = { sessionGame = it }, label = { Text("Game") })
                         DropdownSelector(label = "Game Type", options = gameTypes, selectedOption = gameType, onOptionSelected = { gameType = it })
                         if (sessionType == "Cash") {
                             DropdownSelector(label = "Stakes", options = stakesList, selectedOption = stakes, onOptionSelected = { stakes = it })
@@ -204,6 +212,7 @@ fun SessionsScreen(
                             Spacer(modifier = Modifier.weight(1f))
                             Button(onClick = {
                                 onAddSession(
+                                    sessionName,
                                     selectedCasino ?: "",
                                     sessionDate,
                                     sessionType,

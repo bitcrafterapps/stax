@@ -3,6 +3,7 @@ package com.example.stax.data
 import android.app.Application
 import android.net.Uri
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -21,11 +22,11 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-class DashboardViewModel(
+class CasinoFoldersViewModel(
     private val dao: StaxDao,
     private val application: Application
 ) : ViewModel() {
-    val sessions: StateFlow<List<SessionWithLatestPhoto>> = dao.getSessionsWithLatestPhoto()
+    val casinoFolders: StateFlow<List<CasinoFolder>> = dao.getCasinoFolders()
         .stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(5000),
@@ -57,10 +58,11 @@ class DashboardViewModel(
         }
     }
 
-    fun addSession(casinoName: String, sessionType: String, game: String, gameType: String, stakes: String, antes: String) {
+    fun addSession(name: String, casinoName: String, sessionType: String, game: String, gameType: String, stakes: String, antes: String) {
         viewModelScope.launch {
             val newSession = Session(
-                name = casinoName,
+                name = name,
+                casinoName = casinoName,
                 date = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date()),
                 type = sessionType,
                 game = game,
@@ -84,6 +86,45 @@ class DashboardViewModel(
             dao.deletePhotosForSession(sessionId)
             dao.deleteSession(sessionId)
         }
+    }
+}
+
+class CasinoSessionsViewModel(
+    private val dao: StaxDao,
+    private val casinoName: String
+) : ViewModel() {
+    val sessions: StateFlow<List<SessionWithLatestPhoto>> = dao.getSessionsWithLatestPhotoForCasino(casinoName)
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            emptyList()
+        )
+
+    fun deleteSession(sessionId: Long) {
+        viewModelScope.launch {
+            val photos = dao.getPhotosForSessionOnce(sessionId)
+            photos.forEach { photo ->
+                val file = File(photo.imagePath)
+                if (file.exists()) {
+                    file.delete()
+                }
+            }
+            dao.deletePhotosForSession(sessionId)
+            dao.deleteSession(sessionId)
+        }
+    }
+}
+
+class CasinoSessionsViewModelFactory(
+    private val dao: StaxDao,
+    private val casinoName: String
+) : ViewModelProvider.Factory {
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        if (modelClass.isAssignableFrom(CasinoSessionsViewModel::class.java)) {
+            @Suppress("UNCHECKED_CAST")
+            return CasinoSessionsViewModel(dao, casinoName) as T
+        }
+        throw IllegalArgumentException("Unknown ViewModel class")
     }
 }
 
@@ -120,6 +161,7 @@ class SessionsViewModel(
     }
 
     fun addSession(
+        name: String,
         casinoName: String,
         date: String,
         type: String,
@@ -132,7 +174,8 @@ class SessionsViewModel(
     ) {
         viewModelScope.launch {
             val newSession = Session(
-                name = casinoName,
+                name = name,
+                casinoName = casinoName,
                 date = date,
                 type = type,
                 game = game,

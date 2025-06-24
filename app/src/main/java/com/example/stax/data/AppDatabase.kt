@@ -8,7 +8,7 @@ import androidx.room.TypeConverters
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 
-@Database(entities = [Session::class, Photo::class], version = 8, exportSchema = false)
+@Database(entities = [Session::class, Photo::class], version = 10, exportSchema = false)
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun staxDao(): StaxDao
@@ -23,31 +23,10 @@ abstract class AppDatabase : RoomDatabase() {
                     context.applicationContext,
                     AppDatabase::class.java,
                     "stax_database"
-                ).addMigrations(MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8)
+                ).fallbackToDestructiveMigration()
                     .build()
                 INSTANCE = instance
                 instance
-            }
-        }
-
-        private val MIGRATION_5_6 = object : Migration(5, 6) {
-            override fun migrate(db: SupportSQLiteDatabase) {
-                db.execSQL("ALTER TABLE sessions ADD COLUMN notes TEXT NOT NULL DEFAULT ''")
-            }
-        }
-
-        private val MIGRATION_6_7 = object : Migration(6, 7) {
-            override fun migrate(db: SupportSQLiteDatabase) {
-                db.execSQL("ALTER TABLE sessions ADD COLUMN timeIn TEXT NOT NULL DEFAULT ''")
-                db.execSQL("ALTER TABLE sessions ADD COLUMN timeOut TEXT NOT NULL DEFAULT ''")
-            }
-        }
-
-        private val MIGRATION_7_8 = object : Migration(7, 8) {
-            override fun migrate(db: SupportSQLiteDatabase) {
-                db.execSQL("ALTER TABLE sessions ADD COLUMN gameType TEXT NOT NULL DEFAULT ''")
-                db.execSQL("ALTER TABLE sessions ADD COLUMN stakes TEXT NOT NULL DEFAULT ''")
-                db.execSQL("ALTER TABLE sessions ADD COLUMN antes TEXT NOT NULL DEFAULT ''")
             }
         }
     }

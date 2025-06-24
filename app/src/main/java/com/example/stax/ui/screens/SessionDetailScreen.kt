@@ -30,12 +30,26 @@ fun SessionDetailScreen(
     onNavigateBack: () -> Unit
 ) {
     val context = LocalContext.current
+    val application = context.applicationContext as android.app.Application
     val viewModel: SessionDetailViewModel = viewModel(
-        factory = SessionDetailViewModelFactory(AppDatabase.getDatabase(context).staxDao(), sessionId)
+        factory = SessionDetailViewModelFactory(AppDatabase.getDatabase(context).staxDao(), sessionId, application)
     )
     val session by viewModel.session.collectAsState()
+    val casinoData by viewModel.casinoData.collectAsState()
 
     var name by remember(session) { mutableStateOf(session?.name ?: "") }
+    var casinoName by remember(session) { mutableStateOf(session?.casinoName ?: "") }
+
+    val states = casinoData.keys.toList()
+    var selectedState by remember(session, states) {
+        mutableStateOf(states.find { state ->
+            casinoData[state]?.contains(casinoName) == true
+        } ?: states.firstOrNull() ?: "")
+    }
+
+    var expandedState by remember { mutableStateOf(false) }
+    var expandedCasino by remember { mutableStateOf(false) }
+
     var date by remember(session) { mutableStateOf(session?.date ?: "") }
     var timeIn by remember(session) { mutableStateOf(session?.timeIn ?: "") }
     var timeOut by remember(session) { mutableStateOf(session?.timeOut ?: "") }
@@ -67,6 +81,7 @@ fun SessionDetailScreen(
             FloatingActionButton(onClick = {
                 viewModel.updateSession(
                     name = name,
+                    casinoName = casinoName,
                     date = date,
                     timeIn = timeIn,
                     timeOut = timeOut,
@@ -115,6 +130,61 @@ fun SessionDetailScreen(
                     label = { Text("Session Name") },
                     modifier = Modifier.fillMaxWidth()
                 )
+                ExposedDropdownMenuBox(
+                    expanded = expandedState,
+                    onExpandedChange = { expandedState = !expandedState }
+                ) {
+                    OutlinedTextField(
+                        value = selectedState,
+                        onValueChange = {},
+                        readOnly = true,
+                        label = { Text("State/Region") },
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedState) },
+                        modifier = Modifier.fillMaxWidth().menuAnchor()
+                    )
+                    ExposedDropdownMenu(
+                        expanded = expandedState,
+                        onDismissRequest = { expandedState = false }
+                    ) {
+                        states.forEach { state ->
+                            DropdownMenuItem(
+                                text = { Text(state) },
+                                onClick = {
+                                    selectedState = state
+                                    casinoName = casinoData[state]?.firstOrNull() ?: ""
+                                    expandedState = false
+                                }
+                            )
+                        }
+                    }
+                }
+                ExposedDropdownMenuBox(
+                    expanded = expandedCasino,
+                    onExpandedChange = { expandedCasino = !expandedCasino }
+                ) {
+                    OutlinedTextField(
+                        value = casinoName,
+                        onValueChange = {},
+                        readOnly = true,
+                        label = { Text("Casino") },
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedCasino) },
+                        modifier = Modifier.fillMaxWidth().menuAnchor()
+                    )
+                    ExposedDropdownMenu(
+                        expanded = expandedCasino,
+                        onDismissRequest = { expandedCasino = false }
+                    ) {
+                        casinoData[selectedState]?.forEach { casino ->
+                            DropdownMenuItem(
+                                text = { Text(casino) },
+                                onClick = {
+                                    casinoName = casino
+                                    expandedCasino = false
+                                }
+                            )
+                        }
+                    }
+                }
                 OutlinedTextField(
                     value = date,
                     onValueChange = { date = it },

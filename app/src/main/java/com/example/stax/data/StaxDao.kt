@@ -13,8 +13,14 @@ interface StaxDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertSession(session: Session)
 
+    @Query("SELECT s.casinoName, COUNT(s.id) as sessionCount, (SELECT p.imagePath FROM photos p WHERE p.sessionId = s.id ORDER BY p.id DESC LIMIT 1) as latestPhotoPath FROM sessions s GROUP BY s.casinoName")
+    fun getCasinoFolders(): Flow<List<CasinoFolder>>
+
     @Query("SELECT s.*, (SELECT COUNT(*) FROM photos p WHERE p.sessionId = s.id) as photoCount, (SELECT imagePath FROM photos p WHERE p.sessionId = s.id ORDER BY id DESC LIMIT 1) as latestPhotoPath FROM sessions s ORDER BY s.id DESC")
     fun getSessionsWithLatestPhoto(): Flow<List<SessionWithLatestPhoto>>
+
+    @Query("SELECT s.*, (SELECT COUNT(*) FROM photos p WHERE p.sessionId = s.id) as photoCount, (SELECT imagePath FROM photos p WHERE p.sessionId = s.id ORDER BY id DESC LIMIT 1) as latestPhotoPath FROM sessions s WHERE s.casinoName = :casinoName ORDER BY s.id DESC")
+    fun getSessionsWithLatestPhotoForCasino(casinoName: String): Flow<List<SessionWithLatestPhoto>>
 
     @Query("SELECT * FROM sessions WHERE id = :sessionId")
     fun getSessionById(sessionId: Long): Flow<Session?>
