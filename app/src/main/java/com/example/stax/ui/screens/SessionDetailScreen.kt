@@ -1,10 +1,13 @@
 package com.example.stax.ui.screens
 
+import android.app.TimePickerDialog
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -16,7 +19,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.stax.data.AppDatabase
 import com.example.stax.data.SessionDetailViewModel
 import com.example.stax.data.SessionDetailViewModelFactory
+import com.example.stax.ui.composables.DropdownSelector
 import java.text.NumberFormat
+import java.util.Calendar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -32,11 +37,20 @@ fun SessionDetailScreen(
 
     var name by remember(session) { mutableStateOf(session?.name ?: "") }
     var date by remember(session) { mutableStateOf(session?.date ?: "") }
-    var type by remember(session) { mutableStateOf(session?.type ?: "") }
+    var timeIn by remember(session) { mutableStateOf(session?.timeIn ?: "") }
+    var timeOut by remember(session) { mutableStateOf(session?.timeOut ?: "") }
+    var type by remember(session) { mutableStateOf(session?.type ?: "Cash") }
     var game by remember(session) { mutableStateOf(session?.game ?: "") }
+    var gameType by remember(session) { mutableStateOf(session?.gameType ?: "NLH") }
+    var stakes by remember(session) { mutableStateOf(session?.stakes ?: "1/2") }
+    var antes by remember(session) { mutableStateOf(session?.antes ?: "None") }
     var buyInAmount by remember(session) { mutableStateOf(session?.buyInAmount?.toString() ?: "0.0") }
     var cashOutAmount by remember(session) { mutableStateOf(session?.cashOutAmount?.toString() ?: "0.0") }
     var notes by remember(session) { mutableStateOf(session?.notes ?: "") }
+
+    val gameTypes = listOf("NLH", "PLO", "Limit Hold'em", "7-Card Stud", "Razz", "Omaha Hi/Lo", "2-7 Triple Draw", "Badugi")
+    val stakesList = listOf("1/2", "2/3", "2/5", "5/5", "5/10", "10/20", "20/40", "25/50", "50/100", "100/200", "200/400", "500/1000")
+    val antesList = listOf("None", "10", "20", "40", "50", "100", "200", "400", "1000")
 
     Scaffold(
         topBar = {
@@ -54,8 +68,13 @@ fun SessionDetailScreen(
                 viewModel.updateSession(
                     name = name,
                     date = date,
+                    timeIn = timeIn,
+                    timeOut = timeOut,
                     type = type,
                     game = game,
+                    gameType = gameType,
+                    stakes = stakes,
+                    antes = antes,
                     buyInAmount = buyInAmount.toDoubleOrNull() ?: 0.0,
                     cashOutAmount = cashOutAmount.toDoubleOrNull() ?: 0.0,
                     notes = notes
@@ -102,18 +121,42 @@ fun SessionDetailScreen(
                     label = { Text("Date") },
                     modifier = Modifier.fillMaxWidth()
                 )
-                OutlinedTextField(
-                    value = type,
-                    onValueChange = { type = it },
-                    label = { Text("Type") },
-                    modifier = Modifier.fillMaxWidth()
-                )
+                TimePicker(label = "Time In", selectedTime = timeIn, onTimeSelected = { timeIn = it })
+                TimePicker(label = "Time Out", selectedTime = timeOut, onTimeSelected = { timeOut = it })
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Button(
+                        onClick = { type = "Cash" },
+                        modifier = Modifier.weight(1f),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = if (type == "Cash") MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant
+                        )
+                    ) {
+                        Text("Cash")
+                    }
+                    Button(
+                        onClick = { type = "Tourney" },
+                        modifier = Modifier.weight(1f),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = if (type == "Tourney") MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant
+                        )
+                    ) {
+                        Text("Tourney")
+                    }
+                }
                 OutlinedTextField(
                     value = game,
                     onValueChange = { game = it },
-                    label = { Text("Game") },
+                    label = { Text("Name") },
                     modifier = Modifier.fillMaxWidth()
                 )
+                DropdownSelector(label = "Game Type", options = gameTypes, selectedOption = gameType, onOptionSelected = { gameType = it })
+                if (type == "Cash") {
+                    DropdownSelector(label = "Stakes", options = stakesList, selectedOption = stakes, onOptionSelected = { stakes = it })
+                    DropdownSelector(label = "Antes", options = antesList, selectedOption = antes, onOptionSelected = { antes = it })
+                }
                 OutlinedTextField(
                     value = buyInAmount,
                     onValueChange = { buyInAmount = it },
@@ -135,4 +178,35 @@ fun SessionDetailScreen(
             }
         }
     }
+}
+
+@Composable
+fun TimePicker(label: String, selectedTime: String, onTimeSelected: (String) -> Unit) {
+    val context = LocalContext.current
+    val calendar = Calendar.getInstance()
+    val hour = calendar.get(Calendar.HOUR_OF_DAY)
+    val minute = calendar.get(Calendar.MINUTE)
+
+    val timePickerDialog = TimePickerDialog(
+        context,
+        { _, selectedHour, selectedMinute ->
+            onTimeSelected(String.format("%02d:%02d", selectedHour, selectedMinute))
+        }, hour, minute, true
+    )
+
+    OutlinedTextField(
+        value = selectedTime,
+        onValueChange = { },
+        label = { Text(label) },
+        readOnly = true,
+        trailingIcon = {
+            Icon(
+                Icons.Default.AccessTime,
+                contentDescription = "Select Time"
+            )
+        },
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { timePickerDialog.show() }
+    )
 } 

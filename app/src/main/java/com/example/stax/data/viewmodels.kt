@@ -57,13 +57,16 @@ class DashboardViewModel(
         }
     }
 
-    fun addSession(casinoName: String, sessionType: String, gameType: String) {
+    fun addSession(casinoName: String, sessionType: String, game: String, gameType: String, stakes: String, antes: String) {
         viewModelScope.launch {
             val newSession = Session(
                 name = casinoName,
                 date = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date()),
                 type = sessionType,
-                game = gameType
+                game = game,
+                gameType = gameType,
+                stakes = stakes,
+                antes = antes
             )
             dao.insertSession(newSession)
         }
@@ -121,6 +124,9 @@ class SessionsViewModel(
         date: String,
         type: String,
         game: String,
+        gameType: String,
+        stakes: String,
+        antes: String,
         buyIn: Double,
         cashOut: Double
     ) {
@@ -130,6 +136,9 @@ class SessionsViewModel(
                 date = date,
                 type = type,
                 game = game,
+                gameType = gameType,
+                stakes = stakes,
+                antes = antes,
                 buyInAmount = buyIn,
                 cashOutAmount = cashOut
             )

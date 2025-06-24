@@ -25,8 +25,13 @@ class SessionDetailViewModel(
     fun updateSession(
         name: String,
         date: String,
+        timeIn: String,
+        timeOut: String,
         type: String,
         game: String,
+        gameType: String,
+        stakes: String,
+        antes: String,
         buyInAmount: Double,
         cashOutAmount: Double,
         notes: String
@@ -36,8 +41,13 @@ class SessionDetailViewModel(
             val updatedSession = currentSession.copy(
                 name = name,
                 date = date,
+                timeIn = timeIn,
+                timeOut = timeOut,
                 type = type,
                 game = game,
+                gameType = gameType,
+                stakes = stakes,
+                antes = antes,
                 buyInAmount = buyInAmount,
                 cashOutAmount = cashOutAmount,
                 notes = notes

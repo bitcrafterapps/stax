@@ -63,6 +63,7 @@ import coil.compose.rememberAsyncImagePainter
 import com.example.stax.R
 import com.example.stax.data.DashboardViewModel
 import com.example.stax.data.SessionWithLatestPhoto
+import com.example.stax.ui.composables.DropdownSelector
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -74,7 +75,7 @@ fun DashboardScreen(
     onSessionClick: (Long) -> Unit,
     onDeleteSession: (Long) -> Unit,
     casinoData: Map<String, List<String>>,
-    onAddSession: (String, String, String) -> Unit,
+    onAddSession: (String, String, String, String, String, String) -> Unit,
 ) {
     var longPressedSessionId by remember { mutableStateOf<Long?>(null) }
     var showDeleteDialog by remember { mutableStateOf(false) }
@@ -96,8 +97,8 @@ fun DashboardScreen(
     if (showAddSessionDialog) {
         AddSessionDialog(
             casinoData = casinoData,
-            onConfirm = { casinoName, sessionType, gameType ->
-                onAddSession(casinoName, sessionType, gameType)
+            onConfirm = { casinoName, sessionType, game, gameType, stakes, antes ->
+                onAddSession(casinoName, sessionType, game, gameType, stakes, antes)
                 showAddSessionDialog = false
             },
             onDismiss = { showAddSessionDialog = false }
@@ -255,7 +256,7 @@ fun SessionFolder(
 @Composable
 fun AddSessionDialog(
     casinoData: Map<String, List<String>>,
-    onConfirm: (String, String, String) -> Unit,
+    onConfirm: (String, String, String, String, String, String) -> Unit,
     onDismiss: () -> Unit
 ) {
     var selectedState by remember { mutableStateOf(casinoData.keys.firstOrNull() ?: "") }
@@ -263,7 +264,14 @@ fun AddSessionDialog(
     var selectedCasino by remember { mutableStateOf(casinoData[selectedState]?.firstOrNull() ?: "") }
     var expandedCasino by remember { mutableStateOf(false) }
     var type by remember { mutableStateOf("Cash") }
-    var game by remember { mutableStateOf("NLH") }
+    var game by remember { mutableStateOf("") }
+    var gameType by remember { mutableStateOf("NLH") }
+    var stakes by remember { mutableStateOf("1/2") }
+    var antes by remember { mutableStateOf("None") }
+
+    val gameTypes = listOf("NLH", "PLO", "Limit Hold'em", "7-Card Stud", "Razz", "Omaha Hi/Lo", "2-7 Triple Draw", "Badugi")
+    val stakesList = listOf("1/2", "2/3", "2/5", "5/5", "5/10", "10/20", "20/40", "25/50", "50/100", "100/200", "200/400", "500/1000")
+    val antesList = listOf("None", "10", "20", "40", "50", "100", "200", "400", "1000")
 
     if (casinoData.isEmpty()) {
         // Handle empty casino data case if necessary
@@ -339,23 +347,46 @@ fun AddSessionDialog(
                         }
                     }
                 }
-                OutlinedTextField(
-                    value = type,
-                    onValueChange = { type = it },
-                    label = { Text("Type (e.g., Cash, Tournament)") }
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Button(
+                        onClick = { type = "Cash" },
+                        modifier = Modifier.weight(1f),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = if (type == "Cash") MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant
+                        )
+                    ) {
+                        Text("Cash")
+                    }
+                    Button(
+                        onClick = { type = "Tourney" },
+                        modifier = Modifier.weight(1f),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = if (type == "Tourney") MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant
+                        )
+                    ) {
+                        Text("Tourney")
+                    }
+                }
                 OutlinedTextField(
                     value = game,
                     onValueChange = { game = it },
-                    label = { Text("Game (e.g., NLH, PLO)") }
+                    label = { Text("Name") }
                 )
+                DropdownSelector(label = "Game Type", options = gameTypes, selectedOption = gameType, onOptionSelected = { gameType = it })
+                if (type == "Cash") {
+                    DropdownSelector(label = "Stakes", options = stakesList, selectedOption = stakes, onOptionSelected = { stakes = it })
+                    DropdownSelector(label = "Antes", options = antesList, selectedOption = antes, onOptionSelected = { antes = it })
+                }
             }
         },
         confirmButton = {
             Button(
                 onClick = {
                     if (selectedCasino.isNotBlank()) {
-                        onConfirm(selectedCasino, type, game)
+                        onConfirm(selectedCasino, type, game, gameType, stakes, antes)
                     }
                 }
             ) {

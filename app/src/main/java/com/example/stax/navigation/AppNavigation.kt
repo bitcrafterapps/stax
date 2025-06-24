@@ -136,8 +136,8 @@ fun AppNavigation(photosJson: MutableState<String>) {
             val casinoData by viewModel.casinoData.collectAsState()
             AddSessionDialog(
                 casinoData = casinoData,
-                onConfirm = { casinoName, sessionType, gameType ->
-                    viewModel.addSession(casinoName, sessionType, gameType)
+                onConfirm = { casinoName, sessionType, game, gameType, stakes, antes ->
+                    viewModel.addSession(casinoName, sessionType, game, gameType, stakes, antes)
                     showAddSessionDialog = false
                 },
                 onDismiss = { showAddSessionDialog = false }
@@ -180,8 +180,8 @@ fun AppNavigation(photosJson: MutableState<String>) {
                         viewModel.deleteSession(sessionId)
                     },
                     casinoData = casinoData,
-                    onAddSession = { casinoName, sessionType, gameType ->
-                        viewModel.addSession(casinoName, sessionType, gameType)
+                    onAddSession = { casinoName, sessionType, game, gameType, stakes, antes ->
+                        viewModel.addSession(casinoName, sessionType, game, gameType, stakes, antes)
                     }
                 )
             }
@@ -198,9 +198,12 @@ fun AppNavigation(photosJson: MutableState<String>) {
                     }
                 )
                 val sessions by viewModel.sessions.collectAsState()
+                val casinoData by viewModel.casinoData.collectAsState()
                 SessionsScreen(
                     sessions = sessions,
-                    onAddSession = viewModel::addSession,
+                    onAddSession = { name, date, type, game, gameType, stakes, antes, buyIn, cashOut ->
+                        viewModel.addSession(name, date, type, game, gameType, stakes, antes, buyIn, cashOut)
+                    },
                     onSessionClick = { sessionId ->
                         navController.navigate(Screen.SessionDetail.createRoute(sessionId))
                     },

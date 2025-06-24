@@ -14,6 +14,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenuItem
@@ -42,6 +43,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.example.stax.data.Session
 import com.example.stax.data.SessionsViewModel
+import com.example.stax.ui.composables.DropdownSelector
 import java.text.NumberFormat
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -51,7 +53,7 @@ import java.util.Locale
 @Composable
 fun SessionsScreen(
     sessions: List<Session>,
-    onAddSession: (String, String, String, String, Double, Double) -> Unit,
+    onAddSession: (String, String, String, String, String, String, String, Double, Double) -> Unit,
     onSessionClick: (Long) -> Unit,
     sessionsViewModel: SessionsViewModel
 ) {
@@ -63,10 +65,17 @@ fun SessionsScreen(
     var expandedCasino by remember { mutableStateOf(false) }
 
     var sessionDate by remember { mutableStateOf(SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())) }
-    var sessionType by remember { mutableStateOf("") }
+    var sessionType by remember { mutableStateOf("Cash") }
     var sessionGame by remember { mutableStateOf("") }
+    var gameType by remember { mutableStateOf("NLH") }
+    var stakes by remember { mutableStateOf("1/2") }
+    var antes by remember { mutableStateOf("None") }
     var buyInAmount by remember { mutableStateOf("") }
     var cashOutAmount by remember { mutableStateOf("") }
+
+    val gameTypes = listOf("NLH", "PLO", "Limit Hold'em", "7-Card Stud", "Razz", "Omaha Hi/Lo", "2-7 Triple Draw", "Badugi")
+    val stakesList = listOf("1/2", "2/3", "2/5", "5/5", "5/10", "10/20", "20/40", "25/50", "50/100", "100/200", "200/400", "500/1000")
+    val antesList = listOf("None", "10", "20", "40", "50", "100", "200", "400", "1000")
 
     Scaffold(
         floatingActionButton = {
@@ -158,8 +167,35 @@ fun SessionsScreen(
                             }
                         }
                         OutlinedTextField(value = sessionDate, onValueChange = { sessionDate = it }, label = { Text("Date (yyyy-MM-dd)") })
-                        OutlinedTextField(value = sessionType, onValueChange = { sessionType = it }, label = { Text("Type (e.g., Cash Game, Tournament)") })
-                        OutlinedTextField(value = sessionGame, onValueChange = { sessionGame = it }, label = { Text("Game (e.g., No-Limit Hold'em)") })
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Button(
+                                onClick = { sessionType = "Cash" },
+                                modifier = Modifier.weight(1f),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = if (sessionType == "Cash") MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant
+                                )
+                            ) {
+                                Text("Cash")
+                            }
+                            Button(
+                                onClick = { sessionType = "Tourney" },
+                                modifier = Modifier.weight(1f),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = if (sessionType == "Tourney") MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant
+                                )
+                            ) {
+                                Text("Tourney")
+                            }
+                        }
+                        OutlinedTextField(value = sessionGame, onValueChange = { sessionGame = it }, label = { Text("Name") })
+                        DropdownSelector(label = "Game Type", options = gameTypes, selectedOption = gameType, onOptionSelected = { gameType = it })
+                        if (sessionType == "Cash") {
+                            DropdownSelector(label = "Stakes", options = stakesList, selectedOption = stakes, onOptionSelected = { stakes = it })
+                            DropdownSelector(label = "Antes", options = antesList, selectedOption = antes, onOptionSelected = { antes = it })
+                        }
                         OutlinedTextField(value = buyInAmount, onValueChange = { buyInAmount = it }, label = { Text("Buy-in Amount") })
                         OutlinedTextField(value = cashOutAmount, onValueChange = { cashOutAmount = it }, label = { Text("Cash-out Amount") })
                         Spacer(modifier = Modifier.height(16.dp))
@@ -172,6 +208,9 @@ fun SessionsScreen(
                                     sessionDate,
                                     sessionType,
                                     sessionGame,
+                                    gameType,
+                                    stakes,
+                                    antes,
                                     buyInAmount.toDoubleOrNull() ?: 0.0,
                                     cashOutAmount.toDoubleOrNull() ?: 0.0
                                 )
