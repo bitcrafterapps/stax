@@ -71,13 +71,10 @@ import java.util.Locale
 fun DashboardScreen(
     sessions: List<SessionWithLatestPhoto>,
     onSessionClick: (Long) -> Unit,
-    onAddSession: () -> Unit,
-    onDeleteSession: (Long) -> Unit,
-    viewModel: DashboardViewModel
+    onDeleteSession: (Long) -> Unit
 ) {
     var longPressedSessionId by remember { mutableStateOf<Long?>(null) }
     var showDeleteDialog by remember { mutableStateOf(false) }
-    val casinoData by viewModel.casinoData.collectAsState()
 
     if (showDeleteDialog && longPressedSessionId != null) {
         ConfirmDeleteDialog(
@@ -92,58 +89,49 @@ fun DashboardScreen(
         )
     }
 
-    Scaffold(
-        floatingActionButton = {
-            FloatingActionButton(onClick = onAddSession) {
-                Icon(Icons.Filled.Add, contentDescription = "Add Session")
-            }
-        }
-    ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .padding(16.dp)
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(bottom = 16.dp)
         ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(bottom = 16.dp)
-            ) {
-                Image(
-                    painter = painterResource(id = R.drawable.ic_stax_logo),
-                    contentDescription = "Logo",
-                    modifier = Modifier.size(40.dp)
+            Image(
+                painter = painterResource(id = R.drawable.ic_stax_logo),
+                contentDescription = "Logo",
+                modifier = Modifier.size(40.dp)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = "Chip Porn",
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.White
+            )
+        }
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(2),
+        ) {
+            items(sessions) { session ->
+                SessionFolder(
+                    sessionWithLatest = session,
+                    onClick = {
+                        if (longPressedSessionId == null) {
+                            onSessionClick(session.session.id)
+                        } else {
+                            longPressedSessionId = null
+                        }
+                    },
+                    onLongClick = {
+                        longPressedSessionId = session.session.id
+                    },
+                    onDeleteClick = {
+                        showDeleteDialog = true
+                    },
+                    isSelected = longPressedSessionId == session.session.id
                 )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = "Chip Porn",
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
-                )
-            }
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(2),
-            ) {
-                items(sessions) { session ->
-                    SessionFolder(
-                        sessionWithLatest = session,
-                        onClick = {
-                            if (longPressedSessionId == null) {
-                                onSessionClick(session.session.id)
-                            } else {
-                                longPressedSessionId = null
-                            }
-                        },
-                        onLongClick = {
-                            longPressedSessionId = session.session.id
-                        },
-                        onDeleteClick = {
-                            showDeleteDialog = true
-                        },
-                        isSelected = longPressedSessionId == session.session.id
-                    )
-                }
             }
         }
     }

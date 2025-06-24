@@ -69,7 +69,8 @@ fun PhotoGalleryScreen(
     session: Session?,
     photos: List<Photo>,
     onNavigateUp: () -> Unit,
-    onAddPhoto: (Uri) -> Unit,
+    onNavigateToCamera: () -> Unit,
+    onAddPhotoFromGallery: (Uri) -> Unit,
     onDeletePhoto: (Photo) -> Unit,
     onPhotoClick: (Photo) -> Unit
 ) {
@@ -78,21 +79,12 @@ fun PhotoGalleryScreen(
     val multiplePhotoPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetMultipleContents(),
         onResult = { uris: List<@JvmSuppressWildcards Uri> ->
-            uris.forEach(onAddPhoto)
+            uris.forEach(onAddPhotoFromGallery)
         }
     )
 
     val cameraPermissionState = rememberPermissionState(
         permission = Manifest.permission.CAMERA
-    )
-    var imageUri by remember { mutableStateOf<Uri?>(null) }
-    val cameraLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.TakePicture(),
-        onResult = { success ->
-            if (success) {
-                imageUri?.let { onAddPhoto(it) }
-            }
-        }
     )
 
     Scaffold(
@@ -126,11 +118,7 @@ fun PhotoGalleryScreen(
             FloatingActionButton(
                 onClick = {
                     if (cameraPermissionState.status.isGranted) {
-                        val newImageUri = context.createImageFile().let {
-                            FileProvider.getUriForFile(context, "${context.packageName}.provider", it)
-                        }
-                        imageUri = newImageUri
-                        cameraLauncher.launch(newImageUri)
+                        onNavigateToCamera()
                     } else {
                         cameraPermissionState.launchPermissionRequest()
                     }
@@ -246,14 +234,4 @@ fun PhotoGalleryScreen(
             )
         }
     }
-}
-
-fun Context.createImageFile(): File {
-    val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
-    val imageFileName = "JPEG_" + timeStamp + "_"
-    return File.createTempFile(
-        imageFileName,
-        ".jpg",
-        externalCacheDir
-    )
 } 
