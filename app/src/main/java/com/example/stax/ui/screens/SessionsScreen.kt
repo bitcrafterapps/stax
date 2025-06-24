@@ -1,5 +1,6 @@
 package com.example.stax.ui.screens
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -9,6 +10,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -38,9 +41,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import com.example.stax.R
 import com.example.stax.data.Session
 import com.example.stax.data.SessionsViewModel
 import com.example.stax.ui.composables.DropdownSelector
@@ -78,6 +83,13 @@ fun SessionsScreen(
     val stakesList = listOf("1/2", "2/3", "2/5", "5/5", "5/10", "10/20", "20/40", "25/50", "50/100", "100/200", "200/400", "500/1000")
     val antesList = listOf("None", "10", "20", "40", "50", "100", "200", "400", "1000")
 
+    var selectedFilter by remember { mutableStateOf("All") }
+    val filteredSessions = when (selectedFilter) {
+        "Cash" -> sessions.filter { it.type == "Cash" }
+        "Tourney" -> sessions.filter { it.type == "Tourney" }
+        else -> sessions
+    }
+
     Scaffold(
         floatingActionButton = {
             FloatingActionButton(onClick = { showDialog = true }) {
@@ -85,18 +97,28 @@ fun SessionsScreen(
             }
         }
     ) { paddingValues ->
-        LazyColumn(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+                .padding(horizontal = 16.dp)
         ) {
-            items(sessions) { session ->
-                SessionItem(
-                    session = session,
-                    onClick = { onSessionClick(session.id) }
-                )
+            FilterButtons(
+                selectedFilter = selectedFilter,
+                onFilterSelected = { selectedFilter = it }
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            WinLossSummary(sessions = filteredSessions)
+            Spacer(modifier = Modifier.height(16.dp))
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(filteredSessions) { session ->
+                    SessionItem(
+                        session = session,
+                        onClick = { onSessionClick(session.id) }
+                    )
+                }
             }
         }
 
@@ -236,6 +258,73 @@ fun SessionsScreen(
 }
 
 @Composable
+fun FilterButtons(
+    selectedFilter: String,
+    onFilterSelected: (String) -> Unit
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        val filters = listOf("All", "Cash", "Tourney")
+        filters.forEach { filter ->
+            Button(
+                onClick = { onFilterSelected(filter) },
+                modifier = Modifier.weight(1f),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = if (selectedFilter == filter) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant
+                )
+            ) {
+                Text(filter)
+            }
+        }
+    }
+}
+
+@Composable
+fun WinLossSummary(sessions: List<Session>) {
+    val totalBuyIn = sessions.sumOf { it.buyInAmount }
+    val totalCashOut = sessions.sumOf { it.cashOutAmount }
+    val totalProfitLoss = totalCashOut - totalBuyIn
+    val profitLossColor = if (totalProfitLoss >= 0) Color(0xFF2E7D32) else Color(0xFFC62828)
+    val profitLossPrefix = if (totalProfitLoss >= 0) "+" else ""
+    val numberFormat = NumberFormat.getCurrencyInstance(Locale.US)
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        elevation = CardDefaults.cardElevation(4.dp)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text("Session Summary", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+            Spacer(modifier = Modifier.height(16.dp))
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                Text("Total Sessions:", fontWeight = FontWeight.SemiBold)
+                Text("${sessions.size}")
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                Text("Total Buy-in:", fontWeight = FontWeight.SemiBold)
+                Text(numberFormat.format(totalBuyIn))
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                Text("Total Cash-out:", fontWeight = FontWeight.SemiBold)
+                Text(numberFormat.format(totalCashOut))
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                Text("Total Profit/Loss:", fontWeight = FontWeight.Bold)
+                Text(
+                    text = "$profitLossPrefix${numberFormat.format(totalProfitLoss)}",
+                    color = profitLossColor,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
+    }
+}
+
+@Composable
 fun SessionItem(
     session: Session,
     onClick: () -> Unit
@@ -251,18 +340,31 @@ fun SessionItem(
             .clickable(onClick = onClick),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
-        Column(
+        Row(
             modifier = Modifier
                 .padding(16.dp)
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(session.name, fontWeight = FontWeight.Bold)
-            Text(session.date)
-            Text("${session.type} - ${session.game}")
+            val iconRes = if (session.type == "Cash") R.drawable.cash else R.drawable.stack
+            Image(
+                painter = painterResource(id = iconRes),
+                contentDescription = session.type,
+                modifier = Modifier.size(40.dp)
+            )
+            Spacer(modifier = Modifier.width(16.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(text = session.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(text = session.casinoName, style = MaterialTheme.typography.bodyMedium, color = Color.Gray)
+                Text(text = session.date, style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+            }
             Text(
-                text = "P/L: $profitLossPrefix${NumberFormat.getCurrencyInstance().format(profitLoss)}",
+                text = "$profitLossPrefix${NumberFormat.getCurrencyInstance(Locale.US).format(profitLoss)}",
                 color = profitLossColor,
-                fontWeight = FontWeight.SemiBold
+                fontWeight = FontWeight.Bold,
+                style = MaterialTheme.typography.titleMedium
             )
         }
     }
-} 
+}

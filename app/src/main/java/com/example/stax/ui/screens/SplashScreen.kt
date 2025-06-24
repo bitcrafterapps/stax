@@ -34,7 +34,7 @@ fun SplashScreen(onTimeout: () -> Unit) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(top = 64.dp),
+                .padding(top = 44.dp),
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
