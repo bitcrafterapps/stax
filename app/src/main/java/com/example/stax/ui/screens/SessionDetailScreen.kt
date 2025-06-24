@@ -8,12 +8,15 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AccessTime
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.stax.data.AppDatabase
@@ -22,6 +25,8 @@ import com.example.stax.data.SessionDetailViewModelFactory
 import com.example.stax.ui.composables.DropdownSelector
 import java.text.NumberFormat
 import java.util.Calendar
+import java.util.Locale
+import androidx.compose.foundation.text.KeyboardOptions
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -36,6 +41,7 @@ fun SessionDetailScreen(
     )
     val session by viewModel.session.collectAsState()
     val casinoData by viewModel.casinoData.collectAsState()
+    var isEditMode by remember { mutableStateOf(false) }
 
     var name by remember(session) { mutableStateOf(session?.name ?: "") }
     var casinoName by remember(session) { mutableStateOf(session?.casinoName ?: "") }
@@ -58,8 +64,8 @@ fun SessionDetailScreen(
     var gameType by remember(session) { mutableStateOf(session?.gameType ?: "NLH") }
     var stakes by remember(session) { mutableStateOf(session?.stakes ?: "1/2") }
     var antes by remember(session) { mutableStateOf(session?.antes ?: "None") }
-    var buyInAmount by remember(session) { mutableStateOf(session?.buyInAmount?.toString() ?: "0.0") }
-    var cashOutAmount by remember(session) { mutableStateOf(session?.cashOutAmount?.toString() ?: "0.0") }
+    var buyInAmount by remember(session) { mutableStateOf(session?.buyInAmount?.toInt()?.toString() ?: "0") }
+    var cashOutAmount by remember(session) { mutableStateOf(session?.cashOutAmount?.toInt()?.toString() ?: "0") }
     var notes by remember(session) { mutableStateOf(session?.notes ?: "") }
 
     val gameTypes = listOf("NLH", "PLO", "Limit Hold'em", "7-Card Stud", "Razz", "Omaha Hi/Lo", "2-7 Triple Draw", "Badugi")
@@ -74,29 +80,38 @@ fun SessionDetailScreen(
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
+                },
+                actions = {
+                    if (!isEditMode) {
+                        IconButton(onClick = { isEditMode = true }) {
+                            Icon(Icons.Default.Edit, contentDescription = "Edit Session")
+                        }
+                    }
                 }
             )
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = {
-                viewModel.updateSession(
-                    name = name,
-                    casinoName = casinoName,
-                    date = date,
-                    timeIn = timeIn,
-                    timeOut = timeOut,
-                    type = type,
-                    game = game,
-                    gameType = gameType,
-                    stakes = stakes,
-                    antes = antes,
-                    buyInAmount = buyInAmount.toDoubleOrNull() ?: 0.0,
-                    cashOutAmount = cashOutAmount.toDoubleOrNull() ?: 0.0,
-                    notes = notes
-                )
-                onNavigateBack()
-            }) {
-                Icon(Icons.Default.Save, contentDescription = "Save Session")
+            if (isEditMode) {
+                FloatingActionButton(onClick = {
+                    viewModel.updateSession(
+                        name = name,
+                        casinoName = casinoName,
+                        date = date,
+                        timeIn = timeIn,
+                        timeOut = timeOut,
+                        type = type,
+                        game = game,
+                        gameType = gameType,
+                        stakes = stakes,
+                        antes = antes,
+                        buyInAmount = buyInAmount.toDoubleOrNull() ?: 0.0,
+                        cashOutAmount = cashOutAmount.toDoubleOrNull() ?: 0.0,
+                        notes = notes
+                    )
+                    isEditMode = false
+                }) {
+                    Icon(Icons.Default.Save, contentDescription = "Save Session")
+                }
             }
         }
     ) { paddingValues ->
@@ -114,7 +129,7 @@ fun SessionDetailScreen(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 val profitLoss = (cashOutAmount.toDoubleOrNull() ?: 0.0) - (buyInAmount.toDoubleOrNull() ?: 0.0)
-                val profitLossFormatted = NumberFormat.getCurrencyInstance().format(profitLoss)
+                val profitLossFormatted = NumberFormat.getCurrencyInstance(Locale.US).format(profitLoss)
                 val profitColor = if (profitLoss >= 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
 
                 Text(
@@ -124,129 +139,161 @@ fun SessionDetailScreen(
                     fontWeight = FontWeight.Bold
                 )
 
-                OutlinedTextField(
-                    value = name,
-                    onValueChange = { name = it },
-                    label = { Text("Session Name") },
-                    modifier = Modifier.fillMaxWidth()
-                )
-                ExposedDropdownMenuBox(
-                    expanded = expandedState,
-                    onExpandedChange = { expandedState = !expandedState }
-                ) {
+                if (isEditMode) {
                     OutlinedTextField(
-                        value = selectedState,
-                        onValueChange = {},
-                        readOnly = true,
-                        label = { Text("State/Region") },
-                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedState) },
-                        modifier = Modifier.fillMaxWidth().menuAnchor()
+                        value = name,
+                        onValueChange = { name = it },
+                        label = { Text("Session Name") },
+                        modifier = Modifier.fillMaxWidth()
                     )
-                    ExposedDropdownMenu(
+                    ExposedDropdownMenuBox(
                         expanded = expandedState,
-                        onDismissRequest = { expandedState = false }
+                        onExpandedChange = { expandedState = !expandedState }
                     ) {
-                        states.forEach { state ->
-                            DropdownMenuItem(
-                                text = { Text(state) },
-                                onClick = {
-                                    selectedState = state
-                                    casinoName = casinoData[state]?.firstOrNull() ?: ""
-                                    expandedState = false
-                                }
-                            )
+                        OutlinedTextField(
+                            value = selectedState,
+                            onValueChange = {},
+                            readOnly = true,
+                            label = { Text("State/Region") },
+                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedState) },
+                            modifier = Modifier.fillMaxWidth().menuAnchor()
+                        )
+                        ExposedDropdownMenu(
+                            expanded = expandedState,
+                            onDismissRequest = { expandedState = false }
+                        ) {
+                            states.forEach { state ->
+                                DropdownMenuItem(
+                                    text = { Text(state) },
+                                    onClick = {
+                                        selectedState = state
+                                        casinoName = casinoData[state]?.firstOrNull() ?: ""
+                                        expandedState = false
+                                    }
+                                )
+                            }
                         }
                     }
-                }
-                ExposedDropdownMenuBox(
-                    expanded = expandedCasino,
-                    onExpandedChange = { expandedCasino = !expandedCasino }
-                ) {
-                    OutlinedTextField(
-                        value = casinoName,
-                        onValueChange = {},
-                        readOnly = true,
-                        label = { Text("Casino") },
-                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedCasino) },
-                        modifier = Modifier.fillMaxWidth().menuAnchor()
-                    )
-                    ExposedDropdownMenu(
+                    ExposedDropdownMenuBox(
                         expanded = expandedCasino,
-                        onDismissRequest = { expandedCasino = false }
+                        onExpandedChange = { expandedCasino = !expandedCasino }
                     ) {
-                        casinoData[selectedState]?.forEach { casino ->
-                            DropdownMenuItem(
-                                text = { Text(casino) },
-                                onClick = {
-                                    casinoName = casino
-                                    expandedCasino = false
-                                }
-                            )
+                        OutlinedTextField(
+                            value = casinoName,
+                            onValueChange = {},
+                            readOnly = true,
+                            label = { Text("Casino") },
+                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedCasino) },
+                            modifier = Modifier.fillMaxWidth().menuAnchor()
+                        )
+                        ExposedDropdownMenu(
+                            expanded = expandedCasino,
+                            onDismissRequest = { expandedCasino = false }
+                        ) {
+                            casinoData[selectedState]?.forEach { casino ->
+                                DropdownMenuItem(
+                                    text = { Text(casino) },
+                                    onClick = {
+                                        casinoName = casino
+                                        expandedCasino = false
+                                    }
+                                )
+                            }
                         }
                     }
-                }
-                OutlinedTextField(
-                    value = date,
-                    onValueChange = { date = it },
-                    label = { Text("Date") },
-                    modifier = Modifier.fillMaxWidth()
-                )
-                TimePicker(label = "Time In", selectedTime = timeIn, onTimeSelected = { timeIn = it })
-                TimePicker(label = "Time Out", selectedTime = timeOut, onTimeSelected = { timeOut = it })
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Button(
-                        onClick = { type = "Cash" },
-                        modifier = Modifier.weight(1f),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = if (type == "Cash") MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant
-                        )
+                    OutlinedTextField(
+                        value = date,
+                        onValueChange = { date = it },
+                        label = { Text("Date") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    TimePicker(label = "Time In", selectedTime = timeIn, onTimeSelected = { timeIn = it })
+                    TimePicker(label = "Time Out", selectedTime = timeOut, onTimeSelected = { timeOut = it })
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Text("Cash")
+                        Button(
+                            onClick = { type = "Cash" },
+                            modifier = Modifier.weight(1f),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = if (type == "Cash") MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant
+                            )
+                        ) {
+                            Text("Cash")
+                        }
+                        Button(
+                            onClick = { type = "Tourney" },
+                            modifier = Modifier.weight(1f),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = if (type == "Tourney") MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant
+                            )
+                        ) {
+                            Text("Tourney")
+                        }
                     }
-                    Button(
-                        onClick = { type = "Tourney" },
-                        modifier = Modifier.weight(1f),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = if (type == "Tourney") MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant
-                        )
-                    ) {
-                        Text("Tourney")
+                    OutlinedTextField(
+                        value = game,
+                        onValueChange = { game = it },
+                        label = { Text("Game") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    DropdownSelector(label = "Game Type", options = gameTypes, selectedOption = gameType, onOptionSelected = { gameType = it })
+                    if (type == "Cash") {
+                        DropdownSelector(label = "Stakes", options = stakesList, selectedOption = stakes, onOptionSelected = { stakes = it })
+                        DropdownSelector(label = "Antes", options = antesList, selectedOption = antes, onOptionSelected = { antes = it })
                     }
+                    OutlinedTextField(
+                        value = buyInAmount,
+                        onValueChange = { value ->
+                            buyInAmount = value.filter { it.isDigit() }
+                        },
+                        label = { Text("Buy-in Amount") },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    OutlinedTextField(
+                        value = cashOutAmount,
+                        onValueChange = { value ->
+                            cashOutAmount = value.filter { it.isDigit() }
+                        },
+                        label = { Text("Cash-out Amount") },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    OutlinedTextField(
+                        value = notes,
+                        onValueChange = { notes = it },
+                        label = { Text("Key Hands / Notes") },
+                        modifier = Modifier.fillMaxWidth().height(150.dp)
+                    )
+                } else {
+                    DisplayField("Session Name", name)
+                    DisplayField("Casino", casinoName)
+                    DisplayField("Date", date)
+                    DisplayField("Time In", timeIn)
+                    DisplayField("Time Out", timeOut)
+                    DisplayField("Type", type)
+                    DisplayField("Game", game)
+                    DisplayField("Game Type", gameType)
+                    if (type == "Cash") {
+                        DisplayField("Stakes", stakes)
+                        DisplayField("Antes", antes)
+                    }
+                    DisplayField("Buy-in Amount", NumberFormat.getCurrencyInstance(Locale.US).format(buyInAmount.toDoubleOrNull() ?: 0.0))
+                    DisplayField("Cash-out Amount", NumberFormat.getCurrencyInstance(Locale.US).format(cashOutAmount.toDoubleOrNull() ?: 0.0))
+                    DisplayField("Notes", notes)
                 }
-                OutlinedTextField(
-                    value = game,
-                    onValueChange = { game = it },
-                    label = { Text("Name") },
-                    modifier = Modifier.fillMaxWidth()
-                )
-                DropdownSelector(label = "Game Type", options = gameTypes, selectedOption = gameType, onOptionSelected = { gameType = it })
-                if (type == "Cash") {
-                    DropdownSelector(label = "Stakes", options = stakesList, selectedOption = stakes, onOptionSelected = { stakes = it })
-                    DropdownSelector(label = "Antes", options = antesList, selectedOption = antes, onOptionSelected = { antes = it })
-                }
-                OutlinedTextField(
-                    value = buyInAmount,
-                    onValueChange = { buyInAmount = it },
-                    label = { Text("Buy-in Amount") },
-                    modifier = Modifier.fillMaxWidth()
-                )
-                OutlinedTextField(
-                    value = cashOutAmount,
-                    onValueChange = { cashOutAmount = it },
-                    label = { Text("Cash-out Amount") },
-                    modifier = Modifier.fillMaxWidth()
-                )
-                OutlinedTextField(
-                    value = notes,
-                    onValueChange = { notes = it },
-                    label = { Text("Key Hands / Notes") },
-                    modifier = Modifier.fillMaxWidth().height(150.dp)
-                )
             }
         }
+    }
+}
+
+@Composable
+fun DisplayField(label: String, value: String) {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Text(text = label, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(text = value, style = MaterialTheme.typography.bodyLarge)
     }
 }
 

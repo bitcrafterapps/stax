@@ -43,6 +43,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.example.stax.R
@@ -226,8 +228,22 @@ fun SessionsScreen(
                             DropdownSelector(label = "Stakes", options = stakesList, selectedOption = stakes, onOptionSelected = { stakes = it })
                             DropdownSelector(label = "Antes", options = antesList, selectedOption = antes, onOptionSelected = { antes = it })
                         }
-                        OutlinedTextField(value = buyInAmount, onValueChange = { buyInAmount = it }, label = { Text("Buy-in Amount") })
-                        OutlinedTextField(value = cashOutAmount, onValueChange = { cashOutAmount = it }, label = { Text("Cash-out Amount") })
+                        OutlinedTextField(
+                            value = buyInAmount,
+                            onValueChange = { value ->
+                                buyInAmount = value.filter { it.isDigit() }
+                            },
+                            label = { Text("Buy-in Amount") },
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                        )
+                        OutlinedTextField(
+                            value = cashOutAmount,
+                            onValueChange = { value ->
+                                cashOutAmount = value.filter { it.isDigit() }
+                            },
+                            label = { Text("Cash-out Amount") },
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                        )
                         Spacer(modifier = Modifier.height(16.dp))
                         Row {
                             TextButton(onClick = { showDialog = false }) { Text("Cancel") }

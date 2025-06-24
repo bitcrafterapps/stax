@@ -7,6 +7,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.PhotoLibrary
+import androidx.compose.material.icons.filled.Camera
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
@@ -48,6 +49,7 @@ import com.example.stax.ui.screens.CasinoSessionsScreen
 import com.example.stax.ui.screens.DashboardScreen
 import com.example.stax.ui.screens.FullScreenImageViewer
 import com.example.stax.ui.screens.PhotoGalleryScreen
+import com.example.stax.ui.screens.ScanScreen
 import com.example.stax.ui.screens.SessionDetailScreen
 import com.example.stax.ui.screens.SessionsScreen
 import com.example.stax.ui.screens.SplashScreen
@@ -61,6 +63,7 @@ sealed class Screen(
     object Splash : Screen("splash")
     object Photos : Screen("photos", "Photos", Icons.Default.PhotoLibrary)
     object Sessions : Screen("sessions", "Sessions", Icons.Default.List)
+    object Scan : Screen("scan", "Scan", Icons.Default.Camera)
     object About : Screen("about", "About", Icons.Default.Info)
     object CasinoSessions : Screen("casino_sessions/{casinoName}") {
         fun createRoute(casinoName: String) = "casino_sessions/$casinoName"
@@ -90,7 +93,7 @@ fun AppNavigation(photosJson: MutableState<String>) {
     val application = context.applicationContext as Application
     var showAddSessionDialog by remember { mutableStateOf(false) }
 
-    val navItems = listOf(Screen.Photos, Screen.Sessions, Screen.About)
+    val navItems = listOf(Screen.Photos, Screen.Sessions, Screen.Scan, Screen.About)
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
 
@@ -211,6 +214,13 @@ fun AppNavigation(photosJson: MutableState<String>) {
                         navController.navigate(Screen.SessionDetail.createRoute(sessionId))
                     },
                     sessionsViewModel = viewModel
+                )
+            }
+            composable(Screen.Scan.route) {
+                ScanScreen(
+                    onOpenCamera = {
+                        // Will implement camera functionality later
+                    }
                 )
             }
             composable(Screen.About.route) {
