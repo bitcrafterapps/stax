@@ -151,7 +151,8 @@ fun SessionFolder(
                     imageVector = Icons.Default.Folder,
                     contentDescription = "Folder",
                     modifier = Modifier
-                        .size(80.dp)
+                        .fillMaxSize()
+                        .padding(16.dp)
                         .align(Alignment.Center),
                     tint = Color.White.copy(alpha = 0.3f)
                 )

@@ -110,14 +110,29 @@ fun DashboardScreen(
                 color = Color.White
             )
         }
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(2),
-        ) {
-            items(casinoFolders) { casinoFolder ->
-                CasinoFolderItem(
-                    casinoFolder = casinoFolder,
-                    onClick = { onCasinoClick(casinoFolder.casinoName) }
+        if (casinoFolders.isEmpty()) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "No sessions found.\nTap the + button to add a new session.",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = Color.White.copy(alpha = 0.7f),
+                    fontWeight = FontWeight.Bold,
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
                 )
+            }
+        } else {
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(2),
+            ) {
+                items(casinoFolders) { casinoFolder ->
+                    CasinoFolderItem(
+                        casinoFolder = casinoFolder,
+                        onClick = { onCasinoClick(casinoFolder.casinoName) }
+                    )
+                }
             }
         }
     }
@@ -154,7 +169,8 @@ fun CasinoFolderItem(
                     imageVector = Icons.Default.Folder,
                     contentDescription = "Folder",
                     modifier = Modifier
-                        .size(80.dp)
+                        .fillMaxSize()
+                        .padding(16.dp)
                         .align(Alignment.Center),
                     tint = Color.White.copy(alpha = 0.3f)
                 )
