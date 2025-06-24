@@ -39,6 +39,7 @@ import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -71,10 +72,13 @@ import java.util.Locale
 fun DashboardScreen(
     sessions: List<SessionWithLatestPhoto>,
     onSessionClick: (Long) -> Unit,
-    onDeleteSession: (Long) -> Unit
+    onDeleteSession: (Long) -> Unit,
+    casinoData: Map<String, List<String>>,
+    onAddSession: (String, String, String) -> Unit,
 ) {
     var longPressedSessionId by remember { mutableStateOf<Long?>(null) }
     var showDeleteDialog by remember { mutableStateOf(false) }
+    var showAddSessionDialog by remember { mutableStateOf(false) }
 
     if (showDeleteDialog && longPressedSessionId != null) {
         ConfirmDeleteDialog(
@@ -86,6 +90,17 @@ fun DashboardScreen(
             onDismiss = {
                 showDeleteDialog = false
             }
+        )
+    }
+
+    if (showAddSessionDialog) {
+        AddSessionDialog(
+            casinoData = casinoData,
+            onConfirm = { casinoName, sessionType, gameType ->
+                onAddSession(casinoName, sessionType, gameType)
+                showAddSessionDialog = false
+            },
+            onDismiss = { showAddSessionDialog = false }
         )
     }
 
@@ -199,7 +214,7 @@ fun SessionFolder(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
-                    imageVector = if (sessionWithLatest.session.sessionType == "Cash") Icons.Default.AttachMoney else Icons.Default.Star,
+                    imageVector = if (sessionWithLatest.session.type == "Cash") Icons.Default.AttachMoney else Icons.Default.Star,
                     contentDescription = "Session Type",
                     tint = Color.White,
                     modifier = Modifier.size(16.dp)
@@ -214,7 +229,7 @@ fun SessionFolder(
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "${sessionWithLatest.session.gameType} - ${sessionWithLatest.photoCount} photos",
+                        text = "${sessionWithLatest.session.game} - ${sessionWithLatest.photoCount} photos",
                         style = MaterialTheme.typography.bodySmall,
                         color = Color.White.copy(alpha = 0.7f)
                     )
@@ -243,127 +258,108 @@ fun AddSessionDialog(
     onConfirm: (String, String, String) -> Unit,
     onDismiss: () -> Unit
 ) {
-    var selectedState by remember { mutableStateOf("") }
-    var selectedCasino by remember { mutableStateOf("") }
-    var gameType by remember { mutableStateOf("") }
-    var sessionType by remember { mutableStateOf("Cash") }
-    var casinosInState by remember { mutableStateOf<List<String>>(emptyList()) }
-    var isStateDropdownExpanded by remember { mutableStateOf(false) }
-    var isCasinoDropdownExpanded by remember { mutableStateOf(false) }
+    var selectedState by remember { mutableStateOf(casinoData.keys.firstOrNull() ?: "") }
+    var expandedState by remember { mutableStateOf(false) }
+    var selectedCasino by remember { mutableStateOf(casinoData[selectedState]?.firstOrNull() ?: "") }
+    var expandedCasino by remember { mutableStateOf(false) }
+    var type by remember { mutableStateOf("Cash") }
+    var game by remember { mutableStateOf("NLH") }
 
-    LaunchedEffect(selectedState) {
-        casinosInState = casinoData[selectedState] ?: emptyList()
-        selectedCasino = ""
+    if (casinoData.isEmpty()) {
+        // Handle empty casino data case if necessary
+        return
     }
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Add New Session") },
+        title = { Text(text = "Add New Session") },
         text = {
-            Column {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                // State/Region Dropdown
                 ExposedDropdownMenuBox(
-                    expanded = isStateDropdownExpanded,
-                    onExpandedChange = { isStateDropdownExpanded = it }
+                    expanded = expandedState,
+                    onExpandedChange = { expandedState = !expandedState }
                 ) {
-                    TextField(
+                    OutlinedTextField(
                         value = selectedState,
                         onValueChange = {},
                         readOnly = true,
-                        label = { Text("State") },
-                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = isStateDropdownExpanded) },
+                        label = { Text("State/Region") },
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedState) },
                         modifier = Modifier
-                            .menuAnchor()
                             .fillMaxWidth()
+                            .menuAnchor()
                     )
                     ExposedDropdownMenu(
-                        expanded = isStateDropdownExpanded,
-                        onDismissRequest = { isStateDropdownExpanded = false }
+                        expanded = expandedState,
+                        onDismissRequest = { expandedState = false }
                     ) {
-                        casinoData.keys.sorted().forEach { state ->
+                        casinoData.keys.forEach { state ->
                             DropdownMenuItem(
                                 text = { Text(state) },
                                 onClick = {
                                     selectedState = state
-                                    isStateDropdownExpanded = false
+                                    selectedCasino = casinoData[state]?.firstOrNull() ?: ""
+                                    expandedState = false
                                 }
                             )
                         }
                     }
                 }
-                Spacer(modifier = Modifier.height(16.dp))
+
+                // Casino Dropdown
                 ExposedDropdownMenuBox(
-                    expanded = isCasinoDropdownExpanded,
-                    onExpandedChange = { isCasinoDropdownExpanded = it }
+                    expanded = expandedCasino,
+                    onExpandedChange = { expandedCasino = !expandedCasino }
                 ) {
-                    TextField(
+                    OutlinedTextField(
                         value = selectedCasino,
                         onValueChange = {},
                         readOnly = true,
-                        label = { Text("Casino Name") },
-                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = isCasinoDropdownExpanded) },
+                        label = { Text("Casino") },
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedCasino) },
                         modifier = Modifier
+                            .fillMaxWidth()
                             .menuAnchor()
-                            .fillMaxWidth(),
-                        enabled = casinosInState.isNotEmpty()
                     )
                     ExposedDropdownMenu(
-                        expanded = isCasinoDropdownExpanded,
-                        onDismissRequest = { isCasinoDropdownExpanded = false }
+                        expanded = expandedCasino,
+                        onDismissRequest = { expandedCasino = false }
                     ) {
-                        casinosInState.forEach { casino ->
+                        casinoData[selectedState]?.forEach { casinoItem ->
                             DropdownMenuItem(
-                                text = { Text(casino) },
+                                text = { Text(casinoItem) },
                                 onClick = {
-                                    selectedCasino = casino
-                                    isCasinoDropdownExpanded = false
+                                    selectedCasino = casinoItem
+                                    expandedCasino = false
                                 }
                             )
                         }
                     }
                 }
-                Spacer(modifier = Modifier.height(16.dp))
-                TextField(
-                    value = gameType,
-                    onValueChange = { gameType = it },
-                    label = { Text("Game Type") },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
+                OutlinedTextField(
+                    value = type,
+                    onValueChange = { type = it },
+                    label = { Text("Type (e.g., Cash, Tournament)") }
                 )
-                Spacer(modifier = Modifier.height(16.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    Button(
-                        onClick = { sessionType = "Cash" },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = if (sessionType == "Cash") MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface
-                        )
-                    ) {
-                        Text("Cash")
-                    }
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Button(
-                        onClick = { sessionType = "Tourney" },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = if (sessionType == "Tourney") MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface
-                        )
-                    ) {
-                        Text("Tourney")
-                    }
-                }
+                OutlinedTextField(
+                    value = game,
+                    onValueChange = { game = it },
+                    label = { Text("Game (e.g., NLH, PLO)") }
+                )
             }
         },
         confirmButton = {
             Button(
                 onClick = {
-                    if (selectedCasino.isNotBlank() && gameType.isNotBlank()) {
-                        onConfirm(selectedCasino, sessionType, gameType)
+                    if (selectedCasino.isNotBlank()) {
+                        onConfirm(selectedCasino, type, game)
                     }
-                },
-                enabled = selectedCasino.isNotBlank() && gameType.isNotBlank()
+                }
             ) {
-                Text("Add")
+                Text("Confirm")
             }
         },
         dismissButton = {

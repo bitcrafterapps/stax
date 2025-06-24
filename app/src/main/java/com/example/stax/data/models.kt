@@ -12,9 +12,13 @@ data class Session(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
     val name: String,
-    val date: Long,
-    val sessionType: String,
-    val gameType: String
+    val date: String,
+    val type: String,
+    val game: String,
+    val buyInAmount: Double = 0.0,
+    val cashOutAmount: Double = 0.0,
+    val photos: List<Photo> = emptyList(),
+    val notes: String = ""
 )
 
 data class SessionWithPhotoCount(

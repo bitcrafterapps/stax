@@ -38,12 +38,14 @@ import com.example.stax.data.AppDatabase
 import com.example.stax.data.DashboardViewModel
 import com.example.stax.data.Photo
 import com.example.stax.data.PhotoGalleryViewModel
+import com.example.stax.data.SessionsViewModel
 import com.example.stax.ui.screens.AboutScreen
 import com.example.stax.ui.screens.AddSessionDialog
 import com.example.stax.ui.screens.CameraScreen
 import com.example.stax.ui.screens.DashboardScreen
 import com.example.stax.ui.screens.FullScreenImageViewer
 import com.example.stax.ui.screens.PhotoGalleryScreen
+import com.example.stax.ui.screens.SessionDetailScreen
 import com.example.stax.ui.screens.SessionsScreen
 import com.example.stax.ui.screens.SplashScreen
 import com.google.gson.Gson
@@ -57,6 +59,10 @@ sealed class Screen(
     object Photos : Screen("photos", "Photos", Icons.Default.PhotoLibrary)
     object Sessions : Screen("sessions", "Sessions", Icons.Default.List)
     object About : Screen("about", "About", Icons.Default.Info)
+
+    object SessionDetail : Screen("session/{sessionId}") {
+        fun createRoute(sessionId: Long) = "session/$sessionId"
+    }
 
     object Camera : Screen("camera/{sessionId}") {
         fun createRoute(sessionId: Long) = "camera/$sessionId"
@@ -115,6 +121,29 @@ fun AppNavigation(photosJson: MutableState<String>) {
             }
         }
     ) { innerPadding ->
+        if (showAddSessionDialog) {
+            val viewModel: DashboardViewModel = viewModel(
+                factory = object : ViewModelProvider.Factory {
+                    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                        @Suppress("UNCHECKED_CAST")
+                        return DashboardViewModel(
+                            AppDatabase.getDatabase(application).staxDao(),
+                            application
+                        ) as T
+                    }
+                }
+            )
+            val casinoData by viewModel.casinoData.collectAsState()
+            AddSessionDialog(
+                casinoData = casinoData,
+                onConfirm = { casinoName, sessionType, gameType ->
+                    viewModel.addSession(casinoName, sessionType, gameType)
+                    showAddSessionDialog = false
+                },
+                onDismiss = { showAddSessionDialog = false }
+            )
+        }
+
         NavHost(
             navController = navController,
             startDestination = Screen.Splash.route,
@@ -149,25 +178,47 @@ fun AppNavigation(photosJson: MutableState<String>) {
                     },
                     onDeleteSession = { sessionId ->
                         viewModel.deleteSession(sessionId)
+                    },
+                    casinoData = casinoData,
+                    onAddSession = { casinoName, sessionType, gameType ->
+                        viewModel.addSession(casinoName, sessionType, gameType)
                     }
                 )
-
-                if (showAddSessionDialog) {
-                    AddSessionDialog(
-                        casinoData = casinoData,
-                        onConfirm = { casinoName, sessionType, gameType ->
-                            viewModel.addSession(casinoName, sessionType, gameType)
-                            showAddSessionDialog = false
-                        },
-                        onDismiss = { showAddSessionDialog = false }
-                    )
-                }
             }
             composable(Screen.Sessions.route) {
-                SessionsScreen()
+                val viewModel: SessionsViewModel = viewModel(
+                    factory = object : ViewModelProvider.Factory {
+                        override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                            @Suppress("UNCHECKED_CAST")
+                            return SessionsViewModel(
+                                AppDatabase.getDatabase(application).staxDao(),
+                                application
+                            ) as T
+                        }
+                    }
+                )
+                val sessions by viewModel.sessions.collectAsState()
+                SessionsScreen(
+                    sessions = sessions,
+                    onAddSession = viewModel::addSession,
+                    onSessionClick = { sessionId ->
+                        navController.navigate(Screen.SessionDetail.createRoute(sessionId))
+                    },
+                    sessionsViewModel = viewModel
+                )
             }
             composable(Screen.About.route) {
                 AboutScreen()
+            }
+            composable(
+                route = Screen.SessionDetail.route,
+                arguments = listOf(navArgument("sessionId") { type = NavType.LongType })
+            ) { backStackEntry ->
+                val sessionId = backStackEntry.arguments?.getLong("sessionId") ?: 0L
+                SessionDetailScreen(
+                    sessionId = sessionId,
+                    onNavigateBack = { navController.popBackStack() }
+                )
             }
             composable(
                 route = Screen.PhotoGallery.route,
@@ -196,6 +247,9 @@ fun AppNavigation(photosJson: MutableState<String>) {
                     onNavigateUp = { navController.navigateUp() },
                     onNavigateToCamera = {
                         navController.navigate(Screen.Camera.createRoute(sessionId))
+                    },
+                    onNavigateToSessionDetail = {
+                        navController.navigate(Screen.SessionDetail.createRoute(sessionId))
                     },
                     onAddPhotoFromGallery = { uri ->
                         viewModel.addPhoto(uri)

@@ -19,6 +19,12 @@ interface StaxDao {
     @Query("SELECT * FROM sessions WHERE id = :sessionId")
     fun getSessionById(sessionId: Long): Flow<Session?>
 
+    @Query("SELECT * FROM sessions ORDER BY date DESC")
+    fun getAllSessionsWithDetails(): Flow<List<Session>>
+
+    @Query("SELECT * FROM sessions ORDER BY date DESC")
+    fun getAllSessions(): Flow<List<Session>>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertPhoto(photo: Photo)
 

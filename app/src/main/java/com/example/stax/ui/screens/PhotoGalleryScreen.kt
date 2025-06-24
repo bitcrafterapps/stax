@@ -23,6 +23,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AddAPhoto
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -70,6 +71,7 @@ fun PhotoGalleryScreen(
     photos: List<Photo>,
     onNavigateUp: () -> Unit,
     onNavigateToCamera: () -> Unit,
+    onNavigateToSessionDetail: () -> Unit,
     onAddPhotoFromGallery: (Uri) -> Unit,
     onDeletePhoto: (Photo) -> Unit,
     onPhotoClick: (Photo) -> Unit
@@ -101,10 +103,30 @@ fun PhotoGalleryScreen(
                     }
                 },
                 actions = {
+                    IconButton(onClick = {
+                        if (cameraPermissionState.status.isGranted) {
+                            onNavigateToCamera()
+                        } else {
+                            cameraPermissionState.launchPermissionRequest()
+                        }
+                    }) {
+                        Icon(
+                            Icons.Default.AddAPhoto,
+                            contentDescription = "Add Photo",
+                            tint = Color.White
+                        )
+                    }
                     IconButton(onClick = { multiplePhotoPickerLauncher.launch("image/*") }) {
                         Icon(
                             Icons.Default.PhotoLibrary,
                             contentDescription = "Open Gallery",
+                            tint = Color.White
+                        )
+                    }
+                    IconButton(onClick = onNavigateToSessionDetail) {
+                        Icon(
+                            Icons.Default.List,
+                            contentDescription = "Session Details",
                             tint = Color.White
                         )
                     }
@@ -114,19 +136,7 @@ fun PhotoGalleryScreen(
                 )
             )
         },
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = {
-                    if (cameraPermissionState.status.isGranted) {
-                        onNavigateToCamera()
-                    } else {
-                        cameraPermissionState.launchPermissionRequest()
-                    }
-                }
-            ) {
-                Icon(Icons.Filled.AddAPhoto, contentDescription = "Add Photo")
-            }
-        },
+        floatingActionButton = {},
         containerColor = Color.Transparent
     ) { innerPadding ->
         if (photos.isEmpty()) {
