@@ -2,16 +2,7 @@
 <resources>
 
     <style name="Theme.Stax" parent="Theme.Material3.DayNight.NoActionBar">
-        <!--
-        This theme is what is shown when your app is starting up.
-        Once your Compose UI takes over, the colors are controlled
-        by the StaxTheme composable.
-        -->
+        <item name="android:windowBackground">@drawable/launch_background</item>
     </style>
 
-    <style name="Theme.App.Starting" parent="Theme.SplashScreen">
-        <item name="windowSplashScreenBackground">@color/black</item>
-        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_stax_logo</item>
-        <item name="postSplashScreenTheme">@style/Theme.Stax</item>
-    </style>
 </resources>
