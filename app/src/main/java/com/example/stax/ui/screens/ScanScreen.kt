@@ -2,6 +2,7 @@ package com.example.stax.ui.screens
 
 import android.Manifest
 import android.content.Context
+import android.content.SharedPreferences
 import android.graphics.Bitmap
 import android.graphics.RectF
 import android.util.Log
@@ -78,6 +79,7 @@ fun CameraView() {
     val lastBitmap = remember { mutableStateOf<Bitmap?>(null) }
     var trainingSummary by remember { mutableStateOf("") }
     var infoMessage by remember { mutableStateOf("") }
+    var openAiEnabled by remember { mutableStateOf(getOpenAiEnabled(context)) }
 
     LaunchedEffect(trainingSummary) {
         if (trainingSummary.isNotEmpty()) {
@@ -197,6 +199,21 @@ fun CameraView() {
                     InfoMessage(message = infoMessage)
                     Spacer(modifier = Modifier.height(8.dp))
                 }
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center,
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
+                ) {
+                    Text("Use OpenAI", color = Color.White)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Switch(
+                        checked = openAiEnabled,
+                        onCheckedChange = {
+                            openAiEnabled = it
+                            setOpenAiEnabled(context, it)
+                        }
+                    )
+                }
                 Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                     Button(onClick = {
                         isScanning = true
@@ -236,6 +253,19 @@ fun CameraView() {
         onDispose {
             cameraExecutor.shutdown()
         }
+    }
+}
+
+private fun getOpenAiEnabled(context: Context): Boolean {
+    val sharedPreferences = context.getSharedPreferences("StaxPrefs", Context.MODE_PRIVATE)
+    return sharedPreferences.getBoolean("openai_enabled", false)
+}
+
+private fun setOpenAiEnabled(context: Context, isEnabled: Boolean) {
+    val sharedPreferences = context.getSharedPreferences("StaxPrefs", Context.MODE_PRIVATE)
+    with(sharedPreferences.edit()) {
+        putBoolean("openai_enabled", isEnabled)
+        apply()
     }
 }
 

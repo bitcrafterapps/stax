@@ -1,17 +1,14 @@
 package com.example.stax.ui.screens
 
+import android.content.Context
+import android.content.SharedPreferences
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.size
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -20,34 +17,91 @@ import com.example.stax.R
 
 @Composable
 fun AboutScreen() {
+    val context = LocalContext.current
+    var showSettingsDialog by remember { mutableStateOf(false) }
+
     Column(
-        modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
     ) {
         Image(
             painter = painterResource(id = R.drawable.ic_stax_logo),
-            contentDescription = "Logo",
+            contentDescription = "App Logo",
             modifier = Modifier.size(120.dp)
         )
         Spacer(modifier = Modifier.height(16.dp))
         Text(
-            text = "Chip Porn",
-            fontSize = 32.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color.White
+            text = "Stax",
+            style = MaterialTheme.typography.headlineLarge,
+            fontWeight = FontWeight.Bold
         )
-        Spacer(modifier = Modifier.height(8.dp))
         Text(
-            text = "Poker Porn, No Shame",
-            fontSize = 18.sp,
-            color = Color.White.copy(alpha = 0.9f)
+            text = "Version 1.0.0",
+            style = MaterialTheme.typography.bodyMedium
         )
         Spacer(modifier = Modifier.height(32.dp))
-        Text(
-            text = "v.1.00.00",
-            fontSize = 16.sp,
-            color = Color.White.copy(alpha = 0.7f)
+        Button(onClick = { showSettingsDialog = true }) {
+            Text("Settings")
+        }
+    }
+
+    if (showSettingsDialog) {
+        SettingsDialog(
+            onDismiss = { showSettingsDialog = false },
+            onSave = { apiKey ->
+                saveApiKey(context, apiKey)
+                showSettingsDialog = false
+            }
         )
+    }
+}
+
+@Composable
+fun SettingsDialog(onDismiss: () -> Unit, onSave: (String) -> Unit) {
+    val context = LocalContext.current
+    val defaultApiKey = "REDACTED_OPENAI_KEY"
+    var apiKey by remember { mutableStateOf(getApiKey(context) ?: defaultApiKey) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Settings") },
+        text = {
+            Column {
+                Text("Enter your OpenAI API key to enable AI features.", style = MaterialTheme.typography.bodyMedium)
+                Spacer(modifier = Modifier.height(16.dp))
+                OutlinedTextField(
+                    value = apiKey,
+                    onValueChange = { apiKey = it },
+                    label = { Text("OpenAI API Key") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        },
+        confirmButton = {
+            Button(onClick = { onSave(apiKey) }) {
+                Text("Save")
+            }
+        },
+        dismissButton = {
+            Button(onClick = onDismiss) {
+                Text("Close")
+            }
+        }
+    )
+}
+
+private fun getApiKey(context: Context): String? {
+    val sharedPreferences = context.getSharedPreferences("StaxPrefs", Context.MODE_PRIVATE)
+    return sharedPreferences.getString("openai_api_key", null)
+}
+
+private fun saveApiKey(context: Context, apiKey: String) {
+    val sharedPreferences = context.getSharedPreferences("StaxPrefs", Context.MODE_PRIVATE)
+    with(sharedPreferences.edit()) {
+        putString("openai_api_key", apiKey)
+        apply()
     }
 } 
