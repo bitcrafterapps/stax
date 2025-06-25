@@ -22,35 +22,51 @@ fun AboutScreen(
     val context = LocalContext.current
     var showSettingsDialog by remember { mutableStateOf(false) }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Image(
-            painter = painterResource(id = R.drawable.ic_stax_logo),
-            contentDescription = "App Logo",
-            modifier = Modifier.size(120.dp)
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        Text(
-            text = "Stax",
-            style = MaterialTheme.typography.headlineLarge,
-            fontWeight = FontWeight.Bold
-        )
-        Text(
-            text = "Version 1.00.21",
-            style = MaterialTheme.typography.bodyMedium
-        )
-        Spacer(modifier = Modifier.height(32.dp))
-        Button(onClick = { showSettingsDialog = true }) {
-            Text("Settings")
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .offset(y = (-38).dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Top
+        ) {
+            Image(
+                painter = painterResource(id = R.drawable.ic_stax_logo),
+                contentDescription = "App Logo",
+                modifier = Modifier
+                    .size(240.dp)
+                    .offset(y = 50.dp)
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "Chip Porn",
+                style = MaterialTheme.typography.headlineLarge,
+                fontWeight = FontWeight.Bold
+            )
+            Text(
+                text = "Version 1.00.21",
+                style = MaterialTheme.typography.bodyMedium
+            )
+            Spacer(modifier = Modifier.height(32.dp))
+            Button(onClick = { showSettingsDialog = true }) {
+                Text("Settings")
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+            Button(onClick = onNavigateToChipConfiguration) {
+                Text("Chip Configuration")
+            }
+
         }
-        Spacer(modifier = Modifier.height(16.dp))
-        Button(onClick = onNavigateToChipConfiguration) {
-            Text("Chip Configuration")
+
+        Box(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .fillMaxWidth(0.625f)
+        ) {
+            Image(
+                painter = painterResource(id = R.drawable.stack),
+                contentDescription = "stack of chips"
+            )
         }
     }
 
