@@ -217,11 +217,7 @@ fun AppNavigation(photosJson: MutableState<String>) {
                 )
             }
             composable(Screen.Scan.route) {
-                ScanScreen(
-                    onOpenCamera = {
-                        // Will implement camera functionality later
-                    }
-                )
+                ScanScreen()
             }
             composable(Screen.About.route) {
                 AboutScreen()

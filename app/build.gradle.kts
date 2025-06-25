@@ -72,12 +72,20 @@ dependencies {
     implementation("androidx.room:room-ktx:2.6.1")
     implementation("com.google.code.gson:gson:2.10.1")
 
-    // CameraX
-    val cameraxVersion = "1.3.4"
-    implementation("androidx.camera:camera-core:$cameraxVersion")
-    implementation("androidx.camera:camera-camera2:$cameraxVersion")
-    implementation("androidx.camera:camera-lifecycle:$cameraxVersion")
-    implementation("androidx.camera:camera-view:$cameraxVersion")
+    // TensorFlow Lite for model inference
+    implementation("org.tensorflow:tensorflow-lite:2.13.0")
+    // TensorFlow Lite Support Library for easier data processing
+    implementation("org.tensorflow:tensorflow-lite-support:0.4.3")
+    // TensorFlow Lite Task Library for vision tasks
+    implementation("org.tensorflow:tensorflow-lite-task-vision:0.4.3")
+
+    // CameraX for robust camera functionality
+    val cameraxVersion = "1.3.1"
+    implementation("androidx.camera:camera-core:${cameraxVersion}")
+    implementation("androidx.camera:camera-camera2:${cameraxVersion}")
+    implementation("androidx.camera:camera-lifecycle:${cameraxVersion}")
+    implementation("androidx.camera:camera-view:${cameraxVersion}")
+    implementation("androidx.camera:camera-extensions:${cameraxVersion}")
 
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.2.1")
