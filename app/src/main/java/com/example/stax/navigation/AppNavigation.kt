@@ -46,6 +46,7 @@ import com.example.stax.ui.screens.AboutScreen
 import com.example.stax.ui.screens.AddSessionDialog
 import com.example.stax.ui.screens.CameraScreen
 import com.example.stax.ui.screens.CasinoSessionsScreen
+import com.example.stax.ui.screens.ChipConfigurationScreen
 import com.example.stax.ui.screens.DashboardScreen
 import com.example.stax.ui.screens.FullScreenImageViewer
 import com.example.stax.ui.screens.PhotoGalleryScreen
@@ -68,6 +69,7 @@ sealed class Screen(
     object CasinoSessions : Screen("casino_sessions/{casinoName}") {
         fun createRoute(casinoName: String) = "casino_sessions/$casinoName"
     }
+    object ChipConfiguration : Screen("chip_configuration", "Chip Configuration")
 
     object SessionDetail : Screen("session/{sessionId}") {
         fun createRoute(sessionId: Long) = "session/$sessionId"
@@ -220,7 +222,30 @@ fun AppNavigation(photosJson: MutableState<String>) {
                 ScanScreen()
             }
             composable(Screen.About.route) {
-                AboutScreen()
+                AboutScreen(
+                    onNavigateToChipConfiguration = {
+                        navController.navigate(Screen.ChipConfiguration.route)
+                    }
+                )
+            }
+            composable(Screen.ChipConfiguration.route) {
+                val viewModel: CasinoFoldersViewModel = viewModel(
+                    factory = object : ViewModelProvider.Factory {
+                        override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                            @Suppress("UNCHECKED_CAST")
+                            return CasinoFoldersViewModel(
+                                AppDatabase.getDatabase(application).staxDao(),
+                                application
+                            ) as T
+                        }
+                    }
+                )
+                val casinoData by viewModel.casinoData.collectAsState()
+
+                ChipConfigurationScreen(
+                    casinoData = casinoData,
+                    onNavigateBack = { navController.popBackStack() }
+                )
             }
             composable(
                 route = Screen.CasinoSessions.route,

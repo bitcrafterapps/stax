@@ -1,5 +1,6 @@
 package com.example.stax.ui.screens
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -25,7 +26,7 @@ import com.example.stax.data.Photo
 import com.example.stax.ui.composables.RatingBar
 import java.io.File
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun FullScreenImageViewer(
     photos: List<Photo>,
@@ -34,8 +35,7 @@ fun FullScreenImageViewer(
     onRatingChanged: (Photo, Int) -> Unit
 ) {
     val pagerState = rememberPagerState(
-        initialPage = initialPhotoIndex,
-        initialPageOffsetFraction = 0f
+        initialPage = initialPhotoIndex
     ) {
         photos.size
     }

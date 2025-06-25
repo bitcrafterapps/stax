@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import com.example.stax.data.ChipDetector
+import com.example.stax.data.OpenAiService
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
@@ -80,6 +81,7 @@ fun CameraView() {
     var trainingSummary by remember { mutableStateOf("") }
     var infoMessage by remember { mutableStateOf("") }
     var openAiEnabled by remember { mutableStateOf(getOpenAiEnabled(context)) }
+    var chipTotalFromOpenAi by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(trainingSummary) {
         if (trainingSummary.isNotEmpty()) {
@@ -146,7 +148,7 @@ fun CameraView() {
                             it.setAnalyzer(cameraExecutor) { imageProxy ->
                                 val bitmap = imageProxy.toBitmap()
                                 lastBitmap.value = bitmap
-                                if (isScanning && bitmap != null) {
+                                if (isScanning && !openAiEnabled) {
                                     chipDetector.detect(bitmap, imageProxy.imageInfo.rotationDegrees)
                                 }
                                 imageProxy.close()
@@ -176,8 +178,10 @@ fun CameraView() {
                 modifier = Modifier.fillMaxSize()
             )
 
-            DetectionOverlay(detections, imageHeight, imageWidth)
-            ChipTotal(detections)
+            if (!openAiEnabled) {
+                DetectionOverlay(detections, imageHeight, imageWidth)
+            }
+            ChipTotal(detections, openAiEnabled, chipTotalFromOpenAi)
 
             if (isScanning) {
                 Box(
@@ -215,12 +219,39 @@ fun CameraView() {
                     )
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                    Button(onClick = {
-                        isScanning = true
-                    }) {
+                    Button(
+                        onClick = {
+                            isScanning = true
+                            if (openAiEnabled) {
+                                val apiKey = getApiKey(context)
+                                if (apiKey.isNullOrEmpty()) {
+                                    coroutineScope.launch {
+                                        snackbarHostState.showSnackbar("OpenAI API key is not set.")
+                                    }
+                                    isScanning = false
+                                    return@Button
+                                }
+                                lastBitmap.value?.let { bitmap ->
+                                    coroutineScope.launch {
+                                        try {
+                                            val service = OpenAiService(apiKey)
+                                            val result = service.getChipCount(bitmap)
+                                            chipTotalFromOpenAi = result
+                                        } catch (e: Exception) {
+                                            Log.e("CameraView", "OpenAI call failed", e)
+                                            chipTotalFromOpenAi = "Error: ${e.message}"
+                                        } finally {
+                                            isScanning = false
+                                        }
+                                    }
+                                } ?: run { isScanning = false }
+                            }
+                        },
+                        enabled = !isScanning
+                    ) {
                         Text("Scan")
                     }
-                    Button(onClick = { showTrainDialog = true }) {
+                    Button(onClick = { showTrainDialog = true }, enabled = !openAiEnabled) {
                         Text("Train")
                     }
                 }
@@ -254,6 +285,11 @@ fun CameraView() {
             cameraExecutor.shutdown()
         }
     }
+}
+
+private fun getApiKey(context: Context): String? {
+    val sharedPreferences = context.getSharedPreferences("StaxPrefs", Context.MODE_PRIVATE)
+    return sharedPreferences.getString("openai_api_key", null)
 }
 
 private fun getOpenAiEnabled(context: Context): Boolean {
@@ -363,11 +399,17 @@ fun DetectionOverlay(detections: List<Detection>, imageHeight: Int, imageWidth: 
 }
 
 @Composable
-fun ChipTotal(detections: List<Detection>) {
-    val totalValue = detections.sumOf {
-        it.categories.firstOrNull()?.label?.toIntOrNull() ?: 0
+fun ChipTotal(detections: List<Detection>, openAiEnabled: Boolean, openAiResult: String?) {
+    val modelName = if (openAiEnabled) "OpenAI" else "TensorFlow"
+
+    val totalValue = if (openAiEnabled) {
+        openAiResult
+    } else {
+        val sum = detections.sumOf {
+            it.categories.firstOrNull()?.label?.toIntOrNull() ?: 0
+        }
+        NumberFormat.getCurrencyInstance(Locale.US).format(sum)
     }
-    val formattedTotal = NumberFormat.getCurrencyInstance(Locale.US).format(totalValue)
 
     Box(
         modifier = Modifier
@@ -375,13 +417,19 @@ fun ChipTotal(detections: List<Detection>) {
             .background(Color.Black.copy(alpha = 0.5f))
             .padding(16.dp)
     ) {
-        Text(
-            text = "Total: $formattedTotal",
-            color = Color.White,
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.align(Alignment.Center)
-        )
+        Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
+            Text(
+                text = "Total: ${totalValue ?: "..."}",
+                color = Color.White,
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold
+            )
+            Text(
+                text = "Model: $modelName",
+                color = Color.White.copy(alpha = 0.7f),
+                fontSize = 12.sp,
+            )
+        }
     }
 }
 

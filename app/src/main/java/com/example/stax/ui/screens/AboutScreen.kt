@@ -16,7 +16,9 @@ import androidx.compose.ui.unit.sp
 import com.example.stax.R
 
 @Composable
-fun AboutScreen() {
+fun AboutScreen(
+    onNavigateToChipConfiguration: () -> Unit
+) {
     val context = LocalContext.current
     var showSettingsDialog by remember { mutableStateOf(false) }
 
@@ -45,6 +47,10 @@ fun AboutScreen() {
         Spacer(modifier = Modifier.height(32.dp))
         Button(onClick = { showSettingsDialog = true }) {
             Text("Settings")
+        }
+        Spacer(modifier = Modifier.height(16.dp))
+        Button(onClick = onNavigateToChipConfiguration) {
+            Text("Chip Configuration")
         }
     }
 
