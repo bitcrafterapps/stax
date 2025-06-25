@@ -34,17 +34,17 @@ fun SplashScreen(onTimeout: () -> Unit) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(top = 44.dp),
+                .padding(bottom = 56.dp),
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Image(
                 painter = painterResource(id = R.drawable.ic_stax_logo),
-                contentDescription = "WSOP Crusher Logo",
-                modifier = Modifier.size(240.dp)
+                contentDescription = "Chip Porn Logo",
+                modifier = Modifier.size(260.dp)
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
             Text(
                 text = "Chip Porn",
@@ -55,7 +55,7 @@ fun SplashScreen(onTimeout: () -> Unit) {
                 lineHeight = 52.sp
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             Text(
                 text = "Poker Porn, Without the Shame",

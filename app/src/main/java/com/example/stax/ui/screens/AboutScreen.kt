@@ -41,7 +41,7 @@ fun AboutScreen(
             fontWeight = FontWeight.Bold
         )
         Text(
-            text = "Version 1.0.0",
+            text = "Version 1.00.21",
             style = MaterialTheme.typography.bodyMedium
         )
         Spacer(modifier = Modifier.height(32.dp))

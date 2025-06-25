@@ -8,6 +8,8 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -21,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.example.stax.data.ChipConfig
 import com.example.stax.data.ChipConfigRepository
+import com.github.skydoves.colorpicker.compose.BrightnessSlider
 import com.github.skydoves.colorpicker.compose.HsvColorPicker
 import com.github.skydoves.colorpicker.compose.rememberColorPickerController
 
@@ -181,36 +184,24 @@ fun ChipConfigDialog(
                 Text(gameType, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Spacer(modifier = Modifier.height(16.dp))
                 LazyColumn(modifier = Modifier.weight(1f, fill = false)) {
-                    item {
-                        Row(
-                            modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(text = "Chip Color", modifier = Modifier.weight(1f), textAlign = TextAlign.Center)
-                            Text(text = "Value", modifier = Modifier.weight(1f), textAlign = TextAlign.Center)
-                        }
-                        Divider()
-                    }
                     itemsIndexed(chipConfigs) { index, chip ->
                         Row(
-                            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
-                            verticalAlignment = Alignment.CenterVertically
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 2.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             Box(
-                                modifier = Modifier.weight(1f).padding(end = 8.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(40.dp)
-                                        .clip(CircleShape)
-                                        .background(chip.color)
-                                        .clickable {
-                                            chipIndexToEdit = index
-                                            showColorPicker = true
-                                        }
-                                )
-                            }
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .clip(CircleShape)
+                                    .background(chip.color)
+                                    .clickable {
+                                        chipIndexToEdit = index
+                                        showColorPicker = true
+                                    }
+                            )
                             OutlinedTextField(
                                 value = chip.value,
                                 onValueChange = { newValue ->
@@ -218,20 +209,22 @@ fun ChipConfigDialog(
                                 },
                                 modifier = Modifier.weight(1f)
                             )
+                            IconButton(onClick = {
+                                val newId = (chipConfigs.maxOfOrNull { it.id } ?: 0) + 1
+                                chipConfigs.add(index + 1, ChipConfig(id = newId, color = Color.LightGray, value = "", colorName = "new"))
+                            }) {
+                                Icon(Icons.Default.Add, contentDescription = "Add Row Below")
+                            }
+                            IconButton(
+                                onClick = { chipConfigs.removeAt(index) },
+                                enabled = chipConfigs.size > 1
+                            ) {
+                                Icon(Icons.Default.Delete, contentDescription = "Delete Row")
+                            }
                         }
                     }
                 }
                 Spacer(modifier = Modifier.height(16.dp))
-                Button(
-                    onClick = {
-                        val newId = (chipConfigs.maxOfOrNull { it.id } ?: 0) + 1
-                        chipConfigs.add(ChipConfig(id = newId, color = Color.LightGray, value = "", colorName = "new"))
-                    },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("Add New Row")
-                }
-                Spacer(modifier = Modifier.height(8.dp))
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.End
@@ -268,9 +261,21 @@ fun ColorPickerDialog(
         onDismissRequest = onDismissRequest,
         title = { Text("Select Color") },
         text = {
-            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
                 HsvColorPicker(
-                    modifier = Modifier.height(300.dp).fillMaxWidth(),
+                    modifier = Modifier
+                        .height(300.dp)
+                        .fillMaxWidth(),
+                    controller = controller
+                )
+                BrightnessSlider(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(35.dp),
                     controller = controller
                 )
             }
