@@ -3,10 +3,21 @@ package com.example.stax.ui.theme
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 
-val PurpleGradient = Brush.verticalGradient(
+val StaxHeaderGradient = Brush.verticalGradient(
     colors = listOf(
-        Color.Black,
-        Color.Black,
-        Purple700
+        Color(0xFF0A0A0A),
+        Color(0xFF1A1A1E)
     )
-) 
+)
+
+val StaxAmbientGradient = Brush.verticalGradient(
+    colors = listOf(
+        StaxGraphite,
+        Color(0xFF0D0D12),
+        Color(0xFF12101A),
+        StaxPrimaryDim.copy(alpha = 0.35f)
+    )
+)
+
+@Deprecated("Use StaxAmbientGradient", ReplaceWith("StaxAmbientGradient"))
+val PurpleGradient = StaxAmbientGradient

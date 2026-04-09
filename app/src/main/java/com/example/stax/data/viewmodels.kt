@@ -15,7 +15,11 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import android.content.ContentValues
+import android.os.Environment
+import android.provider.MediaStore
 import java.io.File
+import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.InputStreamReader
 import java.text.SimpleDateFormat
@@ -225,11 +229,33 @@ class PhotoGalleryViewModel(
 
     private fun saveImagePermanently(uri: Uri): File {
         val inputStream = application.contentResolver.openInputStream(uri)
-        val newFile = File(application.getExternalFilesDir(null), "IMG_${System.currentTimeMillis()}.jpg")
+        val timestamp = System.currentTimeMillis()
+        val newFile = File(application.getExternalFilesDir(null), "IMG_$timestamp.jpg")
         val outputStream = FileOutputStream(newFile)
         inputStream?.copyTo(outputStream)
         inputStream?.close()
         outputStream.close()
+
+        saveToDeviceGallery(newFile)
+
         return newFile
+    }
+
+    private fun saveToDeviceGallery(file: File) {
+        try {
+            val values = ContentValues().apply {
+                put(MediaStore.Images.Media.DISPLAY_NAME, file.name)
+                put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
+                put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/Stax")
+            }
+            val contentUri = application.contentResolver.insert(
+                MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values
+            )
+            contentUri?.let { galleryUri ->
+                application.contentResolver.openOutputStream(galleryUri)?.use { out ->
+                    FileInputStream(file).use { input -> input.copyTo(out) }
+                }
+            }
+        } catch (_: Exception) { }
     }
 } 

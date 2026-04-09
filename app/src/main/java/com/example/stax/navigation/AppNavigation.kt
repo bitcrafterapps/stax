@@ -3,15 +3,19 @@ package com.example.stax.navigation
 import android.app.Application
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ViewList
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.List
-import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material.icons.filled.Camera
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.NearMe
+import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarDefaults
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -48,6 +52,7 @@ import com.example.stax.ui.screens.CameraScreen
 import com.example.stax.ui.screens.CasinoSessionsScreen
 import com.example.stax.ui.screens.ChipConfigurationScreen
 import com.example.stax.ui.screens.DashboardScreen
+import com.example.stax.ui.screens.FindScreen
 import com.example.stax.ui.screens.FullScreenImageViewer
 import com.example.stax.ui.screens.PhotoGalleryScreen
 import com.example.stax.ui.screens.ScanScreen
@@ -63,7 +68,8 @@ sealed class Screen(
 ) {
     object Splash : Screen("splash")
     object Photos : Screen("photos", "Photos", Icons.Default.PhotoLibrary)
-    object Sessions : Screen("sessions", "Sessions", Icons.Default.List)
+    object Sessions : Screen("sessions", "Sessions", Icons.AutoMirrored.Filled.ViewList)
+    object Find : Screen("find", "Find", Icons.Default.NearMe)
     object Scan : Screen("scan", "Scan", Icons.Default.Camera)
     object About : Screen("about", "About", Icons.Default.Info)
     object CasinoSessions : Screen("casino_sessions/{casinoName}") {
@@ -95,21 +101,38 @@ fun AppNavigation(photosJson: MutableState<String>) {
     val application = context.applicationContext as Application
     var showAddSessionDialog by remember { mutableStateOf(false) }
 
-    val navItems = listOf(Screen.Photos, Screen.Sessions, Screen.Scan, Screen.About)
+    val navItems = listOf(Screen.Photos, Screen.Sessions, Screen.Find, Screen.Scan, Screen.About)
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
 
     Scaffold(
+        containerColor = androidx.compose.ui.graphics.Color.Transparent,
         bottomBar = {
             val shouldShowBottomBar = navItems.any { it.route == currentDestination?.route }
 
             if (shouldShowBottomBar) {
-                NavigationBar {
+                NavigationBar(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.92f),
+                    contentColor = MaterialTheme.colorScheme.onSurface,
+                    tonalElevation = NavigationBarDefaults.Elevation
+                ) {
                     navItems.forEach { screen ->
+                        val selected =
+                            currentDestination?.hierarchy?.any { it.route == screen.route } == true
                         NavigationBarItem(
-                            icon = { Icon(screen.icon!!, contentDescription = screen.title) },
-                            label = { Text(screen.title!!) },
-                            selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true,
+                            icon = {
+                                Icon(
+                                    screen.icon!!,
+                                    contentDescription = screen.title
+                                )
+                            },
+                            label = {
+                                Text(
+                                    screen.title!!,
+                                    style = MaterialTheme.typography.labelMedium
+                                )
+                            },
+                            selected = selected,
                             onClick = {
                                 navController.navigate(screen.route) {
                                     popUpTo(navController.graph.findStartDestination().id) {
@@ -118,7 +141,14 @@ fun AppNavigation(photosJson: MutableState<String>) {
                                     launchSingleTop = true
                                     restoreState = true
                                 }
-                            }
+                            },
+                            colors = NavigationBarItemDefaults.colors(
+                                selectedIconColor = MaterialTheme.colorScheme.primary,
+                                selectedTextColor = MaterialTheme.colorScheme.primary,
+                                indicatorColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.18f),
+                                unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
                         )
                     }
                 }
@@ -126,7 +156,11 @@ fun AppNavigation(photosJson: MutableState<String>) {
         },
         floatingActionButton = {
             if (currentDestination?.route == Screen.Photos.route) {
-                FloatingActionButton(onClick = { showAddSessionDialog = true }) {
+                FloatingActionButton(
+                    onClick = { showAddSessionDialog = true },
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary
+                ) {
                     Icon(Icons.Filled.Add, contentDescription = "Add Session")
                 }
             }
@@ -217,6 +251,9 @@ fun AppNavigation(photosJson: MutableState<String>) {
                     },
                     sessionsViewModel = viewModel
                 )
+            }
+            composable(Screen.Find.route) {
+                FindScreen()
             }
             composable(Screen.Scan.route) {
                 ScanScreen()
@@ -356,7 +393,8 @@ fun AppNavigation(photosJson: MutableState<String>) {
                 arguments = listOf(navArgument("photoIndex") { type = NavType.IntType })
             ) { backStackEntry ->
                 val photoIndex = backStackEntry.arguments?.getInt("photoIndex") ?: 0
-                val photos = Gson().fromJson(photosJson.value, Array<Photo>::class.java).toList()
+                val parsedPhotos = Gson().fromJson(photosJson.value, Array<Photo>::class.java)
+                val photos = parsedPhotos?.toList() ?: emptyList()
                 val photo = photos.getOrNull(photoIndex)
 
                 if (photo != null) {

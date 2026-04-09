@@ -1,6 +1,7 @@
 package com.example.stax.ui.screens
 
 import android.app.TimePickerDialog
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -27,6 +28,9 @@ import java.text.NumberFormat
 import java.util.Calendar
 import java.util.Locale
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.input.KeyboardCapitalization
+import com.example.stax.ui.theme.StaxHeaderGradient
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -74,21 +78,26 @@ fun SessionDetailScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("Session Details") },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-                    }
-                },
-                actions = {
-                    if (!isEditMode) {
-                        IconButton(onClick = { isEditMode = true }) {
-                            Icon(Icons.Default.Edit, contentDescription = "Edit Session")
+            Box(modifier = Modifier.background(StaxHeaderGradient)) {
+                TopAppBar(
+                    title = { Text("Session Details") },
+                    navigationIcon = {
+                        IconButton(onClick = onNavigateBack) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                         }
-                    }
-                }
-            )
+                    },
+                    actions = {
+                        if (!isEditMode) {
+                            IconButton(onClick = { isEditMode = true }) {
+                                Icon(Icons.Default.Edit, contentDescription = "Edit Session")
+                            }
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = Color.Transparent
+                    )
+                )
+            }
         },
         floatingActionButton = {
             if (isEditMode) {
@@ -144,6 +153,7 @@ fun SessionDetailScreen(
                         value = name,
                         onValueChange = { name = it },
                         label = { Text("Session Name") },
+                        keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words),
                         modifier = Modifier.fillMaxWidth()
                     )
                     ExposedDropdownMenuBox(
@@ -236,6 +246,7 @@ fun SessionDetailScreen(
                         value = game,
                         onValueChange = { game = it },
                         label = { Text("Game") },
+                        keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words),
                         modifier = Modifier.fillMaxWidth()
                     )
                     DropdownSelector(label = "Game Type", options = gameTypes, selectedOption = gameType, onOptionSelected = { gameType = it })

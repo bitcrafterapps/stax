@@ -1,6 +1,6 @@
-# App Improvement Suggestions for Chip Porn
+# App Improvement Suggestions for Stax
 
-This document outlines potential new features and improvements to enhance the user experience and functionality of the Chip Porn application.
+This document outlines potential new features and improvements to enhance the user experience and functionality of the Stax application.
 
 ---
 

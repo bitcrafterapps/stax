@@ -6,15 +6,45 @@ import android.content.SharedPreferences
 import android.graphics.Bitmap
 import android.graphics.RectF
 import android.util.Log
+import android.view.MotionEvent
+import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector
+import androidx.camera.core.FocusMeteringAction
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.CameraAlt
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -28,9 +58,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
+import com.example.stax.data.ChipDetection
 import com.example.stax.data.ChipDetector
 import com.example.stax.data.OpenAiService
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
@@ -38,7 +68,6 @@ import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import org.tensorflow.lite.task.vision.detector.Detection
 import java.io.File
 import java.io.FileOutputStream
 import java.text.NumberFormat
@@ -58,8 +87,35 @@ fun ScanScreen() {
     if (cameraPermissionState.status.isGranted) {
         CameraView()
     } else {
-        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text("Camera permission is required to use this feature.")
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(32.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Icon(
+                imageVector = Icons.Outlined.CameraAlt,
+                contentDescription = null,
+                modifier = Modifier.size(56.dp),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Spacer(modifier = Modifier.height(20.dp))
+            Text(
+                text = "Camera access",
+                style = MaterialTheme.typography.headlineSmall,
+                color = MaterialTheme.colorScheme.onBackground
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "Allow camera access to scan chip stacks and capture training photos.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Spacer(modifier = Modifier.height(24.dp))
+            Button(onClick = { cameraPermissionState.launchPermissionRequest() }) {
+                Text("Continue")
+            }
         }
     }
 }
@@ -71,7 +127,7 @@ fun CameraView() {
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
 
-    var detections by remember { mutableStateOf<List<Detection>>(emptyList()) }
+    var detections by remember { mutableStateOf<List<ChipDetection>>(emptyList()) }
     var imageWidth by remember { mutableStateOf(0) }
     var imageHeight by remember { mutableStateOf(0) }
     var showTrainDialog by remember { mutableStateOf(false) }
@@ -82,6 +138,7 @@ fun CameraView() {
     var infoMessage by remember { mutableStateOf("") }
     var openAiEnabled by remember { mutableStateOf(getOpenAiEnabled(context)) }
     var chipTotalFromOpenAi by remember { mutableStateOf<String?>(null) }
+    var camera by remember { mutableStateOf<Camera?>(null) }
 
     LaunchedEffect(trainingSummary) {
         if (trainingSummary.isNotEmpty()) {
@@ -113,7 +170,7 @@ fun CameraView() {
                         isScanning = false
                     }
 
-                    override fun onResults(results: List<Detection>?, height: Int, width: Int, maxScoreBelowThreshold: Float?) {
+                    override fun onResults(results: List<ChipDetection>?, height: Int, width: Int, maxScoreBelowThreshold: Float?) {
                         if (results.isNullOrEmpty()) {
                             val scorePercent = maxScoreBelowThreshold?.let { (it * 100).toInt() }
                             val scoreMessage = scorePercent?.let { " (max confidence: $it%)" } ?: ""
@@ -163,7 +220,7 @@ fun CameraView() {
                         }
                         try {
                             cameraProvider.unbindAll()
-                            cameraProvider.bindToLifecycle(
+                            camera = cameraProvider.bindToLifecycle(
                                 lifecycleOwner,
                                 cameraSelector,
                                 preview,
@@ -173,6 +230,18 @@ fun CameraView() {
                             Log.e("CameraView", "Use case binding failed", exc)
                         }
                     }, ContextCompat.getMainExecutor(ctx))
+
+                    previewView.setOnTouchListener { _, event ->
+                        if (event.action == MotionEvent.ACTION_DOWN) {
+                            val factory = previewView.meteringPointFactory
+                            val point = factory.createPoint(event.x, event.y)
+                            val action = FocusMeteringAction.Builder(point, FocusMeteringAction.FLAG_AF).build()
+                            camera?.cameraControl?.startFocusAndMetering(action)
+                            return@setOnTouchListener true
+                        }
+                        return@setOnTouchListener false
+                    }
+
                     previewView
                 },
                 modifier = Modifier.fillMaxSize()
@@ -181,78 +250,99 @@ fun CameraView() {
             if (!openAiEnabled) {
                 DetectionOverlay(detections, imageHeight, imageWidth)
             }
-            ChipTotal(detections, openAiEnabled, chipTotalFromOpenAi)
 
             if (isScanning) {
                 Box(
-                    modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.5f)),
+                    modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.45f)),
                     contentAlignment = Alignment.Center
                 ) {
-                    CircularProgressIndicator()
+                    CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
                 }
             }
 
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .align(Alignment.BottomCenter)
-                    .padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+            Surface(
+                modifier = Modifier.align(Alignment.BottomCenter),
+                shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
+                color = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.92f),
+                tonalElevation = 3.dp
             ) {
-                if(infoMessage.isNotEmpty()){
-                    InfoMessage(message = infoMessage)
-                    Spacer(modifier = Modifier.height(8.dp))
-                }
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center,
-                    modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp)
+                        .padding(top = 18.dp, bottom = 20.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text("Use OpenAI", color = Color.White)
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Switch(
-                        checked = openAiEnabled,
-                        onCheckedChange = {
-                            openAiEnabled = it
-                            setOpenAiEnabled(context, it)
-                        }
-                    )
-                }
-                Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                    Button(
-                        onClick = {
-                            isScanning = true
-                            if (openAiEnabled) {
-                                val apiKey = getApiKey(context)
-                                if (apiKey.isNullOrEmpty()) {
-                                    coroutineScope.launch {
-                                        snackbarHostState.showSnackbar("OpenAI API key is not set.")
-                                    }
-                                    isScanning = false
-                                    return@Button
-                                }
-                                lastBitmap.value?.let { bitmap ->
-                                    coroutineScope.launch {
-                                        try {
-                                            val service = OpenAiService(apiKey)
-                                            val result = service.getChipCount(bitmap)
-                                            chipTotalFromOpenAi = result
-                                        } catch (e: Exception) {
-                                            Log.e("CameraView", "OpenAI call failed", e)
-                                            chipTotalFromOpenAi = "Error: ${e.message}"
-                                        } finally {
-                                            isScanning = false
-                                        }
-                                    }
-                                } ?: run { isScanning = false }
-                            }
-                        },
-                        enabled = !isScanning
-                    ) {
-                        Text("Scan")
+                    ChipTotal(detections, openAiEnabled, chipTotalFromOpenAi)
+                    Spacer(modifier = Modifier.height(12.dp))
+                    if (infoMessage.isNotEmpty()) {
+                        InfoMessage(message = infoMessage)
+                        Spacer(modifier = Modifier.height(12.dp))
                     }
-                    Button(onClick = { showTrainDialog = true }, enabled = !openAiEnabled) {
-                        Text("Train")
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 12.dp)
+                    ) {
+                        Text(
+                            "Cloud estimate (OpenAI)",
+                            style = MaterialTheme.typography.labelLarge,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Switch(
+                            checked = openAiEnabled,
+                            onCheckedChange = {
+                                openAiEnabled = it
+                                setOpenAiEnabled(context, it)
+                            },
+                            colors = SwitchDefaults.colors(
+                                checkedThumbColor = MaterialTheme.colorScheme.primary,
+                                checkedTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.45f)
+                            )
+                        )
+                    }
+                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Button(
+                            onClick = {
+                                isScanning = true
+                                if (openAiEnabled) {
+                                    val apiKey = getApiKey(context)
+                                    if (apiKey.isNullOrEmpty()) {
+                                        coroutineScope.launch {
+                                            snackbarHostState.showSnackbar("Add an API key in About → OpenAI settings.")
+                                        }
+                                        isScanning = false
+                                        return@Button
+                                    }
+                                    lastBitmap.value?.let { bitmap ->
+                                        coroutineScope.launch {
+                                            try {
+                                                val service = OpenAiService(apiKey)
+                                                val result = service.getChipCount(bitmap)
+                                                chipTotalFromOpenAi = result
+                                            } catch (e: Exception) {
+                                                Log.e("CameraView", "OpenAI call failed", e)
+                                                chipTotalFromOpenAi = "Error: ${e.message}"
+                                            } finally {
+                                                isScanning = false
+                                            }
+                                        }
+                                    } ?: run { isScanning = false }
+                                }
+                            },
+                            enabled = !isScanning
+                        ) {
+                            Text("Scan")
+                        }
+                        OutlinedButton(
+                            onClick = { showTrainDialog = true },
+                            enabled = !openAiEnabled
+                        ) {
+                            Text("Train")
+                        }
                     }
                 }
             }
@@ -344,23 +434,23 @@ fun getTrainingSummary(context: Context): String {
 
 @Composable
 fun InfoMessage(message: String) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(Color.Black.copy(alpha = 0.5f))
-            .padding(8.dp)
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(14.dp),
+        color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.55f)
     ) {
         Text(
             text = message,
-            color = Color.White,
-            fontSize = 14.sp,
-            modifier = Modifier.align(Alignment.Center)
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSecondaryContainer,
+            modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp)
         )
     }
 }
 
 @Composable
-fun DetectionOverlay(detections: List<Detection>, imageHeight: Int, imageWidth: Int) {
+fun DetectionOverlay(detections: List<ChipDetection>, imageHeight: Int, imageWidth: Int) {
+    val accent = MaterialTheme.colorScheme.primary
     Canvas(modifier = Modifier.fillMaxSize()) {
         detections.forEach { detection ->
             val boundingBox = detection.boundingBox
@@ -372,7 +462,7 @@ fun DetectionOverlay(detections: List<Detection>, imageHeight: Int, imageWidth: 
                     boundingBox.bottom * size.height / imageHeight
                 )
                 drawRect(
-                    color = Color.Red,
+                    color = accent,
                     topLeft = Offset(denormBoundingBox.left, denormBoundingBox.top),
                     size = Size(denormBoundingBox.width(), denormBoundingBox.height()),
                     style = Stroke(width = 2.dp.toPx())
@@ -399,8 +489,8 @@ fun DetectionOverlay(detections: List<Detection>, imageHeight: Int, imageWidth: 
 }
 
 @Composable
-fun ChipTotal(detections: List<Detection>, openAiEnabled: Boolean, openAiResult: String?) {
-    val modelName = if (openAiEnabled) "OpenAI" else "TensorFlow"
+fun ChipTotal(detections: List<ChipDetection>, openAiEnabled: Boolean, openAiResult: String?) {
+    val modelName = if (openAiEnabled) "OpenAI" else "On-device"
 
     val totalValue = if (openAiEnabled) {
         openAiResult
@@ -411,23 +501,28 @@ fun ChipTotal(detections: List<Detection>, openAiEnabled: Boolean, openAiResult:
         NumberFormat.getCurrencyInstance(Locale.US).format(sum)
     }
 
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(Color.Black.copy(alpha = 0.5f))
-            .padding(16.dp)
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        color = MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.85f)
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 14.dp, horizontal = 16.dp)
+        ) {
             Text(
-                text = "Total: ${totalValue ?: "..."}",
-                color = Color.White,
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold
+                text = "Total: ${totalValue ?: "…"}",
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurface
             )
+            Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = "Model: $modelName",
-                color = Color.White.copy(alpha = 0.7f),
-                fontSize = 12.sp,
+                text = "Source · $modelName",
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }
@@ -442,12 +537,19 @@ fun TrainDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Enter Chip Value") },
+        title = {
+            Text(
+                "Training label",
+                style = MaterialTheme.typography.headlineSmall
+            )
+        },
         text = {
             OutlinedTextField(
                 value = chipValue,
                 onValueChange = onChipValueChange,
-                label = { Text("Value") }
+                label = { Text("Chip value") },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true
             )
         },
         confirmButton = {
@@ -456,7 +558,7 @@ fun TrainDialog(
             }
         },
         dismissButton = {
-            Button(onClick = onDismiss) {
+            TextButton(onClick = onDismiss) {
                 Text("Cancel")
             }
         }

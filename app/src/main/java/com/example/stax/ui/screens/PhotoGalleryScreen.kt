@@ -8,9 +8,12 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -19,11 +22,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ViewList
 import androidx.compose.material.icons.filled.AddAPhoto
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -56,6 +61,7 @@ import coil.compose.rememberAsyncImagePainter
 import com.example.stax.data.Photo
 import com.example.stax.data.Session
 import com.example.stax.ui.composables.RatingBar
+import com.example.stax.ui.theme.StaxHeaderGradient
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
@@ -91,50 +97,52 @@ fun PhotoGalleryScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text(session?.name ?: "Gallery", color = Color.White) },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateUp) {
-                        Icon(
-                            Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back",
-                            tint = Color.White
-                        )
-                    }
-                },
-                actions = {
-                    IconButton(onClick = {
-                        if (cameraPermissionState.status.isGranted) {
-                            onNavigateToCamera()
-                        } else {
-                            cameraPermissionState.launchPermissionRequest()
+            Box(modifier = Modifier.background(StaxHeaderGradient)) {
+                TopAppBar(
+                    title = { Text(session?.name ?: "Gallery", color = Color.White) },
+                    navigationIcon = {
+                        IconButton(onClick = onNavigateUp) {
+                            Icon(
+                                Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "Back",
+                                tint = Color.White
+                            )
                         }
-                    }) {
-                        Icon(
-                            Icons.Default.AddAPhoto,
-                            contentDescription = "Add Photo",
-                            tint = Color.White
-                        )
-                    }
-                    IconButton(onClick = { multiplePhotoPickerLauncher.launch("image/*") }) {
-                        Icon(
-                            Icons.Default.PhotoLibrary,
-                            contentDescription = "Open Gallery",
-                            tint = Color.White
-                        )
-                    }
-                    IconButton(onClick = onNavigateToSessionDetail) {
-                        Icon(
-                            Icons.Default.List,
-                            contentDescription = "Session Details",
-                            tint = Color.White
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.Transparent
+                    },
+                    actions = {
+                        IconButton(onClick = {
+                            if (cameraPermissionState.status.isGranted) {
+                                onNavigateToCamera()
+                            } else {
+                                cameraPermissionState.launchPermissionRequest()
+                            }
+                        }) {
+                            Icon(
+                                Icons.Default.AddAPhoto,
+                                contentDescription = "Add Photo",
+                                tint = Color.White
+                            )
+                        }
+                        IconButton(onClick = { multiplePhotoPickerLauncher.launch("image/*") }) {
+                            Icon(
+                                Icons.Default.PhotoLibrary,
+                                contentDescription = "Open Gallery",
+                                tint = Color.White
+                            )
+                        }
+                        IconButton(onClick = onNavigateToSessionDetail) {
+                            Icon(
+                                Icons.AutoMirrored.Filled.ViewList,
+                                contentDescription = "Session Details",
+                                tint = Color.White
+                            )
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = Color.Transparent
+                    )
                 )
-            )
+            }
         },
         floatingActionButton = {},
         containerColor = Color.Transparent
@@ -155,66 +163,80 @@ fun PhotoGalleryScreen(
         } else {
             LazyVerticalGrid(
                 columns = GridCells.Fixed(2),
-                modifier = Modifier.padding(innerPadding)
+                modifier = Modifier
+                    .padding(innerPadding)
+                    .fillMaxSize(),
+                contentPadding = PaddingValues(top = 6.dp, bottom = 80.dp),
+                horizontalArrangement = Arrangement.spacedBy(2.dp),
+                verticalArrangement = Arrangement.spacedBy(2.dp)
             ) {
                 items(photos) { photo ->
-                    Box(
-                        modifier = Modifier
-                            .aspectRatio(0.75f)
-                            .pointerInput(Unit) {
-                                detectTapGestures(
-                                    onLongPress = {
-                                        photoToDelete = photo
-                                    },
-                                    onTap = {
-                                        onPhotoClick(photo)
-                                    }
-                                )
-                            }
+                    Card(
+                        shape = RoundedCornerShape(0.dp),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.80f)
+                        ),
+                        modifier = Modifier.fillMaxWidth()
                     ) {
-                        Image(
-                            painter = rememberAsyncImagePainter(model = File(photo.imagePath)),
-                            contentDescription = "Photo",
-                            modifier = Modifier.fillMaxSize(),
-                            contentScale = ContentScale.Crop
-                        )
                         Box(
                             modifier = Modifier
-                                .fillMaxWidth()
-                                .height(80.dp)
-                                .align(Alignment.BottomCenter)
-                                .background(
-                                    brush = Brush.verticalGradient(
-                                        colors = listOf(
-                                            Color.Transparent,
-                                            Color.Black.copy(alpha = 0.8f)
-                                        )
+                                .aspectRatio(0.75f)
+                                .pointerInput(Unit) {
+                                    detectTapGestures(
+                                        onLongPress = {
+                                            photoToDelete = photo
+                                        },
+                                        onTap = {
+                                            onPhotoClick(photo)
+                                        }
                                     )
-                                )
-                        )
-                        RatingBar(
-                            rating = photo.rating,
-                            modifier = Modifier
-                                .align(Alignment.BottomStart)
-                                .padding(8.dp),
-                            starSize = 16.dp
-                        )
-                        if (photoToDelete == photo) {
+                                }
+                        ) {
+                            Image(
+                                painter = rememberAsyncImagePainter(model = File(photo.imagePath)),
+                                contentDescription = "Photo",
+                                modifier = Modifier.fillMaxSize(),
+                                contentScale = ContentScale.Fit
+                            )
                             Box(
                                 modifier = Modifier
-                                    .fillMaxSize()
-                                    .padding(8.dp),
-                                contentAlignment = Alignment.TopEnd
-                            ) {
-                                IconButton(onClick = {
-                                    onDeletePhoto(photo)
-                                    photoToDelete = null
-                                }) {
-                                    Icon(
-                                        Icons.Default.Delete,
-                                        contentDescription = "Delete Photo",
-                                        tint = Color.White
+                                    .fillMaxWidth()
+                                    .height(80.dp)
+                                    .align(Alignment.BottomCenter)
+                                    .background(
+                                        brush = Brush.verticalGradient(
+                                            colors = listOf(
+                                                Color.Transparent,
+                                                Color.Black.copy(alpha = 0.8f)
+                                            )
+                                        )
                                     )
+                            )
+                            RatingBar(
+                                rating = photo.rating,
+                                modifier = Modifier
+                                    .align(Alignment.BottomStart)
+                                    .padding(10.dp),
+                                starSize = 16.dp
+                            )
+                            if (photoToDelete == photo) {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .padding(8.dp),
+                                    contentAlignment = Alignment.TopEnd
+                                ) {
+                                    IconButton(onClick = {
+                                        onDeletePhoto(photo)
+                                        photoToDelete = null
+                                    }) {
+                                        Icon(
+                                            Icons.Default.Delete,
+                                            contentDescription = "Delete Photo",
+                                            tint = Color.White
+                                        )
+                                    }
                                 }
                             }
                         }

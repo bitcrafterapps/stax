@@ -1,10 +1,9 @@
 package com.example.stax.ui.screens
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -36,12 +35,14 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -56,13 +57,17 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
 import com.example.stax.R
+import com.example.stax.ui.theme.StaxHeaderGradient
 import com.example.stax.data.CasinoFolder
 import com.example.stax.ui.composables.DropdownSelector
+import com.example.stax.ui.composables.StaxEmptyState
+import com.example.stax.ui.composables.StaxScreenHeader
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -88,44 +93,42 @@ fun DashboardScreen(
         )
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-    ) {
+    Column(modifier = Modifier.fillMaxSize()) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(bottom = 16.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(StaxHeaderGradient)
+                .padding(horizontal = 16.dp, vertical = 14.dp)
         ) {
             Image(
                 painter = painterResource(id = R.drawable.ic_stax_logo),
                 contentDescription = "Logo",
-                modifier = Modifier.size(40.dp)
+                modifier = Modifier.size(72.dp)
             )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                text = "Chip Porn",
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.White
+            Spacer(modifier = Modifier.width(12.dp))
+            StaxScreenHeader(
+                title = "Casino/Card Rooms",
+                subtitle = "Browse sessions by venue"
             )
         }
+        Spacer(modifier = Modifier.height(6.dp))
         if (casinoFolders.isEmpty()) {
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = "No sessions found.\nTap the + button to add a new session.",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = Color.White.copy(alpha = 0.7f),
-                    fontWeight = FontWeight.Bold,
-                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                StaxEmptyState(
+                    title = "No sessions yet",
+                    message = "Tap the + button to create your first session and start building your gallery."
                 )
             }
         } else {
             LazyVerticalGrid(
                 columns = GridCells.Fixed(2),
+                horizontalArrangement = Arrangement.spacedBy(3.dp),
+                verticalArrangement = Arrangement.spacedBy(3.dp),
+                contentPadding = PaddingValues(start = 3.dp, end = 3.dp, top = 2.dp, bottom = 80.dp)
             ) {
                 items(casinoFolders) { casinoFolder ->
                     CasinoFolderItem(
@@ -138,7 +141,6 @@ fun DashboardScreen(
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun CasinoFolderItem(
     casinoFolder: CasinoFolder,
@@ -149,14 +151,13 @@ fun CasinoFolderItem(
             .fillMaxWidth()
             .aspectRatio(1f)
             .clickable(onClick = onClick),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        shape = RoundedCornerShape(6.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color.Black.copy(alpha = 0.2f)
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.80f)
         )
     ) {
-        Box(
-            modifier = Modifier.fillMaxSize()
-        ) {
+        Box(modifier = Modifier.fillMaxSize()) {
             if (casinoFolder.latestPhotoPath != null) {
                 Image(
                     painter = rememberAsyncImagePainter(model = File(casinoFolder.latestPhotoPath)),
@@ -169,8 +170,7 @@ fun CasinoFolderItem(
                     imageVector = Icons.Default.Folder,
                     contentDescription = "Folder",
                     modifier = Modifier
-                        .fillMaxSize()
-                        .padding(16.dp)
+                        .size(48.dp)
                         .align(Alignment.Center),
                     tint = Color.White.copy(alpha = 0.3f)
                 )
@@ -181,33 +181,32 @@ fun CasinoFolderItem(
                     .fillMaxSize()
                     .background(
                         Brush.verticalGradient(
-                            colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.8f)),
-                            startY = 300f
+                            colors = listOf(
+                                Color.Transparent,
+                                Color.Black.copy(alpha = 0.7f)
+                            ),
+                            startY = 200f
                         )
                     )
-                    .align(Alignment.BottomCenter)
             )
 
-            Row(
+            Column(
                 modifier = Modifier
                     .align(Alignment.BottomStart)
-                    .padding(8.dp),
-                verticalAlignment = Alignment.CenterVertically
+                    .padding(12.dp)
             ) {
-                Column {
-                    Text(
-                        text = casinoFolder.casinoName,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold,
-                        color = Color.White
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = "${casinoFolder.sessionCount} sessions",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = Color.White.copy(alpha = 0.7f)
-                    )
-                }
+                Text(
+                    text = casinoFolder.casinoName,
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.SemiBold,
+                    color = Color.White
+                )
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = "${casinoFolder.sessionCount} sessions",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = Color.White.copy(alpha = 0.7f)
+                )
             }
         }
     }
@@ -237,7 +236,12 @@ fun AddSessionDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(text = "Add New Session") },
+        title = {
+            Text(
+                text = "New session",
+                style = MaterialTheme.typography.headlineSmall
+            )
+        },
         text = {
             Column(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -245,7 +249,8 @@ fun AddSessionDialog(
                 OutlinedTextField(
                     value = sessionName,
                     onValueChange = { sessionName = it },
-                    label = { Text("Session Name") }
+                    label = { Text("Session Name") },
+                    keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words)
                 )
                 // State/Region Dropdown
                 ExposedDropdownMenuBox(
@@ -313,29 +318,24 @@ fun AddSessionDialog(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Button(
+                    FilterChip(
+                        selected = type == "Cash",
                         onClick = { type = "Cash" },
-                        modifier = Modifier.weight(1f),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = if (type == "Cash") MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant
-                        )
-                    ) {
-                        Text("Cash")
-                    }
-                    Button(
+                        label = { Text("Cash") },
+                        modifier = Modifier.weight(1f)
+                    )
+                    FilterChip(
+                        selected = type == "Tourney",
                         onClick = { type = "Tourney" },
-                        modifier = Modifier.weight(1f),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = if (type == "Tourney") MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant
-                        )
-                    ) {
-                        Text("Tourney")
-                    }
+                        label = { Text("Tourney") },
+                        modifier = Modifier.weight(1f)
+                    )
                 }
                 OutlinedTextField(
                     value = game,
                     onValueChange = { game = it },
-                    label = { Text("Game") }
+                    label = { Text("Game") },
+                    keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words)
                 )
                 DropdownSelector(label = "Game Type", options = gameTypes, selectedOption = gameType, onOptionSelected = { gameType = it })
                 if (type == "Cash") {
@@ -350,13 +350,14 @@ fun AddSessionDialog(
                     if (selectedCasino.isNotBlank()) {
                         onConfirm(sessionName, selectedCasino, type, game, gameType, stakes, antes)
                     }
-                }
+                },
+                enabled = selectedCasino.isNotBlank()
             ) {
-                Text("Confirm")
+                Text("Create")
             }
         },
         dismissButton = {
-            Button(onClick = onDismiss) {
+            TextButton(onClick = onDismiss) {
                 Text("Cancel")
             }
         }
@@ -381,7 +382,7 @@ fun ConfirmDeleteDialog(
             }
         },
         dismissButton = {
-            Button(onClick = onDismiss) {
+            TextButton(onClick = onDismiss) {
                 Text("Cancel")
             }
         }

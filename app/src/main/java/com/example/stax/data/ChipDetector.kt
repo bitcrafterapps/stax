@@ -2,13 +2,14 @@ package com.example.stax.data
 
 import android.content.Context
 import android.graphics.Bitmap
-import android.os.SystemClock
-import org.tensorflow.lite.support.image.ImageProcessor
-import org.tensorflow.lite.support.image.TensorImage
-import org.tensorflow.lite.support.image.ops.Rot90Op
-import org.tensorflow.lite.task.core.BaseOptions
-import org.tensorflow.lite.task.vision.detector.Detection
-import org.tensorflow.lite.task.vision.detector.ObjectDetector
+import com.google.mediapipe.framework.image.BitmapImageBuilder
+import com.google.mediapipe.tasks.components.containers.Category
+import com.google.mediapipe.tasks.components.containers.Detection
+import com.google.mediapipe.tasks.core.BaseOptions
+import com.google.mediapipe.tasks.core.Delegate
+import com.google.mediapipe.tasks.vision.core.ImageProcessingOptions
+import com.google.mediapipe.tasks.vision.core.RunningMode
+import com.google.mediapipe.tasks.vision.objectdetector.ObjectDetector
 
 class ChipDetector(
     val context: Context,
@@ -22,17 +23,30 @@ class ChipDetector(
         setupObjectDetector()
     }
 
-    private fun setupObjectDetector() {
-        val optionsBuilder = ObjectDetector.ObjectDetectorOptions.builder()
-            .setScoreThreshold(0.0f)
+    private fun buildOptions(delegate: Delegate?): ObjectDetector.ObjectDetectorOptions {
+        val baseBuilder = BaseOptions.builder().setModelAssetPath(modelPath)
+        if (delegate != null) {
+            baseBuilder.setDelegate(delegate)
+        }
+        val baseOptions = baseBuilder.build()
+        return ObjectDetector.ObjectDetectorOptions.builder()
+            .setBaseOptions(baseOptions)
+            .setRunningMode(RunningMode.IMAGE)
             .setMaxResults(5)
-        val baseOptionsBuilder = BaseOptions.builder().useNnapi()
-        optionsBuilder.setBaseOptions(baseOptionsBuilder.build())
+            .setScoreThreshold(0f)
+            .build()
+    }
 
-        try {
-            objectDetector = ObjectDetector.createFromFileAndOptions(context, modelPath, optionsBuilder.build())
-        } catch (e: Exception) {
-            listener.onError(e.message ?: "Unknown error setting up chip detector")
+    private fun setupObjectDetector() {
+        objectDetector = try {
+            ObjectDetector.createFromOptions(context, buildOptions(Delegate.NPU))
+        } catch (_: Exception) {
+            try {
+                ObjectDetector.createFromOptions(context, buildOptions(null))
+            } catch (e: Exception) {
+                listener.onError(e.message ?: "Unknown error setting up chip detector")
+                null
+            }
         }
     }
 
@@ -40,35 +54,43 @@ class ChipDetector(
         if (objectDetector == null) {
             setupObjectDetector()
         }
+        val detector = objectDetector ?: return
 
-        val imageProcessor = ImageProcessor.Builder()
-            .add(Rot90Op(-imageRotation / 90))
-            .build()
-
-        val tensorImage = imageProcessor.process(TensorImage.fromBitmap(image))
-
-        val allResults = objectDetector?.detect(tensorImage)
-        val maxScore = allResults?.maxOfOrNull { it.categories.firstOrNull()?.score ?: 0f }
-
-        val filteredResults = allResults?.filter {
-            (it.categories.firstOrNull()?.score ?: 0f) >= displayThreshold
+        BitmapImageBuilder(image).build().use { mpImage ->
+            val opts = ImageProcessingOptions.builder()
+                .setRotationDegrees(imageRotation)
+                .build()
+            val result = detector.detect(mpImage, opts)
+            val allResults = result.detections()
+            val maxScore = allResults.maxOfOrNull { d ->
+                d.categories().firstOrNull()?.score() ?: 0f
+            }
+            val filtered = allResults.filter { d ->
+                (d.categories().firstOrNull()?.score() ?: 0f) >= displayThreshold
+            }
+            listener.onResults(
+                filtered.map { it.toChipDetection() },
+                mpImage.height,
+                mpImage.width,
+                if (filtered.isEmpty()) maxScore else null
+            )
         }
+    }
 
-        listener.onResults(
-            filteredResults,
-            tensorImage.height,
-            tensorImage.width,
-            if (filteredResults.isNullOrEmpty()) maxScore else null
-        )
+    private fun Detection.toChipDetection(): ChipDetection {
+        val cats = categories().map { c: Category ->
+            ChipCategory(label = c.categoryName(), score = c.score())
+        }
+        return ChipDetection(boundingBox = boundingBox(), categories = cats)
     }
 
     interface DetectorListener {
         fun onError(error: String)
         fun onResults(
-            results: List<Detection>?,
+            results: List<ChipDetection>?,
             imageHeight: Int,
             imageWidth: Int,
             maxScoreBelowThreshold: Float?
         )
     }
-} 
+}

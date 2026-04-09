@@ -45,9 +45,28 @@ class OpenAiService(private val apiKey: String) {
     }
 
     private fun createRequestBody(base64Image: String): OpenAiRequest {
-        val prompt = "You are an expert poker player. Count the number of poker chips by color in the image and calculate the total dollar value using the following denominations:" +
-"Red = $5,Green = $25,Blue = $50,Black = $100,Purple = $500,Yellow = $1000,Maroon = $5000" +
-"Return only the total value as a number (e.g., 1250). Do not include any explanation or chip count."
+        val prompt = """
+    You are an expert WSOP tournament player and visual analyst. Using this image, calculate the total value of the poker chips based on the visible stacks.
+    Stacks that are not full should calculate each chips 
+    Each full stack contains 20 chips. Use the following chip values and full stack totals:
+
+    - Black chip = $100 → Full stack = $2,000
+    - Pink chip = $500 → Full stack = $10,000
+    - Yellow chip = $1,000 → Full stack = $20,000
+    - Red chip = $5,000 → Full stack = $100,000
+    - Green chip = $25,000 → Full stack = $500,000
+    - Light Pink chip = $100,000 → Full stack = $2,000,000
+    - Light Green chip = $500,000 → Full stack = $5,000,000
+    - Dark Grey chip = $1,000,000 → Full stack = $20,000,000
+
+    Instructions:
+    - Count the number of full stacks for each chip color. Denominations are list on center top of chip below WSOP
+    - If a stack is not full, estimate the chip count using the visible height, alignment, and spacing. Assume standard poker chip thickness.
+    - Only include chips that are clearly visible and identifiable by color.
+    - Do not guess if the color is ambiguous or obscured.
+
+    Return only the total value of all chips as a currency do not provide explanation just return the value. Example: $3,500,000
+""".trimIndent()
 
         val content = listOf(
             Content(type = "text", text = prompt),

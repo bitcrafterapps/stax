@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.example.stax.data.ChipConfig
 import com.example.stax.data.ChipConfigRepository
+import com.example.stax.ui.theme.StaxHeaderGradient
 import com.github.skydoves.colorpicker.compose.BrightnessSlider
 import com.github.skydoves.colorpicker.compose.HsvColorPicker
 import com.github.skydoves.colorpicker.compose.rememberColorPickerController
@@ -41,17 +42,28 @@ fun ChipConfigurationScreen(
     var expandedCasino by remember { mutableStateOf(false) }
     var type by remember { mutableStateOf("Cash") }
     var showChipConfigDialog by remember { mutableStateOf(false) }
+    var chipConfigVersion by remember { mutableStateOf(0) }
+
+    val casinoName = selectedCasino.ifBlank { "Default" }
+    val chipConfigs = remember(casinoName, type, chipConfigVersion) {
+        repository.loadChipConfigs(casinoName, type)
+    }
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("Chip Configuration") },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-                    }
-                }
-            )
+            Box(modifier = Modifier.background(StaxHeaderGradient)) {
+                TopAppBar(
+                    title = { Text("Chip Configuration") },
+                    navigationIcon = {
+                        IconButton(onClick = onNavigateBack) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = Color.Transparent
+                    )
+                )
+            }
         }
     ) { paddingValues ->
         Column(
@@ -123,39 +135,119 @@ fun ChipConfigurationScreen(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Button(
+                FilterChip(
+                    selected = type == "Cash",
                     onClick = { type = "Cash" },
-                    modifier = Modifier.weight(1f),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = if (type == "Cash") MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant
-                    )
-                ) { Text("Cash") }
-                Button(
+                    label = { Text("Cash") },
+                    modifier = Modifier.weight(1f)
+                )
+                FilterChip(
+                    selected = type == "Tourney",
                     onClick = { type = "Tourney" },
-                    modifier = Modifier.weight(1f),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = if (type == "Tourney") MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant
-                    )
-                ) { Text("Tourney") }
-                IconButton(onClick = { showChipConfigDialog = true }) {
-                    Icon(Icons.Default.Edit, contentDescription = "Edit Chip Values")
-                }
+                    label = { Text("Tourney") },
+                    modifier = Modifier.weight(1f)
+                )
+            }
+
+            ChipGrid(chipConfigs)
+
+            Button(
+                onClick = { showChipConfigDialog = true },
+                modifier = Modifier.fillMaxWidth(),
+                shape = MaterialTheme.shapes.medium
+            ) {
+                Icon(Icons.Default.Edit, contentDescription = null, modifier = Modifier.size(18.dp))
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Edit Chips")
             }
         }
     }
 
     if (showChipConfigDialog) {
-        val casinoName = selectedCasino ?: "Default"
         ChipConfigDialog(
             casinoName = casinoName,
             gameType = type,
-            initialConfigs = repository.loadChipConfigs(casinoName, type),
+            initialConfigs = chipConfigs,
             onDismiss = { showChipConfigDialog = false },
             onSave = { updatedConfigs ->
                 repository.saveChipConfigs(casinoName, type, updatedConfigs)
+                chipConfigVersion++
                 showChipConfigDialog = false
             }
         )
+    }
+}
+
+@Composable
+private fun ChipGrid(chipConfigs: List<ChipConfig>) {
+    val columns = 4
+    val rows = chipConfigs.chunked(columns)
+
+    Card(
+        shape = MaterialTheme.shapes.large,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.85f)
+        ),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            rows.forEach { rowChips ->
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    rowChips.forEach { chip ->
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier.width(72.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(48.dp)
+                                    .clip(CircleShape)
+                                    .background(chip.color),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                val textColor = if (isColorDark(chip.color)) Color.White else Color.Black
+                                Text(
+                                    text = "$",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = textColor.copy(alpha = 0.8f)
+                                )
+                            }
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = formatChipValue(chip.value),
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.onSurface,
+                                textAlign = TextAlign.Center,
+                                maxLines = 1
+                            )
+                        }
+                    }
+                    repeat(columns - rowChips.size) {
+                        Spacer(modifier = Modifier.width(72.dp))
+                    }
+                }
+            }
+        }
+    }
+}
+
+private fun isColorDark(color: Color): Boolean {
+    val luminance = 0.299 * color.red + 0.587 * color.green + 0.114 * color.blue
+    return luminance < 0.5
+}
+
+private fun formatChipValue(value: String): String {
+    val num = value.toLongOrNull() ?: return value
+    return when {
+        num >= 1_000_000 -> "${num / 1_000_000}M"
+        num >= 1_000 -> "${num / 1_000}K"
+        else -> "$$num"
     }
 }
 

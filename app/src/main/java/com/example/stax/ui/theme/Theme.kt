@@ -1,8 +1,6 @@
 package com.example.stax.ui.theme
 
-import android.app.Activity
 import androidx.compose.foundation.background
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
@@ -13,54 +11,62 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 
-private val DarkColorScheme = darkColorScheme(
-    primary = Purple600,
-    secondary = PurpleGrey80,
-    tertiary = Pink80,
+private val StaxDarkScheme = darkColorScheme(
+    primary = StaxPrimary,
+    onPrimary = StaxOnPrimary,
+    primaryContainer = StaxPrimaryDim.copy(alpha = 0.35f),
+    onPrimaryContainer = StaxOnPrimary,
+    secondary = StaxSurfaceHigh,
+    onSecondary = StaxOnSurface,
+    secondaryContainer = StaxSurfaceHigh,
+    onSecondaryContainer = StaxOnSurfaceVariant,
+    tertiary = StaxTertiary,
+    onTertiary = StaxGraphite,
     background = Color.Transparent,
-    surface = Slate900,
-    onPrimary = Color.White,
-    onSecondary = Color.White,
-    onTertiary = Color.White,
-    onBackground = Color.White,
-    onSurface = Color.White
+    onBackground = StaxOnBackground,
+    surface = StaxSurface,
+    onSurface = StaxOnSurface,
+    surfaceVariant = StaxSurfaceHigh,
+    onSurfaceVariant = StaxOnSurfaceVariant,
+    surfaceContainerLowest = StaxGraphite,
+    surfaceContainerLow = StaxGraphiteElevated,
+    surfaceContainer = StaxSurface,
+    surfaceContainerHigh = StaxSurfaceHigh,
+    surfaceContainerHighest = Color(0xFF2E2E36),
+    outline = StaxOutline,
+    outlineVariant = StaxOutlineMuted,
+    error = StaxLoss,
+    onError = Color.White
 )
 
-private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
-    secondary = PurpleGrey40,
-    tertiary = Pink40
-
-    /* Other default colors to override
-    background = Color(0xFFFFFBFE),
-    surface = Color(0xFFFFFBFE),
+private val StaxLightScheme = lightColorScheme(
+    primary = StaxPrimaryDim,
     onPrimary = Color.White,
-    onSecondary = Color.White,
-    onTertiary = Color.White,
-    onBackground = Color(0xFF1C1B1F),
-    onSurface = Color(0xFF1C1B1F),
-    */
+    background = Color.Transparent,
+    onBackground = Color(0xFF1C1C1E),
+    surface = Color.White,
+    onSurface = Color(0xFF1C1C1E),
+    surfaceVariant = Color(0xFFE5E5EA),
+    onSurfaceVariant = Color(0xFF636366),
+    outline = Color(0xFFC7C7CC),
+    error = StaxLoss,
+    onError = Color.White
 )
 
 @Composable
 fun StaxTheme(
-    darkTheme: Boolean = true, // Default to dark theme
+    darkTheme: Boolean = true,
     content: @Composable () -> Unit
 ) {
-    val colorScheme = if (darkTheme) {
-        DarkColorScheme
-    } else {
-        LightColorScheme
-    }
+    val colorScheme = if (darkTheme) StaxDarkScheme else StaxLightScheme
 
     MaterialTheme(
         colorScheme = colorScheme,
-        typography = Typography
+        typography = Typography,
+        shapes = StaxShapes
     ) {
         Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(PurpleGradient)
+            modifier = Modifier.fillMaxSize()
         ) {
             Surface(
                 modifier = Modifier.fillMaxSize(),

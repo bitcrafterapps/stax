@@ -18,7 +18,6 @@ ktor = "2.3.11"
 lifecycleViewmodelCompose = "2.8.0"
 material3 = "1.2.1"
 ksp = "2.0.0-1.0.21"
-tensorflow-lite-task-vision = "0.4.4"
 accompanist-permissions = "0.32.0"
 colorpicker-compose = "1.0.0"
 
@@ -46,7 +45,6 @@ ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
 ktor-client-cio = { module = "io.ktor:ktor-client-cio", version.ref = "ktor" }
 ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor" }
 ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
-tensorflow-lite-task-vision = { module = "org.tensorflow:tensorflow-lite-task-vision", version.ref = "tensorflow-lite-task-vision" }
 accompanist-permissions = { module = "com.google.accompanist:accompanist-permissions", version.ref = "accompanist-permissions" }
 colorpicker-compose = { module = "com.github.skydoves:colorpicker-compose", version.ref = "colorpicker-compose" }
 

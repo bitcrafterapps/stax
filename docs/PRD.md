@@ -1,14 +1,14 @@
-# Chip Porn - Product Requirements Document (PRD)
+# Stax - Product Requirements Document (PRD)
 
 ## 1. Overview
 
-Chip Porn is a mobile application designed for poker enthusiasts to capture, organize, and browse photos of their poker chip stacks. The app provides a "photo gallery" experience, allowing users to create sessions for different poker games and locations, add photos to those sessions, and view them in a gallery format.
+Stax is a mobile application designed for poker enthusiasts to capture, organize, and browse photos of their poker chip stacks. The app provides a "photo gallery" experience, allowing users to create sessions for different poker games and locations, add photos to those sessions, and view them in a gallery format.
 
 ## 2. Core Features
 
 ### 2.1. Session Management
 
-The primary organizational unit in Chip Porn is the "Session." A session represents a specific poker game or event.
+The primary organizational unit in Stax is the "Session." A session represents a specific poker game or event.
 
 -   **Create New Session**:
     -   Users can create a new session from the main "Photos" screen by tapping the floating action button.
@@ -79,7 +79,7 @@ Each session has its own photo gallery.
 
 -   **Photos Screen (Dashboard)**:
     -   The main screen of the app.
-    -   Displays the "Chip Porn" title with the app logo.
+    -   Displays the "Stax" title with the app logo.
     -   Shows a grid of all created sessions.
 
 -   **Photo Gallery Screen**:
@@ -87,7 +87,7 @@ Each session has its own photo gallery.
     -   The top app bar shows the name of the current session.
 
 -   **About Screen**:
-    -   Displays the app's logo and the "Chip Porn" title.
+    -   Displays the app's logo and the "Stax" title.
     -   Includes the tagline "Poker Porn, No Shame."
     -   Shows the app version number (v.1.00.00).
 

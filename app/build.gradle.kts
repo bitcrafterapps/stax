@@ -23,7 +23,11 @@ android {
     }
 
     buildTypes {
+        debug {
+            isDebuggable = true
+        }
         release {
+            isDebuggable = false
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
@@ -73,15 +77,12 @@ dependencies {
     implementation("androidx.room:room-ktx:2.6.1")
     implementation("com.google.code.gson:gson:2.10.1")
 
-    // TensorFlow Lite for model inference
-    implementation("org.tensorflow:tensorflow-lite:2.13.0")
-    // TensorFlow Lite Support Library for easier data processing
-    implementation("org.tensorflow:tensorflow-lite-support:0.4.3")
-    // TensorFlow Lite Task Library for vision tasks
-    implementation("org.tensorflow:tensorflow-lite-task-vision:0.4.3")
+    // MediaPipe Tasks (16 KB page-size compatible native libs; replaces TensorFlow Lite Task Vision)
+    val mediapipeTasksVersion = "0.10.33"
+    implementation("com.google.mediapipe:tasks-vision:$mediapipeTasksVersion")
 
     // CameraX for robust camera functionality
-    val cameraxVersion = "1.3.1"
+    val cameraxVersion = "1.4.2"
     implementation("androidx.camera:camera-core:${cameraxVersion}")
     implementation("androidx.camera:camera-camera2:${cameraxVersion}")
     implementation("androidx.camera:camera-lifecycle:${cameraxVersion}")
@@ -95,6 +96,9 @@ dependencies {
     implementation(libs.ktor.serialization.kotlinx.json)
 
     implementation(libs.colorpicker.compose)
+
+    // Google Play Services Location
+    implementation("com.google.android.gms:play-services-location:21.3.0")
 
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.2.1")
