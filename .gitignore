@@ -1,15 +1,28 @@
+# ── Gradle / Android ────────────────────────────────────────────
 *.iml
 .gradle
+android/local.properties
+android/.gradle
+android/build
+android/app/build
+android/captures
+android/.externalNativeBuild
+android/.cxx
+
+# Legacy root patterns (kept for safety)
 /local.properties
+/build
+/captures
+.externalNativeBuild
+.cxx
+
+# ── IDE ──────────────────────────────────────────────────────────
 /.idea/caches
 /.idea/libraries
 /.idea/modules.xml
 /.idea/workspace.xml
 /.idea/navEditor.xml
 /.idea/assetWizardSettings.xml
+
+# ── OS ───────────────────────────────────────────────────────────
 .DS_Store
-/build
-/captures
-.externalNativeBuild
-.cxx
-local.properties
