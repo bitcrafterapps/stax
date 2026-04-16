@@ -26,7 +26,7 @@ class CardRoomRepository(private val context: Context) {
         context.getSharedPreferences("stax_cardrooms", Context.MODE_PRIVATE)
     }
 
-    private val allRooms: List<CardRoom> by lazy {
+    val allRooms: List<CardRoom> by lazy {
         val json = context.assets.open("cardrooms.json").bufferedReader().use { it.readText() }
         val type = object : TypeToken<List<CardRoom>>() {}.type
         val raw: List<CardRoom> = Gson().fromJson(json, type)
@@ -42,9 +42,9 @@ class CardRoomRepository(private val context: Context) {
         return if (userLat != null && userLng != null) {
             rooms.map { room ->
                 CardRoomWithDistance(room, haversineDistanceMiles(userLat, userLng, room.latitude, room.longitude))
-            }.sortedBy { it.distanceMiles }
+            }.sortedBy { it.distanceMiles ?: Double.MAX_VALUE }
         } else {
-            rooms.sortedBy { it.city }.map { CardRoomWithDistance(it, 0.0) }
+            rooms.sortedBy { it.city }.map { CardRoomWithDistance(it, null) }
         }
     }
 
@@ -56,7 +56,7 @@ class CardRoomRepository(private val context: Context) {
         allRooms.mapNotNull { room ->
             val dist = haversineDistanceMiles(latitude, longitude, room.latitude, room.longitude)
             if (dist <= radiusMiles) CardRoomWithDistance(room, dist) else null
-        }.sortedBy { it.distanceMiles }
+        }.sortedBy { it.distanceMiles ?: Double.MAX_VALUE }
 
     val availableStates: List<String> by lazy {
         allRooms.map { it.state }.distinct().sorted()
@@ -149,12 +149,12 @@ class CardRoomRepository(private val context: Context) {
                     in favorites -> 1
                     else -> 2
                 }
-            }.thenBy { it.distanceMiles })
+            }.thenBy { it.distanceMiles ?: Double.MAX_VALUE })
         }
     }
 }
 
 data class CardRoomWithDistance(
     val room: CardRoom,
-    val distanceMiles: Double
+    val distanceMiles: Double?
 )

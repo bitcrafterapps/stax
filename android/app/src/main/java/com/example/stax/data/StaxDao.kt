@@ -51,4 +51,16 @@ interface StaxDao {
 
     @Query("DELETE FROM sessions WHERE id = :sessionId")
     suspend fun deleteSession(sessionId: Long)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertHand(hand: Hand)
+
+    @Update
+    suspend fun updateHand(hand: Hand)
+
+    @Delete
+    suspend fun deleteHand(hand: Hand)
+
+    @Query("SELECT * FROM hands WHERE sessionId = :sessionId ORDER BY id DESC")
+    fun getHandsForSession(sessionId: Long): Flow<List<Hand>>
 } 

@@ -8,8 +8,11 @@
 
 /* Begin PBXBuildFile section */
 		04AC7D7412B5AE58E38D3ADE /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 437FA6D306C03D321243F7DC /* MainTabView.swift */; };
+		04AE1E0AFF6BBC1ACA472F3A /* HomeGame.swift in Sources */ = {isa = PBXBuildFile; fileRef = A479DC2F1F752CB5FF1548F4 /* HomeGame.swift */; };
 		08444FEEFF241CF00B2D63A0 /* CardRoom.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E1EE36FE067B28D528B6D8C /* CardRoom.swift */; };
 		098678A8DF769EE04AEE0DE3 /* RatingBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09A7E56DCCB23C82051716D2 /* RatingBar.swift */; };
+		0D510A23951DF09D3069CA8A /* CardRoomDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F53372AC7EDF473774ACFBD0 /* CardRoomDetailView.swift */; };
+		164F421EDBF3734DE88E559C /* HandRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4AEC9A89EC2B7C59D8D5A52 /* HandRepository.swift */; };
 		195FB2DE1163245E94AB89A8 /* PhotoGalleryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAC2FB9198F47082FB0A8B83 /* PhotoGalleryView.swift */; };
 		2144718EB8361450F3ACB698 /* FindView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3623E7CB9BE288E2841D211B /* FindView.swift */; };
 		2ED88C3F7A8E3D8E2EC7CFC6 /* ChipConfigRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D96F950A251AE684DFACEC7 /* ChipConfigRepository.swift */; };
@@ -17,14 +20,19 @@
 		49BF615C7B9D9927D5F0FA4C /* ScanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7ECF8D829203D24B757CA512 /* ScanView.swift */; };
 		4AD3C8A07B6304445BD11D6A /* SessionRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0585ADD715BCA3F9B299A91 /* SessionRepository.swift */; };
 		4C97B53C620D63450A03AB86 /* SessionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A89482B10E56F79E86CAC760 /* SessionsView.swift */; };
+		5314CA8D2E24901279438FB5 /* PhotoEditorSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4337FD5F6B711BE0CF230856 /* PhotoEditorSheet.swift */; };
 		532A02A8F6CFC12EE932AE23 /* StaxComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD8EA5490C6B9844D1C64EBA /* StaxComponents.swift */; };
 		5A62BE7367C2B05ABBD2D43B /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 624300DF084ADFCDC8C89BC6 /* DashboardView.swift */; };
 		5B58B2E8F9AFDA4E949EEA06 /* PhotoRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 99AA353A1C457CD26548493B /* PhotoRepository.swift */; };
+		608F144DEF4DDDDEA4D0ECB5 /* HomeGameRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63AB94D33EE0323863AD9060 /* HomeGameRepository.swift */; };
 		731CACEB16E122AF22131CED /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 31A99ACEA347BC0249D08DAC /* Assets.xcassets */; };
 		7403D824FBD198D68C0CA2A5 /* CasinoFolder.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5B946E5392D1A41159BB555 /* CasinoFolder.swift */; };
 		788CD539924DD39C3ED81A79 /* OpenAIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAE903A88E5CF6041DBC35E1 /* OpenAIService.swift */; };
 		7DC7FE46B332D2D4379F4227 /* ChipConfigView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FC589DEA16E03B5C58C2E5C /* ChipConfigView.swift */; };
+		7E24C5B077B52D3EB261F8B8 /* Hand.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4731191330AC3BD404704D09 /* Hand.swift */; };
+		809E2BB29998C4B2458E6615 /* cardrooms.json in Resources */ = {isa = PBXBuildFile; fileRef = A0114DD8C33DEAC2AF55638C /* cardrooms.json */; };
 		897B64362AAF093EBF54D8A7 /* SessionDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2209CE447053E5F19A7E861 /* SessionDetailView.swift */; };
+		960D9E54FCA59E9046FE0EBB /* HandHistorySection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 431A7169D755A67887981FD8 /* HandHistorySection.swift */; };
 		96C5C64A7E49B8D90D9B2D8A /* CardRoomRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF71BACAEFD2AC7E7EBADDCF /* CardRoomRepository.swift */; };
 		9EF57EEFBE32AFB552F6D90B /* FindViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2957853F2B8934F5AA7B5B97 /* FindViewModel.swift */; };
 		A10EF2BB9D527AF5A6BE928F /* Session.swift in Sources */ = {isa = PBXBuildFile; fileRef = 408F69C8E82316DFCE8EE484 /* Session.swift */; };
@@ -35,6 +43,7 @@
 		C87421130AFB20A77802585B /* SessionsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40B2A3B7A094C3619C40C585 /* SessionsViewModel.swift */; };
 		CF6591C839DA01BD185B1FB2 /* FullScreenImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 274B56863B63626554A13309 /* FullScreenImageView.swift */; };
 		E4228D55F15B84445D5F7318 /* SplashView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B7166C913898BED6738CB8A /* SplashView.swift */; };
+		EEDDAA71BD3D63CAC66BF15E /* casinos.json in Resources */ = {isa = PBXBuildFile; fileRef = FD1C8592CAA521B9D85032AD /* casinos.json */; };
 		FFF687A335206457460CA913 /* AboutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE5C523F32C6A9EFA9486961 /* AboutView.swift */; };
 /* End PBXBuildFile section */
 
@@ -48,28 +57,37 @@
 		3623E7CB9BE288E2841D211B /* FindView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FindView.swift; sourceTree = "<group>"; };
 		408F69C8E82316DFCE8EE484 /* Session.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Session.swift; sourceTree = "<group>"; };
 		40B2A3B7A094C3619C40C585 /* SessionsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionsViewModel.swift; sourceTree = "<group>"; };
+		431A7169D755A67887981FD8 /* HandHistorySection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HandHistorySection.swift; sourceTree = "<group>"; };
+		4337FD5F6B711BE0CF230856 /* PhotoEditorSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoEditorSheet.swift; sourceTree = "<group>"; };
 		437FA6D306C03D321243F7DC /* MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
+		4731191330AC3BD404704D09 /* Hand.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Hand.swift; sourceTree = "<group>"; };
 		4AFE3FEFC44506605FDB262E /* CasinoSessionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CasinoSessionsView.swift; sourceTree = "<group>"; };
 		4B7166C913898BED6738CB8A /* SplashView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashView.swift; sourceTree = "<group>"; };
 		5E1EE36FE067B28D528B6D8C /* CardRoom.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardRoom.swift; sourceTree = "<group>"; };
 		5FC589DEA16E03B5C58C2E5C /* ChipConfigView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChipConfigView.swift; sourceTree = "<group>"; };
 		624300DF084ADFCDC8C89BC6 /* DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardView.swift; sourceTree = "<group>"; };
+		63AB94D33EE0323863AD9060 /* HomeGameRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeGameRepository.swift; sourceTree = "<group>"; };
 		7389754E77AB284D9A16F391 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		7ECF8D829203D24B757CA512 /* ScanView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanView.swift; sourceTree = "<group>"; };
 		82EEA430C221FC82F4B6DECB /* Photo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Photo.swift; sourceTree = "<group>"; };
 		865DE48E29F837058F25032C /* CasinoChipView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CasinoChipView.swift; sourceTree = "<group>"; };
 		956C9F7CA1DCAE451B92AB3E /* StaxApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StaxApp.swift; sourceTree = "<group>"; };
 		99AA353A1C457CD26548493B /* PhotoRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoRepository.swift; sourceTree = "<group>"; };
+		A0114DD8C33DEAC2AF55638C /* cardrooms.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = cardrooms.json; sourceTree = "<group>"; };
 		A0585ADD715BCA3F9B299A91 /* SessionRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionRepository.swift; sourceTree = "<group>"; };
+		A479DC2F1F752CB5FF1548F4 /* HomeGame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeGame.swift; sourceTree = "<group>"; };
 		A5AEA3EF5F6E3EB6D94D124B /* Stax.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Stax.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A89482B10E56F79E86CAC760 /* SessionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionsView.swift; sourceTree = "<group>"; };
 		AAC2FB9198F47082FB0A8B83 /* PhotoGalleryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoGalleryView.swift; sourceTree = "<group>"; };
 		AD8EA5490C6B9844D1C64EBA /* StaxComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StaxComponents.swift; sourceTree = "<group>"; };
 		AF71BACAEFD2AC7E7EBADDCF /* CardRoomRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardRoomRepository.swift; sourceTree = "<group>"; };
 		B2209CE447053E5F19A7E861 /* SessionDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionDetailView.swift; sourceTree = "<group>"; };
+		E4AEC9A89EC2B7C59D8D5A52 /* HandRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HandRepository.swift; sourceTree = "<group>"; };
 		EE5C523F32C6A9EFA9486961 /* AboutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutView.swift; sourceTree = "<group>"; };
+		F53372AC7EDF473774ACFBD0 /* CardRoomDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardRoomDetailView.swift; sourceTree = "<group>"; };
 		F5B946E5392D1A41159BB555 /* CasinoFolder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CasinoFolder.swift; sourceTree = "<group>"; };
 		FAE903A88E5CF6041DBC35E1 /* OpenAIService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenAIService.swift; sourceTree = "<group>"; };
+		FD1C8592CAA521B9D85032AD /* casinos.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = casinos.json; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -78,6 +96,8 @@
 			children = (
 				AF71BACAEFD2AC7E7EBADDCF /* CardRoomRepository.swift */,
 				2D96F950A251AE684DFACEC7 /* ChipConfigRepository.swift */,
+				E4AEC9A89EC2B7C59D8D5A52 /* HandRepository.swift */,
+				63AB94D33EE0323863AD9060 /* HomeGameRepository.swift */,
 				FAE903A88E5CF6041DBC35E1 /* OpenAIService.swift */,
 				99AA353A1C457CD26548493B /* PhotoRepository.swift */,
 				A0585ADD715BCA3F9B299A91 /* SessionRepository.swift */,
@@ -89,12 +109,15 @@
 			isa = PBXGroup;
 			children = (
 				EE5C523F32C6A9EFA9486961 /* AboutView.swift */,
+				F53372AC7EDF473774ACFBD0 /* CardRoomDetailView.swift */,
 				4AFE3FEFC44506605FDB262E /* CasinoSessionsView.swift */,
 				5FC589DEA16E03B5C58C2E5C /* ChipConfigView.swift */,
 				624300DF084ADFCDC8C89BC6 /* DashboardView.swift */,
 				3623E7CB9BE288E2841D211B /* FindView.swift */,
 				274B56863B63626554A13309 /* FullScreenImageView.swift */,
+				431A7169D755A67887981FD8 /* HandHistorySection.swift */,
 				437FA6D306C03D321243F7DC /* MainTabView.swift */,
+				4337FD5F6B711BE0CF230856 /* PhotoEditorSheet.swift */,
 				AAC2FB9198F47082FB0A8B83 /* PhotoGalleryView.swift */,
 				7ECF8D829203D24B757CA512 /* ScanView.swift */,
 				B2209CE447053E5F19A7E861 /* SessionDetailView.swift */,
@@ -116,6 +139,8 @@
 			isa = PBXGroup;
 			children = (
 				31A99ACEA347BC0249D08DAC /* Assets.xcassets */,
+				A0114DD8C33DEAC2AF55638C /* cardrooms.json */,
+				FD1C8592CAA521B9D85032AD /* casinos.json */,
 				7389754E77AB284D9A16F391 /* Info.plist */,
 				956C9F7CA1DCAE451B92AB3E /* StaxApp.swift */,
 				E954E24ADDAD5C5697844604 /* Components */,
@@ -142,6 +167,8 @@
 				5E1EE36FE067B28D528B6D8C /* CardRoom.swift */,
 				F5B946E5392D1A41159BB555 /* CasinoFolder.swift */,
 				1FE2B9F2B120254A47B00942 /* ChipConfig.swift */,
+				4731191330AC3BD404704D09 /* Hand.swift */,
+				A479DC2F1F752CB5FF1548F4 /* HomeGame.swift */,
 				82EEA430C221FC82F4B6DECB /* Photo.swift */,
 				408F69C8E82316DFCE8EE484 /* Session.swift */,
 			);
@@ -226,6 +253,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				731CACEB16E122AF22131CED /* Assets.xcassets in Resources */,
+				809E2BB29998C4B2458E6615 /* cardrooms.json in Resources */,
+				EEDDAA71BD3D63CAC66BF15E /* casinos.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -238,6 +267,7 @@
 			files = (
 				FFF687A335206457460CA913 /* AboutView.swift in Sources */,
 				08444FEEFF241CF00B2D63A0 /* CardRoom.swift in Sources */,
+				0D510A23951DF09D3069CA8A /* CardRoomDetailView.swift in Sources */,
 				96C5C64A7E49B8D90D9B2D8A /* CardRoomRepository.swift in Sources */,
 				ADFB62AA136F00CE0187C2BB /* CasinoChipView.swift in Sources */,
 				7403D824FBD198D68C0CA2A5 /* CasinoFolder.swift in Sources */,
@@ -249,9 +279,15 @@
 				2144718EB8361450F3ACB698 /* FindView.swift in Sources */,
 				9EF57EEFBE32AFB552F6D90B /* FindViewModel.swift in Sources */,
 				CF6591C839DA01BD185B1FB2 /* FullScreenImageView.swift in Sources */,
+				7E24C5B077B52D3EB261F8B8 /* Hand.swift in Sources */,
+				960D9E54FCA59E9046FE0EBB /* HandHistorySection.swift in Sources */,
+				164F421EDBF3734DE88E559C /* HandRepository.swift in Sources */,
+				04AE1E0AFF6BBC1ACA472F3A /* HomeGame.swift in Sources */,
+				608F144DEF4DDDDEA4D0ECB5 /* HomeGameRepository.swift in Sources */,
 				04AC7D7412B5AE58E38D3ADE /* MainTabView.swift in Sources */,
 				788CD539924DD39C3ED81A79 /* OpenAIService.swift in Sources */,
 				B20A4C3141682A01CEC3CAED /* Photo.swift in Sources */,
+				5314CA8D2E24901279438FB5 /* PhotoEditorSheet.swift in Sources */,
 				195FB2DE1163245E94AB89A8 /* PhotoGalleryView.swift in Sources */,
 				5B58B2E8F9AFDA4E949EEA06 /* PhotoRepository.swift in Sources */,
 				098678A8DF769EE04AEE0DE3 /* RatingBar.swift in Sources */,

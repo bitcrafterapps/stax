@@ -1,85 +1,112 @@
 import SwiftUI
 
 struct FullScreenImageView: View {
-    let photos: [Photo]
     let initialPhoto: Photo
-    let photoRepo: PhotoRepository
+    @ObservedObject var photoRepo: PhotoRepository
 
     @Environment(\.dismiss) private var dismiss
     @State private var currentIndex: Int
     @State private var showShare = false
     @State private var shareImage: UIImage? = nil
+    @State private var showEditor = false
 
     init(photos: [Photo], initialPhoto: Photo, photoRepo: PhotoRepository) {
-        self.photos = photos
         self.initialPhoto = initialPhoto
-        self.photoRepo = photoRepo
+        _photoRepo = ObservedObject(wrappedValue: photoRepo)
         _currentIndex = State(initialValue: photos.firstIndex(where: { $0.id == initialPhoto.id }) ?? 0)
     }
 
-    private var currentPhoto: Photo {
-        guard currentIndex < photos.count else { return photos[0] }
-        return photos[currentIndex]
+    private var livePhotos: [Photo] {
+        photoRepo.photos(for: initialPhoto.sessionId)
+    }
+
+    private var currentPhoto: Photo? {
+        guard !livePhotos.isEmpty else { return nil }
+        let safeIndex = min(max(currentIndex, 0), livePhotos.count - 1)
+        return livePhotos[safeIndex]
     }
 
     var body: some View {
-        ZStack {
-            Color.black.ignoresSafeArea()
+        Group {
+            if let currentPhoto {
+                ZStack {
+                    Color.black.ignoresSafeArea()
 
-            // Swipeable pager
-            TabView(selection: $currentIndex) {
-                ForEach(Array(photos.enumerated()), id: \.element.id) { idx, photo in
-                    ZoomableImageView(url: photoRepo.fullURL(for: photo))
-                        .tag(idx)
-                }
-            }
-            .tabViewStyle(.page(indexDisplayMode: .never))
-
-            // Top bar
-            VStack {
-                HStack {
-                    Button { dismiss() } label: {
-                        Image(systemName: "xmark.circle.fill")
-                            .font(.title2)
-                            .foregroundStyle(.white, .black.opacity(0.5))
-                    }
-                    Spacer()
-                    Text("\(currentIndex + 1) / \(photos.count)")
-                        .font(.subheadline)
-                        .foregroundColor(.white.opacity(0.85))
-                    Spacer()
-                    Button {
-                        if let img = UIImage(contentsOfFile: photoRepo.fullPath(for: currentPhoto)) {
-                            shareImage = img
-                            showShare = true
+                    // Swipeable pager
+                    TabView(selection: $currentIndex) {
+                        ForEach(Array(livePhotos.enumerated()), id: \.element.id) { idx, photo in
+                            ZoomableImageView(
+                                url: photoRepo.fullURL(for: photo),
+                                refreshVersion: photoRepo.editVersion(for: photo.id)
+                            )
+                            .id("\(photo.id.uuidString)-\(photoRepo.editVersion(for: photo.id))")
+                                .tag(idx)
                         }
-                    } label: {
-                        Image(systemName: "square.and.arrow.up")
-                            .font(.title3)
-                            .foregroundColor(.white)
+                    }
+                    .tabViewStyle(.page(indexDisplayMode: .never))
+
+                    // Top bar
+                    VStack {
+                        HStack {
+                            Button { dismiss() } label: {
+                                Image(systemName: "xmark.circle.fill")
+                                    .font(.title2)
+                                    .foregroundStyle(.white, .black.opacity(0.5))
+                            }
+                            Spacer()
+                            Text("\(min(currentIndex + 1, max(livePhotos.count, 1))) / \(livePhotos.count)")
+                                .font(.subheadline)
+                                .foregroundColor(.white.opacity(0.85))
+                            Spacer()
+                            Button { showEditor = true } label: {
+                                Image(systemName: "slider.horizontal.3")
+                                    .font(.title3)
+                                    .foregroundColor(.white)
+                            }
+                            Button {
+                                if let img = UIImage(contentsOfFile: photoRepo.fullPath(for: currentPhoto)) {
+                                    shareImage = img
+                                    showShare = true
+                                }
+                            } label: {
+                                Image(systemName: "square.and.arrow.up")
+                                    .font(.title3)
+                                    .foregroundColor(.white)
+                            }
+                        }
+                        .padding(.horizontal, 20)
+                        .padding(.top, 60)
+                        Spacer()
+                    }
+
+                    // Bottom: rating bar
+                    VStack {
+                        Spacer()
+                        VStack(spacing: 8) {
+                            if !photoRepo.caption(for: currentPhoto.id).isEmpty {
+                                Text(photoRepo.caption(for: currentPhoto.id))
+                                    .font(.subheadline)
+                                    .foregroundColor(.white.opacity(0.9))
+                                    .multilineTextAlignment(.center)
+                            }
+                            Text("Rate this photo")
+                                .font(.caption)
+                                .foregroundColor(.white.opacity(0.65))
+                            RatingBar(rating: Binding(
+                                get: { currentPhoto.rating },
+                                set: { photoRepo.updateRating(photoId: currentPhoto.id, rating: $0) }
+                            ))
+                        }
+                        .padding(.vertical, 20)
+                        .padding(.horizontal, 32)
+                        .background(.ultraThinMaterial)
+                        .cornerRadius(20, corners: [.topLeft, .topRight])
                     }
                 }
-                .padding(.horizontal, 20)
-                .padding(.top, 60)
-                Spacer()
-            }
-
-            // Bottom: rating bar
-            VStack {
-                Spacer()
-                VStack(spacing: 8) {
-                    Text("Rate this photo")
-                        .font(.caption)
-                        .foregroundColor(.white.opacity(0.65))
-                    RatingBar(rating: Binding(
-                        get: { currentPhoto.rating },
-                        set: { photoRepo.updateRating(photoId: currentPhoto.id, rating: $0) }
-                    ))
-                }
-                .padding(.vertical, 20)
-                .padding(.horizontal, 32)
-                .background(.ultraThinMaterial)
-                .cornerRadius(20, corners: [.topLeft, .topRight])
+            } else {
+                Color.black
+                    .ignoresSafeArea()
+                    .onAppear { dismiss() }
             }
         }
         .sheet(isPresented: $showShare) {
@@ -87,8 +114,24 @@ struct FullScreenImageView: View {
                 ShareSheet(items: [img])
             }
         }
+        .sheet(isPresented: $showEditor) {
+            if let currentPhoto,
+               let image = UIImage(contentsOfFile: photoRepo.fullPath(for: currentPhoto)) {
+                PhotoEditorSheet(
+                    photo: currentPhoto,
+                    image: image,
+                    initialCaption: photoRepo.caption(for: currentPhoto.id),
+                    photoRepo: photoRepo
+                )
+            }
+        }
         .preferredColorScheme(.dark)
         .statusBarHidden()
+        .onChange(of: livePhotos.count) { _, newCount in
+            if newCount > 0 {
+                currentIndex = min(currentIndex, newCount - 1)
+            }
+        }
     }
 }
 
@@ -96,11 +139,15 @@ struct FullScreenImageView: View {
 
 struct ZoomableImageView: View {
     let url: URL
+    let refreshVersion: Int
     @State private var scale: CGFloat = 1.0
     @State private var offset: CGSize = .zero
     @State private var lastOffset: CGSize = .zero
 
-    private var image: UIImage? { UIImage(contentsOfFile: url.path) }
+    private var image: UIImage? {
+        _ = refreshVersion
+        return UIImage(contentsOfFile: url.path)
+    }
 
     var body: some View {
         Group {
@@ -119,15 +166,16 @@ struct ZoomableImageView: View {
                                 }
                             }
                     )
-                    .gesture(
+                    // simultaneousGesture lets TabView's page-swipe gesture also fire
+                    // so at scale == 1 the pager handles horizontal swipes normally
+                    .simultaneousGesture(
                         DragGesture()
                             .onChanged { value in
-                                if scale > 1 {
-                                    offset = CGSize(
-                                        width: lastOffset.width + value.translation.width,
-                                        height: lastOffset.height + value.translation.height
-                                    )
-                                }
+                                guard scale > 1 else { return }
+                                offset = CGSize(
+                                    width: lastOffset.width + value.translation.width,
+                                    height: lastOffset.height + value.translation.height
+                                )
                             }
                             .onEnded { _ in lastOffset = offset }
                     )

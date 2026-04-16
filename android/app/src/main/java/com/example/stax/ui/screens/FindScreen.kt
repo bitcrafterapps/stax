@@ -2,6 +2,8 @@ package com.example.stax.ui.screens
 
 import android.annotation.SuppressLint
 import android.content.Context
+import androidx.compose.foundation.border
+import androidx.compose.ui.graphics.Color
 import android.content.Intent
 import android.location.Location
 import android.net.Uri
@@ -37,6 +39,7 @@ import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -94,9 +97,11 @@ private sealed class FindResult {
     data class FavoritesResult(val items: List<CardRoomWithDistance>) : FindResult()
 }
 
+private val HomePurple = Color(0xFF7B1FA2)
+
 @OptIn(ExperimentalPermissionsApi::class, ExperimentalMaterial3Api::class, FlowPreview::class)
 @Composable
-fun FindScreen() {
+fun FindScreen(onCardRoomClick: (CardRoomWithDistance) -> Unit = {}) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val repo = remember { CardRoomRepository(context) }
@@ -111,6 +116,7 @@ fun FindScreen() {
 
     var result by remember { mutableStateOf<FindResult?>(null) }
     var hasSearched by remember { mutableStateOf(false) }
+    var isLoading by remember { mutableStateOf(false) }
     var cachedLocation by remember { mutableStateOf<Location?>(null) }
     var locationFetched by remember { mutableStateOf(false) }
     var detectedState by remember { mutableStateOf<String?>(null) }
@@ -127,16 +133,19 @@ fun FindScreen() {
         CardRoomRepository.sortWithFavorites(items, favorites, homeCasino)
 
     fun searchNearbyWithCachedLocation(location: Location, radius: Float) {
+        isLoading = true
         scope.launch {
             val items = withContext(Dispatchers.Default) {
                 repo.searchNearby(location.latitude, location.longitude, radius.toDouble())
             }
             result = FindResult.NearbyResult(items)
             hasSearched = true
+            isLoading = false
         }
     }
 
     fun performStateSearch(state: String) {
+        isLoading = true
         scope.launch {
             val loc = cachedLocation
             val items = withContext(Dispatchers.Default) {
@@ -144,10 +153,12 @@ fun FindScreen() {
             }
             result = FindResult.StateResult(items, state)
             hasSearched = true
+            isLoading = false
         }
     }
 
     fun loadFavorites() {
+        isLoading = true
         scope.launch {
             val loc = cachedLocation
             val items = withContext(Dispatchers.Default) {
@@ -156,11 +167,13 @@ fun FindScreen() {
             }
             result = FindResult.FavoritesResult(items)
             hasSearched = true
+            isLoading = false
         }
     }
 
     LaunchedEffect(locationPermissions.allPermissionsGranted) {
         if (locationPermissions.allPermissionsGranted && !locationFetched) {
+            isLoading = true
             val location = getCurrentLocation(context)
             if (location != null) {
                 cachedLocation = location
@@ -179,6 +192,7 @@ fun FindScreen() {
                 result = FindResult.NearbyResult(items)
                 hasSearched = true
             }
+            isLoading = false
         }
     }
 
@@ -265,7 +279,29 @@ fun FindScreen() {
                     SearchMode.FAVORITES -> {}
                 }
 
-                if (hasSearched) {
+                if (isLoading) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 48.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            CircularProgressIndicator(
+                                color = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(40.dp)
+                            )
+                            Text(
+                                "Searching card rooms…",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                } else if (hasSearched) {
                     val displayItems = when (val r = result) {
                         is FindResult.NearbyResult -> sortedItems(r.items)
                         is FindResult.StateResult -> sortedItems(r.items)
@@ -324,6 +360,7 @@ fun FindScreen() {
                                         favorites = repo.getFavorites()
                                         if (searchMode == SearchMode.FAVORITES) loadFavorites()
                                     },
+                                    onCardClick = { onCardRoomClick(item) },
                                     context = context
                                 )
                             }
@@ -488,6 +525,7 @@ private fun CardRoomItem(
     isHomeCasino: Boolean,
     onToggleFavorite: () -> Unit,
     onToggleHome: () -> Unit,
+    onCardClick: () -> Unit = {},
     context: Context
 ) {
     val logoBitmap = remember(logo) {
@@ -502,7 +540,13 @@ private fun CardRoomItem(
     }
 
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        onClick = onCardClick,
+        modifier = Modifier
+            .fillMaxWidth()
+            .then(
+                if (isHomeCasino) Modifier.border(2.dp, HomePurple, RoundedCornerShape(16.dp))
+                else Modifier
+            ),
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
         colors = CardDefaults.cardColors(
@@ -522,8 +566,16 @@ private fun CardRoomItem(
                         .clip(RoundedCornerShape(8.dp)),
                     contentScale = ContentScale.Crop
                 )
-                Spacer(modifier = Modifier.width(12.dp))
+            } else {
+                Image(
+                    painter = painterResource(id = R.drawable.ic_stax_logo),
+                    contentDescription = "Stax logo",
+                    modifier = Modifier
+                        .size(36.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                )
             }
+            Spacer(modifier = Modifier.width(12.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(

@@ -2,6 +2,7 @@ package com.example.stax.ui.screens
 
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -11,9 +12,11 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.calculatePan
+import androidx.compose.foundation.gestures.calculateZoom
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.gestures.rememberTransformableState
-import androidx.compose.foundation.gestures.transformable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -32,6 +35,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -61,6 +65,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
+import coil.request.ImageRequest
 import coil.compose.rememberAsyncImagePainter
 import com.example.stax.R
 import com.example.stax.data.Photo
@@ -73,7 +78,10 @@ fun FullScreenImageViewer(
     photos: List<Photo>,
     initialPhotoIndex: Int,
     onNavigateUp: () -> Unit,
-    onRatingChanged: (Photo, Int) -> Unit
+    captionFor: (Photo) -> String,
+    editVersionFor: (Photo) -> Int,
+    onRatingChanged: (Photo, Int) -> Unit,
+    onSavePhotoEdits: (Photo, Bitmap, String) -> Unit
 ) {
     val context = LocalContext.current
     val pagerState = rememberPagerState(
@@ -85,6 +93,7 @@ fun FullScreenImageViewer(
     // Track zoom state so pager swiping can be disabled while zoomed in
     var isZoomed by remember { mutableStateOf(false) }
     var showSharePanel by remember { mutableStateOf(false) }
+    var editingPhoto by remember { mutableStateOf<Photo?>(null) }
 
     // Reset zoom flag when the page changes
     LaunchedEffect(pagerState.currentPage) {
@@ -111,20 +120,36 @@ fun FullScreenImageViewer(
             modifier = Modifier.fillMaxSize()
         ) { page ->
             val photo = photos[page]
+            val editVersion = editVersionFor(photo)
             var scale by remember { mutableFloatStateOf(1f) }
             var offset by remember { mutableStateOf(Offset.Zero) }
-
-            val transformState = rememberTransformableState { zoomChange, panChange, _ ->
-                val newScale = (scale * zoomChange).coerceIn(1f, 6f)
-                offset = if (newScale > 1f) offset + panChange else Offset.Zero
-                scale = newScale
-                isZoomed = scale > 1.05f
-            }
 
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .transformable(state = transformState)
+                    // Custom gesture: only consume events during pinch or when already zoomed.
+                    // Single-finger drag at scale 1 is NOT consumed, so the HorizontalPager
+                    // receives it and handles the left/right swipe.
+                    .pointerInput(Unit) {
+                        awaitEachGesture {
+                            awaitFirstDown(requireUnconsumed = false)
+                            do {
+                                val event = awaitPointerEvent()
+                                val zoomChange = event.calculateZoom()
+                                val panChange = event.calculatePan()
+                                val isMultiTouch = event.changes.count { it.pressed } > 1
+                                // Intercept only when pinching or already zoomed in
+                                if (isMultiTouch || scale > 1.05f) {
+                                    val newScale = (scale * zoomChange).coerceIn(1f, 6f)
+                                    offset = if (newScale > 1f) offset + panChange else Offset.Zero
+                                    scale = newScale
+                                    isZoomed = scale > 1.05f
+                                    event.changes.forEach { if (!it.isConsumed) it.consume() }
+                                }
+                                // Single-touch at scale 1 → don't consume → pager swipes the page
+                            } while (event.changes.any { it.pressed })
+                        }
+                    }
                     .pointerInput(Unit) {
                         detectTapGestures(
                             onDoubleTap = {
@@ -142,7 +167,13 @@ fun FullScreenImageViewer(
                 contentAlignment = Alignment.Center
             ) {
                 Image(
-                    painter = rememberAsyncImagePainter(model = File(photo.imagePath)),
+                    painter = rememberAsyncImagePainter(
+                        model = ImageRequest.Builder(context)
+                            .data(File(photo.imagePath))
+                            .memoryCacheKey("${photo.imagePath}:$editVersion")
+                            .diskCacheKey("${photo.imagePath}:$editVersion")
+                            .build()
+                    ),
                     contentDescription = "Full Screen Photo",
                     modifier = Modifier
                         .fillMaxSize()
@@ -171,6 +202,8 @@ fun FullScreenImageViewer(
                 )
                 .align(Alignment.TopCenter)
         )
+
+        val currentTopPhoto = photos.getOrNull(pagerState.currentPage)
 
         Row(
             modifier = Modifier
@@ -214,10 +247,18 @@ fun FullScreenImageViewer(
                     tint = Color.White
                 )
             }
+            IconButton(onClick = { currentTopPhoto?.let { editingPhoto = it } }) {
+                Icon(
+                    imageVector = Icons.Default.Edit,
+                    contentDescription = "Edit",
+                    tint = Color.White
+                )
+            }
         }
 
         if (pagerState.pageCount > 0) {
             val currentPhoto = photos[pagerState.currentPage]
+            val caption = captionFor(currentPhoto)
 
             // Bottom scrim
             Box(
@@ -313,6 +354,24 @@ fun FullScreenImageViewer(
                 }
             }
 
+            if (caption.isNotBlank() && !showSharePanel) {
+                Surface(
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .padding(start = 20.dp, end = 20.dp, bottom = 92.dp),
+                    color = Color.Black.copy(alpha = 0.45f),
+                    shape = RoundedCornerShape(16.dp)
+                ) {
+                    Text(
+                        text = caption,
+                        modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+                        color = Color.White.copy(alpha = 0.92f),
+                        style = MaterialTheme.typography.bodyMedium,
+                        textAlign = TextAlign.Center
+                    )
+                }
+            }
+
             // Rating bar — hide when share panel is open
             if (!showSharePanel) {
                 RatingBar(
@@ -325,6 +384,18 @@ fun FullScreenImageViewer(
                         .padding(bottom = 28.dp)
                 )
             }
+        }
+
+        editingPhoto?.let { photo ->
+            PhotoEditSheet(
+                imagePath = photo.imagePath,
+                initialCaption = captionFor(photo),
+                onDismiss = { editingPhoto = null },
+                onSave = { editedBitmap, caption ->
+                    onSavePhotoEdits(photo, editedBitmap, caption)
+                    editingPhoto = null
+                }
+            )
         }
 
     }

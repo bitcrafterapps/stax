@@ -77,20 +77,10 @@ struct StaxLogoImage: View {
     let size: CGFloat
 
     var body: some View {
-        if let img = UIImage(named: "StaxLogo") {
-            Image(uiImage: img)
-                .resizable()
-                .scaledToFit()
-                .frame(width: size, height: size)
-        } else {
-            ZStack {
-                Circle().fill(Color.staxPrimary.opacity(0.25))
-                Text("∞")
-                    .font(.system(size: size * 0.5, weight: .bold))
-                    .foregroundColor(.staxPrimary)
-            }
+        Image("StaxLogo")
+            .resizable()
+            .scaledToFit()
             .frame(width: size, height: size)
-        }
     }
 }
 

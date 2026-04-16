@@ -55,11 +55,18 @@ import com.example.stax.ui.screens.DashboardScreen
 import com.example.stax.ui.screens.FindScreen
 import com.example.stax.ui.screens.FullScreenImageViewer
 import com.example.stax.ui.screens.PhotoGalleryScreen
+import com.example.stax.ui.screens.ReportsScreen
+import com.example.stax.ui.screens.NutzGameScreen
 import com.example.stax.ui.screens.ScanScreen
 import com.example.stax.ui.screens.SessionDetailScreen
+import com.example.stax.ui.screens.CardRoomDetailScreen
 import com.example.stax.ui.screens.SessionsScreen
 import com.example.stax.ui.screens.SplashScreen
+import com.example.stax.data.CardRoomRepository
+import com.example.stax.data.CardRoomWithDistance
 import com.google.gson.Gson
+import java.net.URLDecoder
+import java.net.URLEncoder
 
 sealed class Screen(
     val route: String,
@@ -72,8 +79,11 @@ sealed class Screen(
     object Find : Screen("find", "Find", Icons.Default.NearMe)
     object Scan : Screen("scan", "Scan", Icons.Default.Camera)
     object About : Screen("about", "About", Icons.Default.Info)
-    object CasinoSessions : Screen("casino_sessions/{casinoName}") {
-        fun createRoute(casinoName: String) = "casino_sessions/$casinoName"
+    object Reports : Screen("reports", "Reports")
+    object NutzGame : Screen("nutz_game", "Nutz Game")
+    object CasinoSessions : Screen("casino_sessions/{casinoName}/{source}") {
+        fun createRoute(casinoName: String, source: String = "sessions") =
+            "casino_sessions/$casinoName/$source"
     }
     object ChipConfiguration : Screen("chip_configuration", "Chip Configuration")
 
@@ -91,6 +101,11 @@ sealed class Screen(
 
     object FullScreenImageViewer : Screen("fullscreen/{photoIndex}") {
         fun createRoute(photoIndex: Int) = "fullscreen/$photoIndex"
+    }
+
+    object CardRoomDetail : Screen("card_room_detail/{encodedAddress}") {
+        fun createRoute(address: String) =
+            "card_room_detail/${URLEncoder.encode(address, "UTF-8")}"
     }
 }
 
@@ -181,10 +196,12 @@ fun AppNavigation(photosJson: MutableState<String>) {
             val casinoData by viewModel.casinoData.collectAsState()
             AddSessionDialog(
                 casinoData = casinoData,
-                onConfirm = { name, casinoName, sessionType, game, gameType, stakes, antes ->
-                    viewModel.addSession(name, casinoName, sessionType, game, gameType, stakes, antes)
+                homeGames = viewModel.homeGames.collectAsState().value,
+                onConfirm = { name, casinoName, sessionType, game, gameType, stakes, antes, buyIn, cashOut ->
+                    viewModel.addSession(name, casinoName, sessionType, game, gameType, stakes, antes, buyIn, cashOut)
                     showAddSessionDialog = false
                 },
+                onSaveHomeGame = { name, city, state -> viewModel.saveHomeGame(name, city, state) },
                 onDismiss = { showAddSessionDialog = false }
             )
         }
@@ -215,16 +232,21 @@ fun AppNavigation(photosJson: MutableState<String>) {
                 )
                 val casinoFolders by viewModel.casinoFolders.collectAsState()
                 val casinoData by viewModel.casinoData.collectAsState()
+                val logoMap by viewModel.logoMap.collectAsState()
+                val homeGames by viewModel.homeGames.collectAsState()
 
                 DashboardScreen(
                     casinoFolders = casinoFolders,
                     onCasinoClick = { casinoName ->
-                        navController.navigate(Screen.CasinoSessions.createRoute(casinoName))
+                        navController.navigate(Screen.CasinoSessions.createRoute(casinoName, "photos"))
                     },
                     casinoData = casinoData,
-                    onAddSession = { name, casinoName, sessionType, game, gameType, stakes, antes ->
-                        viewModel.addSession(name, casinoName, sessionType, game, gameType, stakes, antes)
-                    }
+                    onAddSession = { name, casinoName, sessionType, game, gameType, stakes, antes, buyIn, cashOut ->
+                        viewModel.addSession(name, casinoName, sessionType, game, gameType, stakes, antes, buyIn, cashOut)
+                    },
+                    homeGames = homeGames,
+                    onSaveHomeGame = { name, city, state -> viewModel.saveHomeGame(name, city, state) },
+                    logoMap = logoMap
                 )
             }
             composable(Screen.Sessions.route) {
@@ -240,20 +262,61 @@ fun AppNavigation(photosJson: MutableState<String>) {
                     }
                 )
                 val sessions by viewModel.sessions.collectAsState()
-                val casinoData by viewModel.casinoData.collectAsState()
+                val sessionsLogoMap by viewModel.logoMap.collectAsState()
+                val homeGames by viewModel.homeGames.collectAsState()
                 SessionsScreen(
                     sessions = sessions,
                     onAddSession = { name, casinoName, date, type, game, gameType, stakes, antes, buyIn, cashOut ->
                         viewModel.addSession(name, casinoName, date, type, game, gameType, stakes, antes, buyIn, cashOut)
                     },
-                    onSessionClick = { sessionId ->
-                        navController.navigate(Screen.SessionDetail.createRoute(sessionId))
+                    homeGames = homeGames,
+                    onSaveHomeGame = { name, city, state -> viewModel.saveHomeGame(name, city, state) },
+                    onCasinoClick = { casinoName ->
+                        navController.navigate(Screen.CasinoSessions.createRoute(casinoName, "sessions"))
                     },
-                    sessionsViewModel = viewModel
+                    sessionsViewModel = viewModel,
+                    logoMap = sessionsLogoMap
                 )
             }
             composable(Screen.Find.route) {
-                FindScreen()
+                FindScreen(
+                    onCardRoomClick = { item ->
+                        navController.navigate(Screen.CardRoomDetail.createRoute(item.room.address))
+                    }
+                )
+            }
+
+            composable(
+                route = Screen.CardRoomDetail.route,
+                arguments = listOf(navArgument("encodedAddress") { type = NavType.StringType })
+            ) { entry ->
+                val encoded = entry.arguments?.getString("encodedAddress") ?: ""
+                val address = URLDecoder.decode(encoded, "UTF-8")
+                val repo = remember { CardRoomRepository(context) }
+                val room = remember(address) { repo.allRooms.firstOrNull { it.address == address } }
+                var favorites by remember { mutableStateOf(repo.getFavorites()) }
+                var homeCasino by remember { mutableStateOf(repo.getHomeCasino()) }
+
+                if (room != null) {
+                    CardRoomDetailScreen(
+                        item = CardRoomWithDistance(room, null),
+                        isFavorite = room.address in favorites,
+                        isHomeCasino = room.address == homeCasino,
+                        onToggleFavorite = {
+                            favorites = repo.toggleFavorite(room.address)
+                            homeCasino = repo.getHomeCasino()
+                        },
+                        onToggleHome = {
+                            homeCasino = if (room.address == homeCasino) {
+                                repo.setHomeCasino(null)
+                            } else {
+                                repo.setHomeCasino(room.address)
+                            }
+                            favorites = repo.getFavorites()
+                        },
+                        onNavigateBack = { navController.popBackStack() }
+                    )
+                }
             }
             composable(Screen.Scan.route) {
                 ScanScreen()
@@ -262,8 +325,37 @@ fun AppNavigation(photosJson: MutableState<String>) {
                 AboutScreen(
                     onNavigateToChipConfiguration = {
                         navController.navigate(Screen.ChipConfiguration.route)
+                    },
+                    onNavigateToReports = {
+                        navController.navigate(Screen.Reports.route)
+                    },
+                    onNavigateToNutzGame = {
+                        navController.navigate(Screen.NutzGame.route)
                     }
                 )
+            }
+            composable(Screen.Reports.route) {
+                val viewModel: SessionsViewModel = viewModel(
+                    factory = object : ViewModelProvider.Factory {
+                        override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                            @Suppress("UNCHECKED_CAST")
+                            return SessionsViewModel(
+                                AppDatabase.getDatabase(application).staxDao(),
+                                application
+                            ) as T
+                        }
+                    }
+                )
+                val sessions by viewModel.sessions.collectAsState()
+                val homeGames by viewModel.homeGames.collectAsState()
+                ReportsScreen(
+                    sessions = sessions,
+                    homeGames = homeGames,
+                    onNavigateBack = { navController.popBackStack() }
+                )
+            }
+            composable(Screen.NutzGame.route) {
+                NutzGameScreen(onNavigateBack = { navController.popBackStack() })
             }
             composable(Screen.ChipConfiguration.route) {
                 val viewModel: CasinoFoldersViewModel = viewModel(
@@ -286,22 +378,33 @@ fun AppNavigation(photosJson: MutableState<String>) {
             }
             composable(
                 route = Screen.CasinoSessions.route,
-                arguments = listOf(navArgument("casinoName") { type = NavType.StringType })
+                arguments = listOf(
+                    navArgument("casinoName") { type = NavType.StringType },
+                    navArgument("source") { type = NavType.StringType; defaultValue = "sessions" }
+                )
             ) { backStackEntry ->
                 val casinoName = backStackEntry.arguments?.getString("casinoName") ?: ""
+                val source = backStackEntry.arguments?.getString("source") ?: "sessions"
                 val viewModel: CasinoSessionsViewModel = viewModel(
                     factory = CasinoSessionsViewModelFactory(
                         AppDatabase.getDatabase(application).staxDao(),
-                        casinoName
+                        casinoName,
+                        application
                     )
                 )
                 val sessions by viewModel.sessions.collectAsState()
+                val logoResName by viewModel.logoResName.collectAsState()
 
                 CasinoSessionsScreen(
                     casinoName = casinoName,
                     sessions = sessions,
+                    logoResName = logoResName,
                     onSessionClick = { sessionId ->
-                        navController.navigate(Screen.PhotoGallery.createRoute(sessionId))
+                        if (source == "photos") {
+                            navController.navigate(Screen.PhotoGallery.createRoute(sessionId))
+                        } else {
+                            navController.navigate(Screen.SessionDetail.createRoute(sessionId))
+                        }
                     },
                     onDeleteSession = { sessionId ->
                         viewModel.deleteSession(sessionId)
@@ -316,7 +419,8 @@ fun AppNavigation(photosJson: MutableState<String>) {
                 val sessionId = backStackEntry.arguments?.getLong("sessionId") ?: 0L
                 SessionDetailScreen(
                     sessionId = sessionId,
-                    onNavigateBack = { navController.popBackStack() }
+                    onNavigateBack = { navController.popBackStack() },
+                    onNavigateToPhotos = { id -> navController.navigate(Screen.PhotoGallery.createRoute(id)) }
                 )
             }
             composable(
@@ -411,14 +515,21 @@ fun AppNavigation(photosJson: MutableState<String>) {
                         }
                     )
                     val livePhotos by viewModel.photos.collectAsState()
+                    val captions by viewModel.captions.collectAsState()
+                    val editVersions by viewModel.editVersions.collectAsState()
 
                     if (livePhotos.isNotEmpty()) {
                         FullScreenImageViewer(
                             photos = livePhotos,
                             initialPhotoIndex = photoIndex,
                             onNavigateUp = { navController.navigateUp() },
+                            captionFor = { captions[it.id].orEmpty() },
+                            editVersionFor = { editVersions[it.id] ?: 0 },
                             onRatingChanged = { ratedPhoto, rating ->
                                 viewModel.updatePhoto(ratedPhoto.copy(rating = rating))
+                            },
+                            onSavePhotoEdits = { editedPhoto, bitmap, caption ->
+                                viewModel.savePhotoEdits(editedPhoto, bitmap, caption)
                             }
                         )
                     }

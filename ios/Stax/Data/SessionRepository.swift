@@ -33,7 +33,7 @@ class SessionRepository: ObservableObject {
 
     // MARK: – Derived
 
-    func casinoFolders(photoRepo: PhotoRepository) -> [CasinoFolder] {
+    func casinoFolders(photoRepo: PhotoRepository, logoMap: [String: String] = [:]) -> [CasinoFolder] {
         let grouped = Dictionary(grouping: sessions, by: \.casinoName)
         return grouped.map { name, sessionsForCasino -> CasinoFolder in
             let latest = sessionsForCasino.flatMap { photoRepo.photos(for: $0.id) }
@@ -43,7 +43,8 @@ class SessionRepository: ObservableObject {
             return CasinoFolder(
                 casinoName: name,
                 sessionCount: sessionsForCasino.count,
-                latestPhotoPath: path
+                latestPhotoPath: path,
+                logoAssetName: logoMap[name]
             )
         }
         .sorted { $0.casinoName < $1.casinoName }

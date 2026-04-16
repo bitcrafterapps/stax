@@ -26,6 +26,7 @@ class FindViewModel: NSObject, ObservableObject, CLLocationManagerDelegate {
 
     @Published var result: FindResult? = nil
     @Published var hasSearched = false
+    @Published var isLoading = false
     @Published var location: CLLocation? = nil
     @Published var locationPermission: CLAuthorizationStatus = .notDetermined
 
@@ -91,12 +92,14 @@ class FindViewModel: NSObject, ObservableObject, CLLocationManagerDelegate {
             }
             return
         }
+        isLoading = true
         Task {
             let items = repo.searchNearby(latitude: loc.coordinate.latitude, longitude: loc.coordinate.longitude, radiusMiles: radiusMiles)
             let sorted = CardRoomRepository.sortWithFavorites(items, favorites: favorites, homeCasino: homeCasino)
             await MainActor.run {
                 result = .nearby(sorted)
                 hasSearched = true
+                isLoading = false
             }
         }
     }
@@ -105,12 +108,14 @@ class FindViewModel: NSObject, ObservableObject, CLLocationManagerDelegate {
         let state = selectedState
         let lat = location?.coordinate.latitude
         let lon = location?.coordinate.longitude
+        isLoading = true
         Task {
             let items = repo.searchByState(state, latitude: lat, longitude: lon)
             let sorted = CardRoomRepository.sortWithFavorites(items, favorites: favorites, homeCasino: homeCasino)
             await MainActor.run {
                 result = .byState(sorted, state)
                 hasSearched = true
+                isLoading = false
             }
         }
     }
@@ -118,11 +123,13 @@ class FindViewModel: NSObject, ObservableObject, CLLocationManagerDelegate {
     func loadFavorites() {
         let lat = location?.coordinate.latitude
         let lon = location?.coordinate.longitude
+        isLoading = true
         Task {
             let items = repo.getFavoriteRooms(latitude: lat, longitude: lon)
             await MainActor.run {
                 result = .favorites(items)
                 hasSearched = true
+                isLoading = false
             }
         }
     }

@@ -23,8 +23,9 @@ targets:
         excludes:
           - "Resources/**"
     resources:
-      - path: Stax/Resources
       - path: Stax/Assets.xcassets
+      - path: Stax/casinos.json
+      - path: Stax/cardrooms.json
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.example.stax

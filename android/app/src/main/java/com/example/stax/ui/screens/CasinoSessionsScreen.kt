@@ -1,5 +1,6 @@
 package com.example.stax.ui.screens
 
+import android.graphics.BitmapFactory
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.Image
@@ -24,10 +25,11 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.AttachMoney
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Folder
-import androidx.compose.material.icons.filled.Star
+import androidx.compose.foundation.layout.offset
+import androidx.compose.ui.res.painterResource
+import com.example.stax.R
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -45,10 +47,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.rememberAsyncImagePainter
 import com.example.stax.data.SessionWithLatestPhoto
@@ -62,10 +68,21 @@ fun CasinoSessionsScreen(
     sessions: List<SessionWithLatestPhoto>,
     onSessionClick: (Long) -> Unit,
     onDeleteSession: (Long) -> Unit,
-    onNavigateBack: () -> Unit
+    onNavigateBack: () -> Unit,
+    logoResName: String? = null
 ) {
+    val context = LocalContext.current
     var longPressedSessionId by remember { mutableStateOf<Long?>(null) }
     var showDeleteDialog by remember { mutableStateOf(false) }
+
+    val logoBitmap = remember(logoResName) {
+        if (logoResName != null) {
+            try {
+                val id = context.resources.getIdentifier(logoResName, "drawable", context.packageName)
+                if (id != 0) BitmapFactory.decodeResource(context.resources, id)?.asImageBitmap() else null
+            } catch (_: Exception) { null }
+        } else null
+    }
 
     if (showDeleteDialog && longPressedSessionId != null) {
         ConfirmDeleteDialog(
@@ -74,9 +91,7 @@ fun CasinoSessionsScreen(
                 showDeleteDialog = false
                 longPressedSessionId = null
             },
-            onDismiss = {
-                showDeleteDialog = false
-            }
+            onDismiss = { showDeleteDialog = false }
         )
     }
 
@@ -85,11 +100,28 @@ fun CasinoSessionsScreen(
             Box(modifier = Modifier.background(StaxHeaderGradient)) {
                 TopAppBar(
                     title = {
-                        Text(
-                            casinoName,
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.SemiBold
-                        )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            if (logoBitmap != null) {
+                                Image(
+                                    bitmap = logoBitmap,
+                                    contentDescription = "$casinoName logo",
+                                    modifier = Modifier
+                                        .size(32.dp)
+                                        .clip(RoundedCornerShape(7.dp)),
+                                    contentScale = ContentScale.Crop
+                                )
+                            }
+                            Text(
+                                casinoName,
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.SemiBold,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
                     },
                     navigationIcon = {
                         IconButton(onClick = onNavigateBack) {
@@ -214,6 +246,23 @@ fun SessionFolder(
                     },
                     style = MaterialTheme.typography.labelSmall,
                     color = Color.White.copy(alpha = 0.65f)
+                )
+            }
+
+            // Game type badge — top-start corner
+            val typeIconRes = if (sessionWithLatest.session.type == "Cash") R.drawable.cash else R.drawable.stack
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopStart)
+                    .padding(8.dp)
+                    .size(84.dp)
+                    .background(Color.Black.copy(alpha = 0.45f), RoundedCornerShape(14.dp)),
+                contentAlignment = Alignment.Center
+            ) {
+                Image(
+                    painter = painterResource(id = typeIconRes),
+                    contentDescription = sessionWithLatest.session.type,
+                    modifier = Modifier.size(54.dp)
                 )
             }
 

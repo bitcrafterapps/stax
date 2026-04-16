@@ -2,6 +2,8 @@ import Foundation
 import CoreLocation
 
 class CardRoomRepository {
+    static let shared = CardRoomRepository()
+
     private(set) var allRooms: [CardRoom] = []
     private(set) var availableStates: [String] = []
 
@@ -105,6 +107,20 @@ class CardRoomRepository {
             UserDefaults.standard.set(Array(favs), forKey: favKey)
         }
         return address
+    }
+
+    // MARK: – Logo lookup
+
+    /// Returns the asset name for a casino's logo given its display name.
+    /// Matches Android's:  "logo_" + logo.removeSuffix(".png").replace('-','_')
+    func logoAssetName(for casinoName: String) -> String? {
+        // Find the room whose name matches (case-insensitive)
+        guard let room = allRooms.first(where: { $0.name.lowercased() == casinoName.lowercased() }),
+              let logo = room.logo else { return nil }
+        let stem = logo
+            .replacingOccurrences(of: ".png", with: "")
+            .replacingOccurrences(of: "-", with: "_")
+        return "logo_\(stem)"
     }
 
     // MARK: – Sorting (favorites + home first)

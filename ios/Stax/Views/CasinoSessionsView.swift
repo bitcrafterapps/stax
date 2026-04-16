@@ -3,11 +3,21 @@ import SwiftUI
 struct CasinoSessionsView: View {
     @ObservedObject var vm: SessionsViewModel
     let casinoName: String
+    var showPhotos: Bool = false   // true = came from Photos tab, false = came from Sessions tab
     @State private var sessionToDelete: UUID? = nil
     @State private var showDeleteConfirm = false
 
     private var sessions: [Session] {
         vm.sessionRepo.sessions(for: casinoName)
+    }
+
+    @ViewBuilder
+    private func destination(for session: Session) -> some View {
+        if showPhotos {
+            PhotoGalleryView(vm: vm, session: session)
+        } else {
+            SessionDetailView(vm: vm, session: session)
+        }
     }
 
     var body: some View {
@@ -22,7 +32,7 @@ struct CasinoSessionsView: View {
                 } else {
                     List {
                         ForEach(sessions) { session in
-                            NavigationLink(destination: PhotoGalleryView(vm: vm, session: session)) {
+                            NavigationLink(destination: destination(for: session)) {
                                 SessionRow(session: session)
                                     .listRowBackground(Color.clear)
                             }
@@ -45,6 +55,17 @@ struct CasinoSessionsView: View {
         }
         .navigationTitle(casinoName)
         .navigationBarTitleDisplayMode(.large)
+        .toolbar {
+            if let assetName = vm.casinoLogoMap[casinoName] {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Image(assetName)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 32, height: 32)
+                        .clipShape(RoundedRectangle(cornerRadius: 7))
+                }
+            }
+        }
         .alert("Delete Session?", isPresented: $showDeleteConfirm) {
             Button("Delete", role: .destructive) {
                 if let id = sessionToDelete {

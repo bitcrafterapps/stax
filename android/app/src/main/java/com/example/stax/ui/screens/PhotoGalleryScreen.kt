@@ -121,7 +121,16 @@ fun PhotoGalleryScreen(
         topBar = {
             Box(modifier = Modifier.background(StaxHeaderGradient)) {
                 TopAppBar(
-                    title = { Text(session?.name ?: "Gallery", color = Color.White) },
+                    title = {
+                        Text(
+                            text = session?.name ?: "Gallery",
+                            color = Color.White,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    },
                     navigationIcon = {
                         IconButton(onClick = onNavigateUp) {
                             Icon(

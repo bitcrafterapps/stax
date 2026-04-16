@@ -61,5 +61,6 @@ Drop your `ic_stax_logo.png` (the infinity-glasses logo) into `Stax/Assets.xcass
 ## Notes
 
 - Apple Photos replaces Google Photos (same UX, native iOS picker)
+- Tagline: "Stack it. Snap it. Track it." (matches Android)
 - No on-device TensorFlow model — cloud scanning via OpenAI Vision only
 - Add your OpenAI API key in the **About** tab

@@ -25,7 +25,7 @@ struct MainTabView: View {
                     Label("Find", systemImage: "location.magnifyingglass")
                 }
 
-            AboutView()
+            AboutView(vm: vm)
                 .tabItem {
                     Label("About", systemImage: "info.circle.fill")
                 }

@@ -1,6 +1,8 @@
 package com.example.stax.data
 
 import android.app.Application
+import android.content.Context
+import android.graphics.Bitmap
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -30,6 +32,7 @@ class CasinoFoldersViewModel(
     private val dao: StaxDao,
     private val application: Application
 ) : ViewModel() {
+    private val homeGameRepository = HomeGameRepository.getInstance(application)
     val casinoFolders: StateFlow<List<CasinoFolder>> = dao.getCasinoFolders()
         .stateIn(
             viewModelScope,
@@ -40,8 +43,14 @@ class CasinoFoldersViewModel(
     private val _casinoData = MutableStateFlow<Map<String, List<String>>>(emptyMap())
     val casinoData: StateFlow<Map<String, List<String>>> = _casinoData.asStateFlow()
 
+    // Maps casinoName → drawable resource name (e.g. "Commerce Casino" → "logo_commerce_casino")
+    private val _logoMap = MutableStateFlow<Map<String, String>>(emptyMap())
+    val logoMap: StateFlow<Map<String, String>> = _logoMap.asStateFlow()
+    val homeGames: StateFlow<List<HomeGameVenue>> = homeGameRepository.homeGames
+
     init {
         loadCasinoData()
+        loadLogoMap()
     }
 
     private fun loadCasinoData() {
@@ -62,7 +71,38 @@ class CasinoFoldersViewModel(
         }
     }
 
-    fun addSession(name: String, casinoName: String, sessionType: String, game: String, gameType: String, stakes: String, antes: String) {
+    private fun loadLogoMap() {
+        viewModelScope.launch {
+            try {
+                withContext(Dispatchers.IO) {
+                    val json = application.assets.open("cardrooms.json").bufferedReader().use { it.readText() }
+                    val type = object : TypeToken<List<CardRoom>>() {}.type
+                    val rooms: List<CardRoom> = Gson().fromJson(json, type)
+                    val map = rooms.mapNotNull { room ->
+                        room.logo?.let { logo ->
+                            val resName = "logo_" + logo.removeSuffix(".png").replace('-', '_')
+                            room.name to resName
+                        }
+                    }.toMap()
+                    _logoMap.value = map
+                }
+            } catch (e: Exception) {
+                // Handle error
+            }
+        }
+    }
+
+    fun addSession(
+        name: String,
+        casinoName: String,
+        sessionType: String,
+        game: String,
+        gameType: String,
+        stakes: String,
+        antes: String,
+        buyIn: Double,
+        cashOut: Double
+    ) {
         viewModelScope.launch {
             val newSession = Session(
                 name = name,
@@ -72,7 +112,9 @@ class CasinoFoldersViewModel(
                 game = game,
                 gameType = gameType,
                 stakes = stakes,
-                antes = antes
+                antes = antes,
+                buyInAmount = buyIn,
+                cashOutAmount = cashOut
             )
             dao.insertSession(newSession)
         }
@@ -91,11 +133,16 @@ class CasinoFoldersViewModel(
             dao.deleteSession(sessionId)
         }
     }
+
+    fun saveHomeGame(name: String, city: String, state: String) {
+        homeGameRepository.addOrUpdate(name, city, state)
+    }
 }
 
 class CasinoSessionsViewModel(
     private val dao: StaxDao,
-    private val casinoName: String
+    private val casinoName: String,
+    private val application: Application
 ) : ViewModel() {
     val sessions: StateFlow<List<SessionWithLatestPhoto>> = dao.getSessionsWithLatestPhotoForCasino(casinoName)
         .stateIn(
@@ -104,14 +151,31 @@ class CasinoSessionsViewModel(
             emptyList()
         )
 
+    private val _logoResName = MutableStateFlow<String?>(null)
+    val logoResName: StateFlow<String?> = _logoResName.asStateFlow()
+
+    init {
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                try {
+                    val json = application.assets.open("cardrooms.json").bufferedReader().use { it.readText() }
+                    val type = object : TypeToken<List<CardRoom>>() {}.type
+                    val rooms: List<CardRoom> = Gson().fromJson(json, type)
+                    val room = rooms.find { it.name == casinoName }
+                    _logoResName.value = room?.logo?.let { logo ->
+                        "logo_" + logo.removeSuffix(".png").replace('-', '_')
+                    }
+                } catch (_: Exception) {}
+            }
+        }
+    }
+
     fun deleteSession(sessionId: Long) {
         viewModelScope.launch {
             val photos = dao.getPhotosForSessionOnce(sessionId)
             photos.forEach { photo ->
                 val file = File(photo.imagePath)
-                if (file.exists()) {
-                    file.delete()
-                }
+                if (file.exists()) file.delete()
             }
             dao.deletePhotosForSession(sessionId)
             dao.deleteSession(sessionId)
@@ -121,12 +185,13 @@ class CasinoSessionsViewModel(
 
 class CasinoSessionsViewModelFactory(
     private val dao: StaxDao,
-    private val casinoName: String
+    private val casinoName: String,
+    private val application: Application
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(CasinoSessionsViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
-            return CasinoSessionsViewModel(dao, casinoName) as T
+            return CasinoSessionsViewModel(dao, casinoName, application) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }
@@ -136,14 +201,20 @@ class SessionsViewModel(
     private val dao: StaxDao,
     private val application: Application
 ) : ViewModel() {
+    private val homeGameRepository = HomeGameRepository.getInstance(application)
     val sessions = dao.getAllSessionsWithDetails()
         .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
     private val _casinoData = MutableStateFlow<Map<String, List<String>>>(emptyMap())
     val casinoData: StateFlow<Map<String, List<String>>> = _casinoData.asStateFlow()
 
+    private val _logoMap = MutableStateFlow<Map<String, String>>(emptyMap())
+    val logoMap: StateFlow<Map<String, String>> = _logoMap.asStateFlow()
+    val homeGames: StateFlow<List<HomeGameVenue>> = homeGameRepository.homeGames
+
     init {
         loadCasinoData()
+        loadLogoMap()
     }
 
     private fun loadCasinoData() {
@@ -157,6 +228,27 @@ class SessionsViewModel(
                             _casinoData.value = data
                         }
                     }
+                }
+            } catch (e: Exception) {
+                // Handle error
+            }
+        }
+    }
+
+    private fun loadLogoMap() {
+        viewModelScope.launch {
+            try {
+                withContext(Dispatchers.IO) {
+                    val json = application.assets.open("cardrooms.json").bufferedReader().use { it.readText() }
+                    val type = object : TypeToken<List<CardRoom>>() {}.type
+                    val rooms: List<CardRoom> = Gson().fromJson(json, type)
+                    val map = rooms.mapNotNull { room ->
+                        room.logo?.let { logo ->
+                            val resName = "logo_" + logo.removeSuffix(".png").replace('-', '_')
+                            room.name to resName
+                        }
+                    }.toMap()
+                    _logoMap.value = map
                 }
             } catch (e: Exception) {
                 // Handle error
@@ -192,6 +284,10 @@ class SessionsViewModel(
             dao.insertSession(newSession)
         }
     }
+
+    fun saveHomeGame(name: String, city: String, state: String) {
+        homeGameRepository.addOrUpdate(name, city, state)
+    }
 }
 
 class PhotoGalleryViewModel(
@@ -199,10 +295,16 @@ class PhotoGalleryViewModel(
     private val sessionId: Long,
     private val application: Application
 ) : ViewModel() {
+    private val captionPrefs = application.getSharedPreferences("photo_captions", Context.MODE_PRIVATE)
+
     val photos: StateFlow<List<Photo>> = dao.getPhotosForSession(sessionId)
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
     val session: StateFlow<Session?> = dao.getSessionById(sessionId)
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
+    private val _captions = MutableStateFlow(loadCaptions())
+    val captions: StateFlow<Map<Long, String>> = _captions.asStateFlow()
+    private val _editVersions = MutableStateFlow<Map<Long, Int>>(emptyMap())
+    val editVersions: StateFlow<Map<Long, Int>> = _editVersions.asStateFlow()
 
     fun addPhoto(uri: Uri) {
         viewModelScope.launch {
@@ -223,7 +325,26 @@ class PhotoGalleryViewModel(
             if (file.exists()) {
                 file.delete()
             }
+            captionPrefs.edit().remove(captionKey(photo.id)).apply()
+            _captions.value = _captions.value - photo.id
             dao.deletePhoto(photo)
+        }
+    }
+
+    fun savePhotoEdits(photo: Photo, editedBitmap: Bitmap, caption: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            FileOutputStream(photo.imagePath).use { out ->
+                editedBitmap.compress(Bitmap.CompressFormat.JPEG, 92, out)
+            }
+            val trimmedCaption = caption.trim()
+            if (trimmedCaption.isBlank()) {
+                captionPrefs.edit().remove(captionKey(photo.id)).apply()
+                _captions.value = _captions.value - photo.id
+            } else {
+                captionPrefs.edit().putString(captionKey(photo.id), trimmedCaption).apply()
+                _captions.value = _captions.value + (photo.id to trimmedCaption)
+            }
+            _editVersions.value = _editVersions.value + (photo.id to ((_editVersions.value[photo.id] ?: 0) + 1))
         }
     }
 
@@ -258,4 +379,14 @@ class PhotoGalleryViewModel(
             }
         } catch (_: Exception) { }
     }
+
+    private fun loadCaptions(): Map<Long, String> =
+        captionPrefs.all.mapNotNull { (key, value) ->
+            if (!key.startsWith("caption_")) return@mapNotNull null
+            val id = key.removePrefix("caption_").toLongOrNull() ?: return@mapNotNull null
+            val caption = value as? String ?: return@mapNotNull null
+            id to caption
+        }.toMap()
+
+    private fun captionKey(photoId: Long): String = "caption_$photoId"
 } 

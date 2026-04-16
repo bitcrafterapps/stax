@@ -6,6 +6,7 @@ struct FindView: View {
     @StateObject private var vm = FindViewModel()
 
     var body: some View {
+        NavigationStack {
         ZStack {
             Color.staxBackground.ignoresSafeArea()
             VStack(spacing: 0) {
@@ -50,7 +51,19 @@ struct FindView: View {
                     }
 
                     // Results
-                    if vm.hasSearched {
+                    if vm.isLoading {
+                        VStack(spacing: 12) {
+                            ProgressView()
+                                .progressViewStyle(.circular)
+                                .tint(.staxPrimary)
+                                .scaleEffect(1.3)
+                            Text("Searching card rooms…")
+                                .font(.subheadline)
+                                .foregroundColor(.staxOnSurfaceVar)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.top, 48)
+                    } else if vm.hasSearched {
                         let items = vm.result?.items ?? []
                         if items.isEmpty {
                             emptyState
@@ -62,13 +75,15 @@ struct FindView: View {
 
                             List {
                                 ForEach(items) { item in
-                                    CardRoomRow(
-                                        item: item,
-                                        isFavorite: vm.favorites.contains(item.room.address),
-                                        isHome: item.room.address == vm.homeCasino,
-                                        onFavorite: { vm.toggleFavorite(item.room.address) },
-                                        onHome: { vm.toggleHome(item.room.address) }
-                                    )
+                                    NavigationLink(destination: CardRoomDetailView(item: item, vm: vm)) {
+                                        CardRoomRow(
+                                            item: item,
+                                            isFavorite: vm.favorites.contains(item.room.address),
+                                            isHome: item.room.address == vm.homeCasino,
+                                            onFavorite: { vm.toggleFavorite(item.room.address) },
+                                            onHome: { vm.toggleHome(item.room.address) }
+                                        )
+                                    }
                                     .listRowBackground(Color.clear)
                                     .listRowInsets(EdgeInsets(top: 4, leading: 0, bottom: 4, trailing: 0))
                                 }
@@ -89,6 +104,8 @@ struct FindView: View {
                 vm.search()
             }
         }
+        } // NavigationStack
+        .navigationBarHidden(true)
     }
 
     private var emptyState: some View {
@@ -187,8 +204,29 @@ struct CardRoomRow: View {
     let onFavorite: () -> Void
     let onHome: () -> Void
 
+    private var logoAssetName: String? {
+        guard let logo = item.room.logo else { return nil }
+        let base = logo.replacingOccurrences(of: ".png", with: "")
+        return UIImage(named: base) != nil ? base : nil
+    }
+
     var body: some View {
         HStack(spacing: 12) {
+            // Logo: casino logo if available, STAX logo as fallback
+            Group {
+                if let assetName = logoAssetName {
+                    Image(assetName)
+                        .resizable()
+                        .scaledToFill()
+                } else {
+                    Image("StaxLogo")
+                        .resizable()
+                        .scaledToFill()
+                }
+            }
+            .frame(width: 36, height: 36)
+            .clipShape(RoundedRectangle(cornerRadius: 8))
+
             VStack(alignment: .leading, spacing: 3) {
                 HStack(spacing: 6) {
                     Text(item.room.name)
@@ -229,6 +267,10 @@ struct CardRoomRow: View {
         .padding(.horizontal, 14).padding(.vertical, 10)
         .background(Color.staxSurfaceHigh)
         .cornerRadius(16)
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(Color(red: 0.42, green: 0.11, blue: 0.58), lineWidth: isHome ? 2 : 0)
+        )
     }
 
     private func formatDist(_ m: Double) -> String {

@@ -8,17 +8,15 @@ struct StaxApp: App {
         WindowGroup {
             ZStack {
                 if showSplash {
-                    SplashView()
-                        .transition(.opacity)
+                    SplashView(onDone: {
+                        withAnimation(.easeInOut(duration: 0.4)) {
+                            showSplash = false
+                        }
+                    })
+                    .transition(.opacity)
                 } else {
                     MainTabView()
                         .transition(.opacity)
-                }
-            }
-            .animation(.easeInOut(duration: 0.5), value: showSplash)
-            .onAppear {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
-                    showSplash = false
                 }
             }
         }
