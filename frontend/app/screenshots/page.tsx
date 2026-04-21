@@ -66,17 +66,17 @@ const groups = [
   {
     title: "Find & Scan",
     description:
-      "420+ card rooms across 38 states — California, Nevada, Texas, Florida, New York, and more. Count your stack in seconds.",
+      "380 card rooms across 38 states — California, Washington, Nevada, Texas, Florida, and more. Count your stack in seconds.",
     screenshots: [
       {
         src: "/screenshots/871.jpg",
         caption: "Find Card Rooms",
-        sub: "420+ card rooms across 38 states, one-tap directions",
+        sub: "380 card rooms across 38 states, one-tap directions",
       },
       {
         src: "/screenshots/873.jpg",
         caption: "By State",
-        sub: "38 states — CA · NV · TX · FL · WA · NY & more",
+        sub: "38 states — CA · WA · NV · TX · FL & more",
       },
       {
         src: "/screenshots/875.jpg",

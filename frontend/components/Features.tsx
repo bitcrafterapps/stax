@@ -73,7 +73,7 @@ const features = [
     icon: MapPin,
     title: "Casino Finder",
     description:
-      "420+ venues across 38 states — California, Nevada, Texas, Florida, New York, and more. Set search radius, mark favorites, get one-tap directions.",
+      "380 venues across 38 states — California, Washington, Nevada, Texas, Florida, and more. Set search radius, mark favorites, get one-tap directions.",
     accent: "#FF453A",
     tier: "Free",
     category: "Find & Explore",

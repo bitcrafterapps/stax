@@ -200,7 +200,7 @@ export default function Hero() {
               <div className="w-px h-8" style={{ background: "#1C1C21" }} />
 
               <div className="flex items-center gap-2 text-xs" style={{ color: "#5C5C64" }}>
-                <span>420+ card rooms</span>
+                <span>380 card rooms</span>
                 <span style={{ color: "#2C2C34" }}>·</span>
                 <span>38 states</span>
                 <span style={{ color: "#2C2C34" }}>·</span>

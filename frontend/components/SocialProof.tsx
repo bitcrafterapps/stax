@@ -1,18 +1,20 @@
 const stats = [
-  { value: "420+", label: "Card Rooms", sublabel: "across 38 states", color: "#7C6CF6" },
-  { value: "38", label: "States", sublabel: "CA · NV · TX · FL · NY & more", color: "#5AC8FA" },
+  { value: "380", label: "Card Rooms", sublabel: "across 38 states", color: "#7C6CF6" },
+  { value: "38", label: "States", sublabel: "CA · WA · NV · TX · FL & more", color: "#5AC8FA" },
   { value: "Free", label: "Download", sublabel: "no credit card needed", color: "#34C759" },
   { value: "7-Day", label: "Free Trial", sublabel: "Premium, on us", color: "#FF9F0A" },
 ];
 
 const stateData = [
-  { state: "California", abbr: "CA", count: 71 },
-  { state: "Nevada", abbr: "NV", count: 44 },
-  { state: "Washington", abbr: "WA", count: 35 },
-  { state: "Texas", abbr: "TX", count: 28 },
-  { state: "Florida", abbr: "FL", count: 31 },
+  { state: "California", abbr: "CA", count: 68 },
+  { state: "Washington", abbr: "WA", count: 33 },
+  { state: "Nevada", abbr: "NV", count: 26 },
+  { state: "Florida", abbr: "FL", count: 26 },
+  { state: "Texas", abbr: "TX", count: 22 },
+  { state: "Montana", abbr: "MT", count: 21 },
   { state: "Oregon", abbr: "OR", count: 14 },
-  { state: "Indiana", abbr: "IN", count: 14 },
+  { state: "Indiana", abbr: "IN", count: 12 },
+  { state: "Mississippi", abbr: "MS", count: 12 },
   { state: "Pennsylvania", abbr: "PA", count: 10 },
 ];
 
@@ -113,7 +115,7 @@ export default function SocialProof() {
               className="text-xl font-black tabular-nums"
               style={{ color: "#7C6CF6", letterSpacing: "-0.01em" }}
             >
-              38 States <span style={{ color: "#3A3A42", fontWeight: 400 }}>/</span> 420+ Venues
+              38 States <span style={{ color: "#3A3A42", fontWeight: 400 }}>/</span> 380 Venues
             </p>
           </div>
 

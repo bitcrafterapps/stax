@@ -1,0 +1,21 @@
+{
+  "images": [
+    {
+      "filename": "logo_inn_of_the_mountain_gods_resort_casino.png",
+      "idiom": "universal",
+      "scale": "1x"
+    },
+    {
+      "idiom": "universal",
+      "scale": "2x"
+    },
+    {
+      "idiom": "universal",
+      "scale": "3x"
+    }
+  ],
+  "info": {
+    "author": "xcode",
+    "version": 1
+  }
+}

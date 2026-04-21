@@ -23,7 +23,6 @@ import android.provider.MediaStore
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
-import java.io.InputStreamReader
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -55,18 +54,17 @@ class CasinoFoldersViewModel(
 
     private fun loadCasinoData() {
         viewModelScope.launch {
-            try {
-                withContext(Dispatchers.IO) {
-                    application.assets.open("casinos.json").use { inputStream ->
-                        InputStreamReader(inputStream).use { reader ->
-                            val type = object : TypeToken<Map<String, List<String>>>() {}.type
-                            val data: Map<String, List<String>> = Gson().fromJson(reader, type)
-                            _casinoData.value = data
-                        }
-                    }
-                }
-            } catch (e: Exception) {
-                // Handle error
+            withContext(Dispatchers.IO) {
+                try {
+                    val json = application.assets.open("cardrooms.json").bufferedReader().use { it.readText() }
+                    val type = object : TypeToken<List<CardRoom>>() {}.type
+                    val rooms: List<CardRoom> = Gson().fromJson(json, type)
+                    val data = rooms
+                        .groupBy { it.state }
+                        .mapValues { (_, roomsInState) -> roomsInState.map { it.name }.sorted() }
+                        .toSortedMap()
+                    _casinoData.value = data
+                } catch (_: Exception) {}
             }
         }
     }
@@ -219,18 +217,17 @@ class SessionsViewModel(
 
     private fun loadCasinoData() {
         viewModelScope.launch {
-            try {
-                withContext(Dispatchers.IO) {
-                    application.assets.open("casinos.json").use { inputStream ->
-                        InputStreamReader(inputStream).use { reader ->
-                            val type = object : TypeToken<Map<String, List<String>>>() {}.type
-                            val data: Map<String, List<String>> = Gson().fromJson(reader, type)
-                            _casinoData.value = data
-                        }
-                    }
-                }
-            } catch (e: Exception) {
-                // Handle error
+            withContext(Dispatchers.IO) {
+                try {
+                    val json = application.assets.open("cardrooms.json").bufferedReader().use { it.readText() }
+                    val type = object : TypeToken<List<CardRoom>>() {}.type
+                    val rooms: List<CardRoom> = Gson().fromJson(json, type)
+                    val data = rooms
+                        .groupBy { it.state }
+                        .mapValues { (_, roomsInState) -> roomsInState.map { it.name }.sorted() }
+                        .toSortedMap()
+                    _casinoData.value = data
+                } catch (_: Exception) {}
             }
         }
     }

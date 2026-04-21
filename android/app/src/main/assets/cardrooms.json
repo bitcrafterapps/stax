@@ -126,22 +126,13 @@
     "logo": "club-one-casino.png"
   },
   {
-    "name": "Deuces Wild Casino",
-    "city": "Vacaville",
-    "state": "California",
-    "address": "340 Orange Dr, Vacaville, CA 95687",
-    "latitude": 38.3577,
-    "longitude": -121.952,
-    "logo": "deuces-wild-casino.png"
-  },
-  {
     "name": "Paso Robles Casino",
     "city": "Paso Robles",
     "state": "California",
     "address": "1144 Black Oak Dr, Paso Robles, CA 93446",
     "latitude": 35.6267,
     "longitude": -120.691,
-    "logo": "paso-robles-casino.png"
+    "logo": null
   },
   {
     "name": "Garlic City Club",
@@ -205,15 +196,6 @@
     "latitude": 33.4382,
     "longitude": -117.0789,
     "logo": "pechanga-resort-casino.png"
-  },
-  {
-    "name": "San Manuel Casino",
-    "city": "Highland",
-    "state": "California",
-    "address": "777 San Manuel Blvd, Highland, CA 92346",
-    "latitude": 34.1241,
-    "longitude": -117.1678,
-    "logo": "san-manuel-casino.png"
   },
   {
     "name": "Morongo Casino Resort",
@@ -351,15 +333,6 @@
     "logo": "caesars-palace-poker-room.png"
   },
   {
-    "name": "Resorts World Poker Room",
-    "city": "Las Vegas",
-    "state": "Nevada",
-    "address": "3000 Las Vegas Blvd S, Las Vegas, NV 89109",
-    "latitude": 36.137,
-    "longitude": -115.168,
-    "logo": "resorts-world-poker-room.png"
-  },
-  {
     "name": "South Point Poker Room",
     "city": "Las Vegas",
     "state": "Nevada",
@@ -387,15 +360,6 @@
     "logo": "golden-nugget-las-vegas.png"
   },
   {
-    "name": "Planet Hollywood Poker Room",
-    "city": "Las Vegas",
-    "state": "Nevada",
-    "address": "3667 Las Vegas Blvd S, Las Vegas, NV 89109",
-    "latitude": 36.1098,
-    "longitude": -115.1718,
-    "logo": "planet-hollywood-poker-room.png"
-  },
-  {
     "name": "Mandalay Bay Poker Room",
     "city": "Las Vegas",
     "state": "Nevada",
@@ -403,42 +367,6 @@
     "latitude": 36.0919,
     "longitude": -115.1764,
     "logo": "mandalay-bay-poker-room.png"
-  },
-  {
-    "name": "Mirage Poker Room",
-    "city": "Las Vegas",
-    "state": "Nevada",
-    "address": "3400 Las Vegas Blvd S, Las Vegas, NV 89109",
-    "latitude": 36.1212,
-    "longitude": -115.1742,
-    "logo": "mirage-poker-room.png"
-  },
-  {
-    "name": "Rio Poker Room",
-    "city": "Las Vegas",
-    "state": "Nevada",
-    "address": "3700 W Flamingo Rd, Las Vegas, NV 89103",
-    "latitude": 36.1166,
-    "longitude": -115.1872,
-    "logo": "rio-poker-room.png"
-  },
-  {
-    "name": "Binion's",
-    "city": "Las Vegas",
-    "state": "Nevada",
-    "address": "128 Fremont St, Las Vegas, NV 89101",
-    "latitude": 36.1709,
-    "longitude": -115.1432,
-    "logo": "binions.png"
-  },
-  {
-    "name": "El Cortez",
-    "city": "Las Vegas",
-    "state": "Nevada",
-    "address": "600 Fremont St, Las Vegas, NV 89101",
-    "latitude": 36.1698,
-    "longitude": -115.1381,
-    "logo": "el-cortez.png"
   },
   {
     "name": "Orleans Poker Room",
@@ -513,42 +441,6 @@
     "logo": "harveys-lake-tahoe.png"
   },
   {
-    "name": "Nugget Casino Resort",
-    "city": "Sparks",
-    "state": "Nevada",
-    "address": "1100 Nugget Ave, Sparks, NV 89431",
-    "latitude": 39.5345,
-    "longitude": -119.7418,
-    "logo": "nugget-casino-resort.png"
-  },
-  {
-    "name": "Sam's Town Las Vegas",
-    "city": "Las Vegas",
-    "state": "Nevada",
-    "address": "5111 Boulder Hwy, Las Vegas, NV 89122",
-    "latitude": 36.1158,
-    "longitude": -115.0621,
-    "logo": "sams-town-las-vegas.png"
-  },
-  {
-    "name": "Treasure Island",
-    "city": "Las Vegas",
-    "state": "Nevada",
-    "address": "3300 Las Vegas Blvd S, Las Vegas, NV 89109",
-    "latitude": 36.1247,
-    "longitude": -115.1722,
-    "logo": "treasure-island.png"
-  },
-  {
-    "name": "Lodge Card Club",
-    "city": "Round Rock",
-    "state": "Texas",
-    "address": "12783 Mays St, Round Rock, TX 78664",
-    "latitude": 30.5341,
-    "longitude": -97.669,
-    "logo": "lodge-card-club.png"
-  },
-  {
     "name": "Texas Card House - Austin",
     "city": "Austin",
     "state": "Texas",
@@ -603,24 +495,6 @@
     "logo": "shuffle-214.png"
   },
   {
-    "name": "Poker House of Dallas",
-    "city": "Dallas",
-    "state": "Texas",
-    "address": "7510 Greenville Ave, Dallas, TX 75231",
-    "latitude": 32.8698,
-    "longitude": -96.75,
-    "logo": "poker-house-of-dallas.png"
-  },
-  {
-    "name": "Prime Social Poker Club",
-    "city": "Houston",
-    "state": "Texas",
-    "address": "2650 Fountain View Dr, Houston, TX 77057",
-    "latitude": 29.7395,
-    "longitude": -95.48,
-    "logo": "prime-social-poker-club.png"
-  },
-  {
     "name": "Legends Poker Room",
     "city": "Houston",
     "state": "Texas",
@@ -646,15 +520,6 @@
     "latitude": 47.735,
     "longitude": -122.5741,
     "logo": "clearwater-poker-room.png"
-  },
-  {
-    "name": "Club Hollywood Casino",
-    "city": "Shoreline",
-    "state": "Washington",
-    "address": "16300 Aurora Ave N, Shoreline, WA 98133",
-    "latitude": 47.7429,
-    "longitude": -122.3448,
-    "logo": "club-hollywood-casino.png"
   },
   {
     "name": "Coyote Bob's Casino",
@@ -702,15 +567,6 @@
     "logo": "nob-hill-casino.png"
   },
   {
-    "name": "Red Dragon Casino",
-    "city": "Mountlake Terrace",
-    "state": "Washington",
-    "address": "21616 Hwy 99, Mountlake Terrace, WA 98043",
-    "latitude": 47.7823,
-    "longitude": -122.3094,
-    "logo": "red-dragon-casino.png"
-  },
-  {
     "name": "Silver Dollar Casino - Mill Creek",
     "city": "Mill Creek",
     "state": "Washington",
@@ -718,15 +574,6 @@
     "latitude": 47.8601,
     "longitude": -122.204,
     "logo": "silver-dollar-casino-mill-creek.png"
-  },
-  {
-    "name": "Silver Dollar Casino - Renton",
-    "city": "Renton",
-    "state": "Washington",
-    "address": "702 S 3rd St, Renton, WA 98057",
-    "latitude": 47.4799,
-    "longitude": -122.2168,
-    "logo": "silver-dollar-casino-renton.png"
   },
   {
     "name": "Silver Dollar Casino - SeaTac",
@@ -754,24 +601,6 @@
     "latitude": 47.4829,
     "longitude": -122.2003,
     "logo": "fortune-poker.png"
-  },
-  {
-    "name": "Muckleshoot Casino",
-    "city": "Auburn",
-    "state": "Washington",
-    "address": "2402 Auburn Way S, Auburn, WA 98002",
-    "latitude": 47.2772,
-    "longitude": -122.2169,
-    "logo": "muckleshoot-casino.png"
-  },
-  {
-    "name": "Tulalip Resort Casino",
-    "city": "Tulalip",
-    "state": "Washington",
-    "address": "10200 Quil Ceda Blvd, Tulalip, WA 98271",
-    "latitude": 48.0759,
-    "longitude": -122.1942,
-    "logo": "tulalip-resort-casino.png"
   },
   {
     "name": "Encore Boston Harbor",
@@ -837,15 +666,6 @@
     "logo": "bestbet-orange-park.png"
   },
   {
-    "name": "Gulfstream Park",
-    "city": "Hallandale Beach",
-    "state": "Florida",
-    "address": "901 S Federal Hwy, Hallandale Beach, FL 33009",
-    "latitude": 25.9694,
-    "longitude": -80.1375,
-    "logo": "gulfstream-park.png"
-  },
-  {
     "name": "Palm Beach Kennel Club",
     "city": "West Palm Beach",
     "state": "Florida",
@@ -889,15 +709,6 @@
     "latitude": 29.1729,
     "longitude": -81.0589,
     "logo": "daytona-beach-racing.png"
-  },
-  {
-    "name": "Seminole Brighton Casino",
-    "city": "Okeechobee",
-    "state": "Florida",
-    "address": "17735 Reservation Rd, Okeechobee, FL 34974",
-    "latitude": 27.2142,
-    "longitude": -80.9578,
-    "logo": "seminole-brighton-casino.png"
   },
   {
     "name": "Borgata Hotel Casino & Spa",
@@ -1006,15 +817,6 @@
     "latitude": 39.801,
     "longitude": -105.4928,
     "logo": "monarch-casino-black-hawk.png"
-  },
-  {
-    "name": "WinStar World Casino",
-    "city": "Thackerville",
-    "state": "Oklahoma",
-    "address": "777 Casino Ave, Thackerville, OK 73459",
-    "latitude": 33.9729,
-    "longitude": -97.0833,
-    "logo": "winstar-world-casino.png"
   },
   {
     "name": "Choctaw Casino Durant",
@@ -1141,15 +943,6 @@
     "latitude": 41.6718,
     "longitude": -87.5006,
     "logo": "horseshoe-hammond.png"
-  },
-  {
-    "name": "Harrah's New Orleans",
-    "city": "New Orleans",
-    "state": "Louisiana",
-    "address": "228 Poydras St, New Orleans, LA 70130",
-    "latitude": 29.9476,
-    "longitude": -90.0632,
-    "logo": "harrahs-new-orleans.png"
   },
   {
     "name": "L'Auberge Casino Resort Baton Rouge",
@@ -1323,24 +1116,6 @@
     "logo": "jack-cleveland-casino.png"
   },
   {
-    "name": "Hollywood Gaming Dayton",
-    "city": "Dayton",
-    "state": "Ohio",
-    "address": "777 Hollywood Blvd, Dayton, OH 45414",
-    "latitude": 39.799,
-    "longitude": -84.2001,
-    "logo": "hollywood-gaming-dayton.png"
-  },
-  {
-    "name": "Isle of Capri Boonville",
-    "city": "Boonville",
-    "state": "Missouri",
-    "address": "100 Isle of Capri Blvd, Boonville, MO 65233",
-    "latitude": 38.9607,
-    "longitude": -92.7377,
-    "logo": "isle-of-capri-boonville.png"
-  },
-  {
     "name": "Ameristar Casino Kansas City",
     "city": "Kansas City",
     "state": "Missouri",
@@ -1383,7 +1158,7 @@
     "address": "15406 Maricopa Rd, Maricopa, AZ 85139",
     "latitude": 33.0616,
     "longitude": -112.175,
-    "logo": null
+    "logo": "harrahs-ak-chin-casino.png"
   },
   {
     "name": "Desert Diamond Casino West Valley",
@@ -1392,7 +1167,7 @@
     "address": "9431 W Northern Ave, Glendale, AZ 85305",
     "latitude": 33.5773,
     "longitude": -112.1926,
-    "logo": null
+    "logo": "desert-diamond-casino-west-valley.png"
   },
   {
     "name": "Desert Diamond Casino Tucson",
@@ -1401,7 +1176,7 @@
     "address": "7350 S Nogales Hwy, Tucson, AZ 85756",
     "latitude": 32.1532,
     "longitude": -110.9737,
-    "logo": null
+    "logo": "desert-diamond-casino-tucson.png"
   },
   {
     "name": "Desert Diamond Casino Sahuarita",
@@ -1410,7 +1185,7 @@
     "address": "1100 W Pima Mine Rd, Sahuarita, AZ 85629",
     "latitude": 31.9565,
     "longitude": -110.9947,
-    "logo": null
+    "logo": "desert-diamond-casino-sahuarita.png"
   },
   {
     "name": "Yavapai Casino",
@@ -1419,7 +1194,7 @@
     "address": "1505 E Hwy 69, Prescott, AZ 86301",
     "latitude": 34.54,
     "longitude": -112.4685,
-    "logo": null
+    "logo": "yavapai-casino.png"
   },
   {
     "name": "Apache Gold Casino Resort",
@@ -1428,7 +1203,7 @@
     "address": "US-70, Globe, AZ 85501",
     "latitude": 33.3937,
     "longitude": -110.7737,
-    "logo": null
+    "logo": "apache-gold-casino-resort.png"
   },
   {
     "name": "Hon-Dah Resort Casino",
@@ -1437,7 +1212,7 @@
     "address": "777 AZ-260, Pinetop-Lakeside, AZ 85935",
     "latitude": 34.137,
     "longitude": -109.9773,
-    "logo": null
+    "logo": "hon-dah-resort-casino.png"
   },
   {
     "name": "Casino of the Sun",
@@ -1446,7 +1221,7 @@
     "address": "7406 S Camino De Oeste, Tucson, AZ 85746",
     "latitude": 32.161,
     "longitude": -111.058,
-    "logo": null
+    "logo": "casino-of-the-sun.png"
   },
   {
     "name": "500 Club Casino",
@@ -1455,7 +1230,7 @@
     "address": "550 E Shaw Ave, Clovis, CA 93740",
     "latitude": 36.8115,
     "longitude": -119.7003,
-    "logo": null
+    "logo": "500-club-casino.png"
   },
   {
     "name": "Crystal Casino",
@@ -1491,7 +1266,7 @@
     "address": "20930 Malaga Rd, Lake Elsinore, CA 92530",
     "latitude": 33.6684,
     "longitude": -117.3277,
-    "logo": null
+    "logo": "lake-elsinore-casino.png"
   },
   {
     "name": "Player's Casino",
@@ -1500,7 +1275,7 @@
     "address": "4533 Telegraph Rd, Ventura, CA 93003",
     "latitude": 34.2764,
     "longitude": -119.229,
-    "logo": null
+    "logo": "players-casino.png"
   },
   {
     "name": "Parkwest Casino 580",
@@ -1509,7 +1284,7 @@
     "address": "4359 Las Positas Rd, Livermore, CA 94551",
     "latitude": 37.691,
     "longitude": -121.8261,
-    "logo": null
+    "logo": "parkwest-casino-580.png"
   },
   {
     "name": "Palace Poker Casino",
@@ -1527,7 +1302,7 @@
     "address": "4640 East Ave, Livermore, CA 94550",
     "latitude": 37.6825,
     "longitude": -121.7498,
-    "logo": null
+    "logo": "livermore-casino.png"
   },
   {
     "name": "Kings Card Club",
@@ -1536,7 +1311,7 @@
     "address": "247 W Benjamin Holt Dr, Stockton, CA 95207",
     "latitude": 37.9818,
     "longitude": -121.313,
-    "logo": null
+    "logo": "kings-card-club.png"
   },
   {
     "name": "Stars Casino",
@@ -1545,7 +1320,7 @@
     "address": "6 W Alpine Ave, Stockton, CA 95204",
     "latitude": 37.9735,
     "longitude": -121.3101,
-    "logo": null
+    "logo": "stars-casino.png"
   },
   {
     "name": "Westlane Card Room",
@@ -1563,7 +1338,7 @@
     "address": "3512 Brundage Ln, Bakersfield, CA 93304",
     "latitude": 35.3473,
     "longitude": -118.998,
-    "logo": null
+    "logo": "diamond-jims-casino.png"
   },
   {
     "name": "Casino Chico",
@@ -1572,7 +1347,7 @@
     "address": "2741 Olive Hwy, Chico, CA 95928",
     "latitude": 39.757,
     "longitude": -121.8199,
-    "logo": null
+    "logo": "casino-chico.png"
   },
   {
     "name": "Casino 99",
@@ -1581,7 +1356,7 @@
     "address": "3328 Esplanade, Chico, CA 95973",
     "latitude": 39.762,
     "longitude": -121.8425,
-    "logo": null
+    "logo": "casino-99.png"
   },
   {
     "name": "Towers Casino",
@@ -1599,7 +1374,7 @@
     "address": "3334 Bradshaw Rd, Sacramento, CA 95827",
     "latitude": 38.559,
     "longitude": -121.3427,
-    "logo": null
+    "logo": "limelight-card-room.png"
   },
   {
     "name": "The Nineteenth Hole",
@@ -1644,7 +1419,7 @@
     "address": "1503 Main St, Watsonville, CA 95076",
     "latitude": 36.9103,
     "longitude": -121.7569,
-    "logo": null
+    "logo": "tres-lounge-and-casino.png"
   },
   {
     "name": "Yaamava' Resort & Casino at San Manuel",
@@ -1653,7 +1428,7 @@
     "address": "777 San Manuel Blvd, Highland, CA 92346",
     "latitude": 34.1241,
     "longitude": -117.1678,
-    "logo": null
+    "logo": "yaamava-resort-casino-at-san-manuel.png"
   },
   {
     "name": "Chumash Casino Resort",
@@ -1662,7 +1437,7 @@
     "address": "3400 E Highway 246, Santa Ynez, CA 93460",
     "latitude": 34.619,
     "longitude": -120.0744,
-    "logo": null
+    "logo": "chumash-casino-resort.png"
   },
   {
     "name": "River Rock Casino",
@@ -1671,7 +1446,7 @@
     "address": "3250 Hwy 128, Geyserville, CA 95441",
     "latitude": 38.7243,
     "longitude": -122.8999,
-    "logo": null
+    "logo": "river-rock-casino.png"
   },
   {
     "name": "Black Oak Casino Resort",
@@ -1698,7 +1473,7 @@
     "address": "23333 Soboba Rd, San Jacinto, CA 92583",
     "latitude": 33.7913,
     "longitude": -116.9418,
-    "logo": null
+    "logo": "soboba-casino-resort.png"
   },
   {
     "name": "Fantasy Springs Resort Casino",
@@ -1707,7 +1482,7 @@
     "address": "84-245 Indio Springs Pkwy, Indio, CA 92203",
     "latitude": 33.7553,
     "longitude": -116.2814,
-    "logo": null
+    "logo": "fantasy-springs-resort-casino.png"
   },
   {
     "name": "Spotlight 29 Casino",
@@ -1716,7 +1491,7 @@
     "address": "46-200 Harrison Pl, Coachella, CA 92236",
     "latitude": 33.681,
     "longitude": -116.1755,
-    "logo": null
+    "logo": "spotlight-29-casino.png"
   },
   {
     "name": "Pala Casino Spa & Resort",
@@ -1725,7 +1500,7 @@
     "address": "11154 Hwy 76, Pala, CA 92059",
     "latitude": 33.3659,
     "longitude": -117.0785,
-    "logo": null
+    "logo": "pala-casino-spa-resort.png"
   },
   {
     "name": "Valley View Casino & Hotel",
@@ -1734,7 +1509,7 @@
     "address": "16300 Nyemii Pass Rd, Valley Center, CA 92082",
     "latitude": 33.2432,
     "longitude": -117.0262,
-    "logo": null
+    "logo": "valley-view-casino-hotel.png"
   },
   {
     "name": "Agua Caliente Casino Cathedral City",
@@ -1743,7 +1518,7 @@
     "address": "68-960 E Palm Canyon Dr, Cathedral City, CA 92234",
     "latitude": 33.7837,
     "longitude": -116.4659,
-    "logo": null
+    "logo": "agua-caliente-casino-cathedral-city.png"
   },
   {
     "name": "Agua Caliente Casino Rancho Mirage",
@@ -1752,7 +1527,7 @@
     "address": "32-250 Bob Hope Dr, Rancho Mirage, CA 92270",
     "latitude": 33.7718,
     "longitude": -116.4237,
-    "logo": null
+    "logo": "agua-caliente-casino-rancho-mirage.png"
   },
   {
     "name": "Win-River Resort & Casino",
@@ -1761,7 +1536,7 @@
     "address": "2100 Redding Rancheria Rd, Redding, CA 96001",
     "latitude": 40.6239,
     "longitude": -122.3866,
-    "logo": null
+    "logo": "win-river-resort-casino.png"
   },
   {
     "name": "Quechan Resort Casino",
@@ -1770,7 +1545,7 @@
     "address": "525 Algodones Rd, Winterhaven, CA 92283",
     "latitude": 32.7269,
     "longitude": -114.668,
-    "logo": null
+    "logo": "quechan-resort-casino.png"
   },
   {
     "name": "Harrah's Northern California Casino",
@@ -1779,7 +1554,7 @@
     "address": "2000 Meiss Rd, Ione, CA 95640",
     "latitude": 38.3612,
     "longitude": -120.9295,
-    "logo": null
+    "logo": "harrahs-northern-california-casino.png"
   },
   {
     "name": "Bally's Black Hawk Casino",
@@ -1788,7 +1563,7 @@
     "address": "321 Main St, Black Hawk, CO 80422",
     "latitude": 39.7987,
     "longitude": -105.4917,
-    "logo": null
+    "logo": "ballys-black-hawk-casino.png"
   },
   {
     "name": "Horseshoe Black Hawk Casino",
@@ -1797,7 +1572,7 @@
     "address": "401 Main St, Black Hawk, CO 80422",
     "latitude": 39.8013,
     "longitude": -105.4925,
-    "logo": null
+    "logo": "horseshoe-black-hawk-casino.png"
   },
   {
     "name": "Midnight Rose Hotel & Casino",
@@ -1806,7 +1581,7 @@
     "address": "256 E Bennett Ave, Cripple Creek, CO 80813",
     "latitude": 38.7448,
     "longitude": -105.1784,
-    "logo": null
+    "logo": "midnight-rose-hotel-casino.png"
   },
   {
     "name": "Delaware Park Casino & Racing",
@@ -1815,7 +1590,7 @@
     "address": "777 Delaware Park Blvd, Wilmington, DE 19804",
     "latitude": 39.6418,
     "longitude": -75.5924,
-    "logo": null
+    "logo": "delaware-park-casino-racing.png"
   },
   {
     "name": "The Big Easy Casino",
@@ -1833,7 +1608,7 @@
     "address": "50 Race Track Rd, St. Augustine, FL 32084",
     "latitude": 29.9058,
     "longitude": -81.381,
-    "logo": null
+    "logo": "bestbet-st-augustine.png"
   },
   {
     "name": "Casino Miami Jai-Alai",
@@ -1842,7 +1617,7 @@
     "address": "3500 NW 37th Ave, Miami, FL 33142",
     "latitude": 25.8111,
     "longitude": -80.2598,
-    "logo": null
+    "logo": "casino-miami-jai-alai.png"
   },
   {
     "name": "The Casino at Dania Beach",
@@ -1851,7 +1626,7 @@
     "address": "301 E Dania Beach Blvd, Dania Beach, FL 33004",
     "latitude": 26.0545,
     "longitude": -80.144,
-    "logo": null
+    "logo": "the-casino-at-dania-beach.png"
   },
   {
     "name": "Harrah's Pompano Beach",
@@ -1860,7 +1635,7 @@
     "address": "1800 SW 3rd St, Pompano Beach, FL 33069",
     "latitude": 26.2384,
     "longitude": -80.1576,
-    "logo": null
+    "logo": "harrahs-pompano-beach.png"
   },
   {
     "name": "Melbourne Greyhound Park",
@@ -1914,7 +1689,7 @@
     "address": "21001 NW 27th Ave, Miami Gardens, FL 33056",
     "latitude": 25.9452,
     "longitude": -80.2427,
-    "logo": null
+    "logo": "calder-casino.png"
   },
   {
     "name": "Silks at Tampa Bay Downs",
@@ -1923,7 +1698,7 @@
     "address": "11225 Race Track Rd, Tampa, FL 33626",
     "latitude": 28.0529,
     "longitude": -82.6165,
-    "logo": null
+    "logo": "silks-at-tampa-bay-downs.png"
   },
   {
     "name": "Fort Pierce Jai-Alai Poker Room",
@@ -1959,25 +1734,7 @@
     "address": "5550 NW 40th St, Coconut Creek, FL 33073",
     "latitude": 26.275,
     "longitude": -80.1878,
-    "logo": null
-  },
-  {
-    "name": "Seminole Casino Immokalee",
-    "city": "Immokalee",
-    "state": "Florida",
-    "address": "506 S 1st St, Immokalee, FL 34142",
-    "latitude": 26.418,
-    "longitude": -81.4118,
-    "logo": null
-  },
-  {
-    "name": "Seminole Classic Casino",
-    "city": "Hollywood",
-    "state": "Florida",
-    "address": "4150 N State Rd 7, Hollywood, FL 33021",
-    "latitude": 26.0388,
-    "longitude": -80.2008,
-    "logo": null
+    "logo": "seminole-casino-coconut-creek.png"
   },
   {
     "name": "Miccosukee Resort & Gaming Center",
@@ -1986,16 +1743,7 @@
     "address": "500 SW 177th Ave, Miami, FL 33194",
     "latitude": 25.761,
     "longitude": -80.513,
-    "logo": null
-  },
-  {
-    "name": "Wind Creek Miami",
-    "city": "Miami",
-    "state": "Florida",
-    "address": "450 NW 37th Ave, Miami, FL 33125",
-    "latitude": 25.7756,
-    "longitude": -80.246,
-    "logo": null
+    "logo": "miccosukee-resort-gaming-center.png"
   },
   {
     "name": "Hollywood Casino Aurora",
@@ -2004,7 +1752,7 @@
     "address": "1 W New York St, Aurora, IL 60506",
     "latitude": 41.7589,
     "longitude": -88.3201,
-    "logo": null
+    "logo": "hollywood-casino-aurora.png"
   },
   {
     "name": "Harrah's Joliet Casino & Hotel",
@@ -2013,7 +1761,7 @@
     "address": "151 N Joliet St, Joliet, IL 60432",
     "latitude": 41.5256,
     "longitude": -88.0823,
-    "logo": null
+    "logo": "harrahs-joliet-casino-hotel.png"
   },
   {
     "name": "Hollywood Casino Joliet",
@@ -2022,7 +1770,7 @@
     "address": "777 Hollywood Casino Dr, Joliet, IL 60436",
     "latitude": 41.5214,
     "longitude": -88.0953,
-    "logo": null
+    "logo": "hollywood-casino-joliet.png"
   },
   {
     "name": "Bally's Quad Cities Casino & Hotel",
@@ -2031,7 +1779,7 @@
     "address": "777 Bally Blvd, Rock Island, IL 61201",
     "latitude": 41.5097,
     "longitude": -90.5792,
-    "logo": null
+    "logo": "ballys-quad-cities-casino-hotel.png"
   },
   {
     "name": "Par-A-Dice Hotel Casino",
@@ -2040,7 +1788,7 @@
     "address": "21 Blackjack Blvd, East Peoria, IL 61611",
     "latitude": 40.68,
     "longitude": -89.5413,
-    "logo": null
+    "logo": "par-a-dice-hotel-casino.png"
   },
   {
     "name": "Hard Rock Casino Rockford",
@@ -2049,7 +1797,7 @@
     "address": "1311 E State St, Rockford, IL 61104",
     "latitude": 42.2714,
     "longitude": -89.0573,
-    "logo": null
+    "logo": "hard-rock-casino-rockford.png"
   },
   {
     "name": "Wind Creek Chicago Southland",
@@ -2058,7 +1806,7 @@
     "address": "17300 S Halsted St, East Hazel Crest, IL 60429",
     "latitude": 41.5672,
     "longitude": -87.6395,
-    "logo": null
+    "logo": "wind-creek-chicago-southland.png"
   },
   {
     "name": "DraftKings at Casino Queen",
@@ -2067,7 +1815,7 @@
     "address": "200 S Front St, East St. Louis, IL 62201",
     "latitude": 38.6188,
     "longitude": -90.153,
-    "logo": null
+    "logo": "draftkings-at-casino-queen.png"
   },
   {
     "name": "Caesars Southern Indiana",
@@ -2076,7 +1824,7 @@
     "address": "11999 Avenue of the Emperors, Elizabeth, IN 47117",
     "latitude": 38.1127,
     "longitude": -85.9785,
-    "logo": null
+    "logo": "caesars-southern-indiana.png"
   },
   {
     "name": "Horseshoe Indianapolis",
@@ -2085,7 +1833,7 @@
     "address": "4004 N Michigan Rd, Shelbyville, IN 46176",
     "latitude": 39.5601,
     "longitude": -85.7897,
-    "logo": null
+    "logo": "horseshoe-indianapolis.png"
   },
   {
     "name": "Four Winds South Bend",
@@ -2094,7 +1842,7 @@
     "address": "1400 E Pokagon St, South Bend, IN 46601",
     "latitude": 41.6764,
     "longitude": -86.2416,
-    "logo": null
+    "logo": "four-winds-south-bend.png"
   },
   {
     "name": "Hard Rock Casino Northern Indiana",
@@ -2103,7 +1851,7 @@
     "address": "5400 W 29th Ave, Gary, IN 46406",
     "latitude": 41.5996,
     "longitude": -87.3748,
-    "logo": null
+    "logo": "hard-rock-casino-northern-indiana.png"
   },
   {
     "name": "Hollywood Casino Lawrenceburg",
@@ -2112,7 +1860,7 @@
     "address": "777 Hollywood Blvd, Lawrenceburg, IN 47025",
     "latitude": 39.089,
     "longitude": -84.876,
-    "logo": null
+    "logo": "hollywood-casino-lawrenceburg.png"
   },
   {
     "name": "Ameristar Casino East Chicago",
@@ -2124,22 +1872,13 @@
     "logo": null
   },
   {
-    "name": "Blue Chip Casino Hotel & Spa",
-    "city": "Michigan City",
-    "state": "Indiana",
-    "address": "2 Blue Chip Dr, Michigan City, IN 46360",
-    "latitude": 41.6999,
-    "longitude": -86.8925,
-    "logo": null
-  },
-  {
     "name": "Rising Star Casino Resort",
     "city": "Rising Sun",
     "state": "Indiana",
     "address": "777 Rising Star Dr, Rising Sun, IN 47040",
     "latitude": 38.9459,
     "longitude": -84.8571,
-    "logo": null
+    "logo": "rising-star-casino-resort.png"
   },
   {
     "name": "Belterra Casino Resort",
@@ -2148,16 +1887,7 @@
     "address": "777 Belterra Dr, Florence, IN 47020",
     "latitude": 38.802,
     "longitude": -84.9482,
-    "logo": null
-  },
-  {
-    "name": "Harrah's Hoosier Park",
-    "city": "Anderson",
-    "state": "Indiana",
-    "address": "4500 Dan Patch Cir, Anderson, IN 46013",
-    "latitude": 40.0912,
-    "longitude": -85.6432,
-    "logo": null
+    "logo": "belterra-casino-resort.png"
   },
   {
     "name": "Bally's Evansville",
@@ -2166,7 +1896,7 @@
     "address": "421 NW Riverside Dr, Evansville, IN 47708",
     "latitude": 37.9756,
     "longitude": -87.5798,
-    "logo": null
+    "logo": "ballys-evansville.png"
   },
   {
     "name": "Terre Haute Casino Resort",
@@ -2184,7 +1914,7 @@
     "address": "8670 W State Rd 56, French Lick, IN 47432",
     "latitude": 38.5373,
     "longitude": -86.6228,
-    "logo": null
+    "logo": "french-lick-resort-casino.png"
   },
   {
     "name": "Grand Falls Casino Resort",
@@ -2193,7 +1923,7 @@
     "address": "1415 Grand Falls Blvd, Larchwood, IA 51241",
     "latitude": 43.4523,
     "longitude": -96.5369,
-    "logo": null
+    "logo": "grand-falls-casino-resort.png"
   },
   {
     "name": "Riverside Casino & Golf Resort",
@@ -2211,7 +1941,7 @@
     "address": "777 Hollywood Casino Blvd, Kansas City, KS 66111",
     "latitude": 39.1142,
     "longitude": -94.8298,
-    "logo": null
+    "logo": "hollywood-casino-at-kansas-speedway.png"
   },
   {
     "name": "Caesars New Orleans",
@@ -2220,7 +1950,7 @@
     "address": "228 Poydras St, New Orleans, LA 70130",
     "latitude": 29.9476,
     "longitude": -90.0632,
-    "logo": null
+    "logo": "caesars-new-orleans.png"
   },
   {
     "name": "Bally's Shreveport",
@@ -2229,7 +1959,7 @@
     "address": "451 Clyde Fant Pkwy, Shreveport, LA 71101",
     "latitude": 32.5161,
     "longitude": -93.7491,
-    "logo": null
+    "logo": "ballys-shreveport.png"
   },
   {
     "name": "Boomtown Casino New Orleans",
@@ -2238,7 +1968,7 @@
     "address": "4132 Peters Rd, Harvey, LA 70058",
     "latitude": 29.8938,
     "longitude": -90.0775,
-    "logo": null
+    "logo": "boomtown-casino-new-orleans.png"
   },
   {
     "name": "Golden Nugget Lake Charles",
@@ -2247,7 +1977,7 @@
     "address": "2121 W Prien Lake Rd, Lake Charles, LA 70601",
     "latitude": 30.2066,
     "longitude": -93.2416,
-    "logo": null
+    "logo": "golden-nugget-lake-charles.png"
   },
   {
     "name": "Horseshoe Bossier City",
@@ -2256,7 +1986,7 @@
     "address": "711 Horseshoe Blvd, Bossier City, LA 71111",
     "latitude": 32.5195,
     "longitude": -93.7247,
-    "logo": null
+    "logo": "horseshoe-bossier-city.png"
   },
   {
     "name": "Jena Choctaw Pines Casino",
@@ -2265,7 +1995,7 @@
     "address": "149 Chahta Trail, Dry Prong, LA 71423",
     "latitude": 31.579,
     "longitude": -92.5265,
-    "logo": null
+    "logo": "jena-choctaw-pines-casino.png"
   },
   {
     "name": "Paragon Casino Resort",
@@ -2283,7 +2013,7 @@
     "address": "500 Main St, Bangor, ME 04401",
     "latitude": 44.8027,
     "longitude": -68.7771,
-    "logo": null
+    "logo": "hollywood-casino-bangor.png"
   },
   {
     "name": "Hollywood Casino Perryville",
@@ -2292,7 +2022,7 @@
     "address": "1 Chesapeake Overlook Pkwy, Perryville, MD 21903",
     "latitude": 39.569,
     "longitude": -76.0748,
-    "logo": null
+    "logo": "hollywood-casino-perryville.png"
   },
   {
     "name": "Soaring Eagle Casino & Resort",
@@ -2301,7 +2031,7 @@
     "address": "6800 Soaring Eagle Blvd, Mt. Pleasant, MI 48858",
     "latitude": 43.597,
     "longitude": -84.7798,
-    "logo": null
+    "logo": "soaring-eagle-casino-resort.png"
   },
   {
     "name": "Gun Lake Casino",
@@ -2310,7 +2040,7 @@
     "address": "1123 129th Ave, Wayland, MI 49348",
     "latitude": 42.6389,
     "longitude": -85.6439,
-    "logo": null
+    "logo": "gun-lake-casino.png"
   },
   {
     "name": "Island Resort & Casino",
@@ -2328,7 +2058,7 @@
     "address": "1760 Victories Dr, Petoskey, MI 49770",
     "latitude": 45.3901,
     "longitude": -84.9566,
-    "logo": null
+    "logo": "odawa-casino-resort.png"
   },
   {
     "name": "Treasure Island Resort & Casino",
@@ -2337,7 +2067,7 @@
     "address": "5734 Sturgeon Lake Rd, Welch, MN 55089",
     "latitude": 44.553,
     "longitude": -92.673,
-    "logo": null
+    "logo": "treasure-island-resort-casino.png"
   },
   {
     "name": "Shooting Star Casino",
@@ -2346,7 +2076,7 @@
     "address": "777 Casino Rd, Mahnomen, MN 56557",
     "latitude": 47.3254,
     "longitude": -95.9684,
-    "logo": null
+    "logo": "shooting-star-casino.png"
   },
   {
     "name": "Seven Clans Casino Warroad",
@@ -2355,7 +2085,7 @@
     "address": "1012 E Lake St, Warroad, MN 56763",
     "latitude": 48.903,
     "longitude": -95.3143,
-    "logo": null
+    "logo": "seven-clans-casino-warroad.png"
   },
   {
     "name": "Northern Lights Casino",
@@ -2364,7 +2094,7 @@
     "address": "6800 Y Frontage Rd NW, Walker, MN 56484",
     "latitude": 47.1166,
     "longitude": -94.6155,
-    "logo": null
+    "logo": "northern-lights-casino.png"
   },
   {
     "name": "Fortune Bay Resort Casino",
@@ -2373,7 +2103,7 @@
     "address": "1430 Bois Forte Rd, Tower, MN 55790",
     "latitude": 47.775,
     "longitude": -92.2697,
-    "logo": null
+    "logo": "fortune-bay-resort-casino.png"
   },
   {
     "name": "Cedar Lakes Casino Hotel",
@@ -2382,7 +2112,7 @@
     "address": "1012 S Mission St, Cass Lake, MN 56633",
     "latitude": 47.3784,
     "longitude": -94.5897,
-    "logo": null
+    "logo": "cedar-lakes-casino-hotel.png"
   },
   {
     "name": "Hard Rock Hotel & Casino Biloxi",
@@ -2391,7 +2121,7 @@
     "address": "777 Beach Blvd, Biloxi, MS 39530",
     "latitude": 30.3914,
     "longitude": -88.9056,
-    "logo": null
+    "logo": "hard-rock-hotel-casino-biloxi.png"
   },
   {
     "name": "Golden Nugget Biloxi",
@@ -2400,7 +2130,7 @@
     "address": "151 Beach Blvd, Biloxi, MS 39530",
     "latitude": 30.3967,
     "longitude": -88.9214,
-    "logo": null
+    "logo": "golden-nugget-biloxi.png"
   },
   {
     "name": "Boomtown Casino Biloxi",
@@ -2409,7 +2139,7 @@
     "address": "676 Bayview Ave, Biloxi, MS 39530",
     "latitude": 30.3829,
     "longitude": -88.8878,
-    "logo": null
+    "logo": "boomtown-casino-biloxi.png"
   },
   {
     "name": "Hollywood Casino Gulf Coast",
@@ -2418,7 +2148,7 @@
     "address": "711 Hollywood Blvd, Bay St. Louis, MS 39520",
     "latitude": 30.3411,
     "longitude": -89.3279,
-    "logo": null
+    "logo": "hollywood-casino-gulf-coast.png"
   },
   {
     "name": "Horseshoe Casino Tunica",
@@ -2427,7 +2157,7 @@
     "address": "1021 Casino Center Dr, Robinsonville, MS 38664",
     "latitude": 34.7013,
     "longitude": -90.335,
-    "logo": null
+    "logo": "horseshoe-casino-tunica.png"
   },
   {
     "name": "Gold Strike Casino Resort",
@@ -2436,7 +2166,7 @@
     "address": "1010 Casino Center Dr, Robinsonville, MS 38664",
     "latitude": 34.7005,
     "longitude": -90.3341,
-    "logo": null
+    "logo": "gold-strike-casino-resort.png"
   },
   {
     "name": "Pearl River Resort",
@@ -2445,7 +2175,7 @@
     "address": "13541 MS-16, Choctaw, MS 39350",
     "latitude": 32.8822,
     "longitude": -89.1285,
-    "logo": null
+    "logo": "pearl-river-resort.png"
   },
   {
     "name": "Ameristar Casino Vicksburg",
@@ -2454,7 +2184,7 @@
     "address": "4116 Washington St, Vicksburg, MS 39180",
     "latitude": 32.3523,
     "longitude": -90.8765,
-    "logo": null
+    "logo": "ameristar-casino-vicksburg.png"
   },
   {
     "name": "Ameristar Casino St. Charles",
@@ -2463,7 +2193,7 @@
     "address": "1260 S Main St, St. Charles, MO 63301",
     "latitude": 38.7703,
     "longitude": -90.4823,
-    "logo": null
+    "logo": "ameristar-casino-st-charles.png"
   },
   {
     "name": "Horseshoe Casino St. Louis",
@@ -2472,7 +2202,7 @@
     "address": "777 Casino Center Dr, Maryland Heights, MO 63043",
     "latitude": 38.7218,
     "longitude": -90.4538,
-    "logo": null
+    "logo": "horseshoe-casino-st-louis.png"
   },
   {
     "name": "Shooters Poker Room",
@@ -2508,7 +2238,7 @@
     "address": "3011 King Ave W, Billings, MT 59102",
     "latitude": 45.7781,
     "longitude": -108.5627,
-    "logo": null
+    "logo": "montana-club-casino.png"
   },
   {
     "name": "Red Door Lounge",
@@ -2526,7 +2256,7 @@
     "address": "125 W Front St, Missoula, MT 59801",
     "latitude": 46.8727,
     "longitude": -114.0154,
-    "logo": null
+    "logo": "stockmans-bar-casino.png"
   },
   {
     "name": "Press Box Casino",
@@ -2670,7 +2400,7 @@
     "address": "700 Fonner Park Rd, Grand Island, NE 68801",
     "latitude": 40.9162,
     "longitude": -98.3734,
-    "logo": null
+    "logo": "grand-island-casino-resort.png"
   },
   {
     "name": "Boulder Station Casino",
@@ -2679,7 +2409,7 @@
     "address": "4111 Boulder Hwy, Las Vegas, NV 89121",
     "latitude": 36.1076,
     "longitude": -115.0583,
-    "logo": null
+    "logo": "boulder-station-casino.png"
   },
   {
     "name": "Santa Fe Station Hotel & Casino",
@@ -2688,34 +2418,7 @@
     "address": "4949 N Rancho Dr, North Las Vegas, NV 89130",
     "latitude": 36.2617,
     "longitude": -115.2226,
-    "logo": null
-  },
-  {
-    "name": "Palace Station Hotel & Casino",
-    "city": "Las Vegas",
-    "state": "Nevada",
-    "address": "2411 W Sahara Ave, Las Vegas, NV 89102",
-    "latitude": 36.1445,
-    "longitude": -115.1826,
-    "logo": null
-  },
-  {
-    "name": "Suncoast Hotel & Casino",
-    "city": "Las Vegas",
-    "state": "Nevada",
-    "address": "9090 Alta Dr, Las Vegas, NV 89145",
-    "latitude": 36.1795,
-    "longitude": -115.2776,
-    "logo": null
-  },
-  {
-    "name": "Aliante Casino & Hotel",
-    "city": "North Las Vegas",
-    "state": "Nevada",
-    "address": "7300 N Aliante Pkwy, North Las Vegas, NV 89084",
-    "latitude": 36.3122,
-    "longitude": -115.16,
-    "logo": null
+    "logo": "santa-fe-station-hotel-casino.png"
   },
   {
     "name": "Westgate Las Vegas Resort & Casino",
@@ -2724,16 +2427,7 @@
     "address": "3000 Paradise Rd, Las Vegas, NV 89109",
     "latitude": 36.1381,
     "longitude": -115.1516,
-    "logo": null
-  },
-  {
-    "name": "M Resort Spa Casino",
-    "city": "Henderson",
-    "state": "Nevada",
-    "address": "12300 Las Vegas Blvd S, Henderson, NV 89044",
-    "latitude": 35.9726,
-    "longitude": -115.1486,
-    "logo": null
+    "logo": "westgate-las-vegas-resort-casino.png"
   },
   {
     "name": "Harrah's Laughlin",
@@ -2742,25 +2436,7 @@
     "address": "2900 S Casino Dr, Laughlin, NV 89029",
     "latitude": 35.1541,
     "longitude": -114.569,
-    "logo": null
-  },
-  {
-    "name": "Aquarius Casino Resort",
-    "city": "Laughlin",
-    "state": "Nevada",
-    "address": "1900 S Casino Dr, Laughlin, NV 89029",
-    "latitude": 35.1508,
-    "longitude": -114.5706,
-    "logo": null
-  },
-  {
-    "name": "Golden Nugget Laughlin",
-    "city": "Laughlin",
-    "state": "Nevada",
-    "address": "2300 S Casino Dr, Laughlin, NV 89029",
-    "latitude": 35.1531,
-    "longitude": -114.5693,
-    "logo": null
+    "logo": "harrahs-laughlin.png"
   },
   {
     "name": "Don Laughlin's Riverside Resort",
@@ -2772,31 +2448,13 @@
     "logo": null
   },
   {
-    "name": "Edgewater Hotel & Casino",
-    "city": "Laughlin",
-    "state": "Nevada",
-    "address": "2020 S Casino Dr, Laughlin, NV 89029",
-    "latitude": 35.1522,
-    "longitude": -114.5698,
-    "logo": null
-  },
-  {
     "name": "Silver Legacy Resort Casino",
     "city": "Reno",
     "state": "Nevada",
     "address": "407 N Virginia St, Reno, NV 89501",
     "latitude": 39.53,
     "longitude": -119.8131,
-    "logo": null
-  },
-  {
-    "name": "Circus Circus Reno",
-    "city": "Reno",
-    "state": "Nevada",
-    "address": "500 N Sierra St, Reno, NV 89503",
-    "latitude": 39.5301,
-    "longitude": -119.8133,
-    "logo": null
+    "logo": "silver-legacy-resort-casino.png"
   },
   {
     "name": "Alamo Casino",
@@ -2805,7 +2463,7 @@
     "address": "250 N Sierra St, Reno, NV 89501",
     "latitude": 39.529,
     "longitude": -119.814,
-    "logo": null
+    "logo": "alamo-casino.png"
   },
   {
     "name": "Wendover Nugget Casino",
@@ -2817,22 +2475,13 @@
     "logo": null
   },
   {
-    "name": "Hard Rock Hotel & Casino Las Vegas",
-    "city": "Las Vegas",
-    "state": "Nevada",
-    "address": "3400 Las Vegas Blvd S, Las Vegas, NV 89109",
-    "latitude": 36.1212,
-    "longitude": -115.1742,
-    "logo": null
-  },
-  {
     "name": "Caesars Atlantic City",
     "city": "Atlantic City",
     "state": "New Jersey",
     "address": "2100 Pacific Ave, Atlantic City, NJ 08401",
     "latitude": 39.3565,
     "longitude": -74.429,
-    "logo": null
+    "logo": "caesars-atlantic-city.png"
   },
   {
     "name": "Golden Nugget Atlantic City",
@@ -2841,7 +2490,7 @@
     "address": "600 Huron Ave, Atlantic City, NJ 08401",
     "latitude": 39.3893,
     "longitude": -74.4213,
-    "logo": null
+    "logo": "golden-nugget-atlantic-city.png"
   },
   {
     "name": "Resorts Casino Hotel",
@@ -2850,7 +2499,7 @@
     "address": "1133 Boardwalk, Atlantic City, NJ 08401",
     "latitude": 39.3636,
     "longitude": -74.4328,
-    "logo": null
+    "logo": "resorts-casino-hotel.png"
   },
   {
     "name": "Bally's Atlantic City",
@@ -2859,7 +2508,7 @@
     "address": "1900 Pacific Ave, Atlantic City, NJ 08401",
     "latitude": 39.3573,
     "longitude": -74.4306,
-    "logo": null
+    "logo": "ballys-atlantic-city.png"
   },
   {
     "name": "Sandia Resort & Casino",
@@ -2868,7 +2517,7 @@
     "address": "30 Rainbow Rd NE, Albuquerque, NM 87113",
     "latitude": 35.1841,
     "longitude": -106.533,
-    "logo": null
+    "logo": "sandia-resort-casino.png"
   },
   {
     "name": "Isleta Resort & Casino",
@@ -2877,7 +2526,7 @@
     "address": "11000 Broadway Blvd SE, Albuquerque, NM 87105",
     "latitude": 34.954,
     "longitude": -106.6892,
-    "logo": null
+    "logo": "isleta-resort-casino.png"
   },
   {
     "name": "Inn of the Mountain Gods Resort & Casino",
@@ -2886,7 +2535,7 @@
     "address": "287 Carrizo Canyon Rd, Mescalero, NM 88340",
     "latitude": 33.1437,
     "longitude": -105.782,
-    "logo": null
+    "logo": "inn-of-the-mountain-gods-resort-casino.png"
   },
   {
     "name": "Route 66 Casino Hotel",
@@ -2895,7 +2544,7 @@
     "address": "14500 Central Ave SW, Albuquerque, NM 87121",
     "latitude": 35.0451,
     "longitude": -106.8268,
-    "logo": null
+    "logo": "route-66-casino-hotel.png"
   },
   {
     "name": "Buffalo Thunder Resort & Casino",
@@ -2904,7 +2553,7 @@
     "address": "20 Buffalo Thunder Trail, Santa Fe, NM 87506",
     "latitude": 35.7427,
     "longitude": -106.0127,
-    "logo": null
+    "logo": "buffalo-thunder-resort-casino.png"
   },
   {
     "name": "Resorts World Catskills",
@@ -2913,7 +2562,7 @@
     "address": "888 Resorts World Dr, Monticello, NY 12701",
     "latitude": 41.6535,
     "longitude": -74.7143,
-    "logo": null
+    "logo": "resorts-world-catskills.png"
   },
   {
     "name": "Rivers Casino & Resort Schenectady",
@@ -2922,7 +2571,7 @@
     "address": "1 Rush St, Schenectady, NY 12305",
     "latitude": 42.8181,
     "longitude": -73.9474,
-    "logo": null
+    "logo": "rivers-casino-resort-schenectady.png"
   },
   {
     "name": "del Lago Resort & Casino",
@@ -2931,7 +2580,7 @@
     "address": "1133 NY-414, Waterloo, NY 13165",
     "latitude": 42.898,
     "longitude": -76.8837,
-    "logo": null
+    "logo": "del-lago-resort-casino.png"
   },
   {
     "name": "Tioga Downs Casino Resort",
@@ -2940,7 +2589,7 @@
     "address": "2384 W River Rd, Nichols, NY 13812",
     "latitude": 42.022,
     "longitude": -76.3655,
-    "logo": null
+    "logo": "tioga-downs-casino-resort.png"
   },
   {
     "name": "Seneca Niagara Resort & Casino",
@@ -2949,7 +2598,7 @@
     "address": "310 4th St, Niagara Falls, NY 14303",
     "latitude": 43.0939,
     "longitude": -79.0576,
-    "logo": null
+    "logo": "seneca-niagara-resort-casino.png"
   },
   {
     "name": "Seneca Allegany Resort & Casino",
@@ -2958,7 +2607,7 @@
     "address": "777 Seneca One Stop, Salamanca, NY 14779",
     "latitude": 42.1548,
     "longitude": -78.725,
-    "logo": null
+    "logo": "seneca-allegany-resort-casino.png"
   },
   {
     "name": "Akwesasne Mohawk Casino Resort",
@@ -2967,7 +2616,7 @@
     "address": "873 NY-37, Hogansburg, NY 13655",
     "latitude": 44.992,
     "longitude": -74.6746,
-    "logo": null
+    "logo": "akwesasne-mohawk-casino-resort.png"
   },
   {
     "name": "Harrah's Cherokee Valley River Casino",
@@ -2976,7 +2625,7 @@
     "address": "777 Casino Pkwy, Murphy, NC 28906",
     "latitude": 35.0937,
     "longitude": -84.0258,
-    "logo": null
+    "logo": "harrahs-cherokee-valley-river-casino.png"
   },
   {
     "name": "4 Bears Casino & Lodge",
@@ -2985,7 +2634,7 @@
     "address": "202 Frontage Rd, New Town, ND 58763",
     "latitude": 47.9843,
     "longitude": -102.4942,
-    "logo": null
+    "logo": "4-bears-casino-lodge.png"
   },
   {
     "name": "Spirit Lake Casino & Resort",
@@ -2994,7 +2643,7 @@
     "address": "7889 ND-57, St. Michael, ND 58370",
     "latitude": 47.9655,
     "longitude": -99.1445,
-    "logo": null
+    "logo": "spirit-lake-casino-resort.png"
   },
   {
     "name": "Sky Dancer Casino & Resort",
@@ -3003,7 +2652,7 @@
     "address": "3965 Sky Dancer Way NE, Belcourt, ND 58316",
     "latitude": 48.8378,
     "longitude": -99.7557,
-    "logo": null
+    "logo": "sky-dancer-casino-resort.png"
   },
   {
     "name": "Hard Rock Casino Cincinnati",
@@ -3012,7 +2661,7 @@
     "address": "1000 Broadway St, Cincinnati, OH 45202",
     "latitude": 39.1054,
     "longitude": -84.5126,
-    "logo": null
+    "logo": "hard-rock-casino-cincinnati.png"
   },
   {
     "name": "Hollywood Casino Columbus",
@@ -3021,7 +2670,7 @@
     "address": "200 Georgesville Rd, Columbus, OH 43228",
     "latitude": 39.9514,
     "longitude": -83.1009,
-    "logo": null
+    "logo": "hollywood-casino-columbus.png"
   },
   {
     "name": "Hollywood Casino Toledo",
@@ -3030,7 +2679,7 @@
     "address": "777 Hollywood Blvd, Toledo, OH 43605",
     "latitude": 41.6442,
     "longitude": -83.535,
-    "logo": null
+    "logo": "hollywood-casino-toledo.png"
   },
   {
     "name": "Jack Cincinnati Casino",
@@ -3039,7 +2688,7 @@
     "address": "312 Plum St, Cincinnati, OH 45202",
     "latitude": 39.1041,
     "longitude": -84.5105,
-    "logo": null
+    "logo": "jack-cincinnati-casino.png"
   },
   {
     "name": "River Spirit Casino Resort",
@@ -3048,7 +2697,7 @@
     "address": "8330 Riverside Pkwy, Tulsa, OK 74137",
     "latitude": 36.031,
     "longitude": -95.9818,
-    "logo": null
+    "logo": "river-spirit-casino-resort.png"
   },
   {
     "name": "Cherokee Casino West Siloam Springs",
@@ -3057,7 +2706,7 @@
     "address": "2416 US-59, Colcord, OK 74338",
     "latitude": 36.1876,
     "longitude": -94.6836,
-    "logo": null
+    "logo": "cherokee-casino-west-siloam-springs.png"
   },
   {
     "name": "Choctaw Casino Pocola",
@@ -3066,7 +2715,7 @@
     "address": "3400 Powerhouse Rd, Pocola, OK 74902",
     "latitude": 35.2357,
     "longitude": -94.4677,
-    "logo": null
+    "logo": "choctaw-casino-pocola.png"
   },
   {
     "name": "Downstream Casino Resort",
@@ -3075,7 +2724,7 @@
     "address": "69300 E 290 Rd, Quapaw, OK 74363",
     "latitude": 36.9419,
     "longitude": -94.6618,
-    "logo": null
+    "logo": "downstream-casino-resort.png"
   },
   {
     "name": "Grand Casino Hotel & Resort",
@@ -3084,7 +2733,7 @@
     "address": "777 Grand Casino Blvd, Shawnee, OK 74804",
     "latitude": 35.3439,
     "longitude": -96.9697,
-    "logo": null
+    "logo": "grand-casino-hotel-resort.png"
   },
   {
     "name": "Indigo Sky Casino",
@@ -3102,7 +2751,7 @@
     "address": "146 Chief Miwaleta Ln, Canyonville, OR 97417",
     "latitude": 42.9244,
     "longitude": -123.2844,
-    "logo": null
+    "logo": "seven-feathers-casino-resort.png"
   },
   {
     "name": "Three Rivers Casino Resort",
@@ -3111,7 +2760,7 @@
     "address": "5647 US-126, Florence, OR 97439",
     "latitude": 43.9823,
     "longitude": -124.0841,
-    "logo": null
+    "logo": "three-rivers-casino-resort.png"
   },
   {
     "name": "Wildhorse Resort & Casino",
@@ -3120,7 +2769,7 @@
     "address": "46510 Wildhorse Blvd, Pendleton, OR 97801",
     "latitude": 45.6776,
     "longitude": -118.7055,
-    "logo": null
+    "logo": "wildhorse-resort-casino.png"
   },
   {
     "name": "Indian Head Casino",
@@ -3138,7 +2787,7 @@
     "address": "34333 US-97, Chiloquin, OR 97624",
     "latitude": 42.5716,
     "longitude": -121.8731,
-    "logo": null
+    "logo": "kla-mo-ya-casino.png"
   },
   {
     "name": "Final Table Poker Club",
@@ -3174,7 +2823,7 @@
     "address": "1200 Hilyard St, Eugene, OR 97401",
     "latitude": 44.0473,
     "longitude": -123.0823,
-    "logo": null
+    "logo": "full-house-poker.png"
   },
   {
     "name": "Bend Poker Room",
@@ -3183,7 +2832,7 @@
     "address": "61462 S Hwy 97, Bend, OR 97702",
     "latitude": 43.9896,
     "longitude": -121.2995,
-    "logo": null
+    "logo": "bend-poker-room.png"
   },
   {
     "name": "Medford Social Club Poker Room",
@@ -3201,7 +2850,7 @@
     "address": "1025 NE 6th St, Grants Pass, OR 97526",
     "latitude": 42.4436,
     "longitude": -123.3268,
-    "logo": null
+    "logo": "grants-pass-poker-room.png"
   },
   {
     "name": "Wind Creek Bethlehem",
@@ -3210,7 +2859,7 @@
     "address": "77 Wind Creek Blvd, Bethlehem, PA 18015",
     "latitude": 40.6161,
     "longitude": -75.3593,
-    "logo": null
+    "logo": "wind-creek-bethlehem.png"
   },
   {
     "name": "Live! Casino Philadelphia",
@@ -3228,7 +2877,7 @@
     "address": "210 Race Track Rd, Washington, PA 15301",
     "latitude": 40.1561,
     "longitude": -80.2645,
-    "logo": null
+    "logo": "hollywood-casino-at-the-meadows.png"
   },
   {
     "name": "Mohegan Sun Pocono",
@@ -3237,7 +2886,7 @@
     "address": "1280 PA-315, Wilkes-Barre, PA 18702",
     "latitude": 41.2827,
     "longitude": -75.8273,
-    "logo": null
+    "logo": "mohegan-sun-pocono.png"
   },
   {
     "name": "Hollywood Casino Morgantown",
@@ -3246,7 +2895,7 @@
     "address": "1301 Berks Rd, Morgantown, PA 19543",
     "latitude": 40.1665,
     "longitude": -75.8811,
-    "logo": null
+    "logo": "hollywood-casino-morgantown.png"
   },
   {
     "name": "Valley Forge Casino Resort",
@@ -3255,7 +2904,7 @@
     "address": "1160 First Ave, King of Prussia, PA 19406",
     "latitude": 40.0881,
     "longitude": -75.3777,
-    "logo": null
+    "logo": "valley-forge-casino-resort.png"
   },
   {
     "name": "Mount Airy Casino Resort",
@@ -3264,7 +2913,7 @@
     "address": "312 Woodland Rd, Mount Pocono, PA 18344",
     "latitude": 41.1273,
     "longitude": -75.3583,
-    "logo": null
+    "logo": "mount-airy-casino-resort.png"
   },
   {
     "name": "Bally's Twin River Casino Hotel",
@@ -3273,16 +2922,7 @@
     "address": "100 Twin River Rd, Lincoln, RI 02865",
     "latitude": 41.9207,
     "longitude": -71.4607,
-    "logo": null
-  },
-  {
-    "name": "Bally's Tiverton Casino Hotel",
-    "city": "Tiverton",
-    "state": "Rhode Island",
-    "address": "777 Tiverton Casino Blvd, Tiverton, RI 02878",
-    "latitude": 41.6215,
-    "longitude": -71.1988,
-    "logo": null
+    "logo": "ballys-twin-river-casino-hotel.png"
   },
   {
     "name": "Silverado Franklin Historic Hotel & Gaming",
@@ -3291,7 +2931,7 @@
     "address": "709 Main St, Deadwood, SD 57732",
     "latitude": 44.3773,
     "longitude": -103.7296,
-    "logo": null
+    "logo": "silverado-franklin-historic-hotel-gaming.png"
   },
   {
     "name": "Cadillac Jack's Gaming Resort",
@@ -3300,7 +2940,7 @@
     "address": "360 Main St, Deadwood, SD 57732",
     "latitude": 44.3765,
     "longitude": -103.7277,
-    "logo": null
+    "logo": "cadillac-jacks-gaming-resort.png"
   },
   {
     "name": "Saloon No. 10",
@@ -3309,7 +2949,7 @@
     "address": "657 Main St, Deadwood, SD 57732",
     "latitude": 44.377,
     "longitude": -103.7289,
-    "logo": null
+    "logo": "saloon-no-10.png"
   },
   {
     "name": "Deadwood Mountain Grand",
@@ -3318,7 +2958,7 @@
     "address": "1906 Deadwood Mountain Dr, Deadwood, SD 57732",
     "latitude": 44.3837,
     "longitude": -103.7235,
-    "logo": null
+    "logo": "deadwood-mountain-grand.png"
   },
   {
     "name": "Royal River Casino",
@@ -3327,7 +2967,7 @@
     "address": "607 S Veterans St, Flandreau, SD 57028",
     "latitude": 44.0445,
     "longitude": -96.5981,
-    "logo": null
+    "logo": "royal-river-casino.png"
   },
   {
     "name": "Grand River Casino & Resort",
@@ -3336,7 +2976,7 @@
     "address": "1107 E Grand Crossing, Mobridge, SD 57601",
     "latitude": 45.5374,
     "longitude": -100.417,
-    "logo": null
+    "logo": "grand-river-casino-resort.png"
   },
   {
     "name": "Kickapoo Lucky Eagle Casino Hotel",
@@ -3354,16 +2994,7 @@
     "address": "5765 Airport Blvd, Austin, TX 78751",
     "latitude": 30.3209,
     "longitude": -97.7196,
-    "logo": null
-  },
-  {
-    "name": "Alamo Card House",
-    "city": "San Antonio",
-    "state": "Texas",
-    "address": "7959 Fredericksburg Rd, San Antonio, TX 78229",
-    "latitude": 29.4858,
-    "longitude": -98.5618,
-    "logo": null
+    "logo": "shuffle-512.png"
   },
   {
     "name": "SA Card House",
@@ -3372,7 +3003,7 @@
     "address": "9901 W Loop 1604 N, San Antonio, TX 78254",
     "latitude": 29.5722,
     "longitude": -98.6946,
-    "logo": null
+    "logo": "sa-card-house.png"
   },
   {
     "name": "Poker House Fort Worth",
@@ -3390,7 +3021,7 @@
     "address": "900 E Villa Maria Rd, Bryan, TX 77802",
     "latitude": 30.6618,
     "longitude": -96.3452,
-    "logo": null
+    "logo": "aggieland-poker-club.png"
   },
   {
     "name": "Cypress Poker Club",
@@ -3399,7 +3030,7 @@
     "address": "15807 Farm to Market 529, Cypress, TX 77433",
     "latitude": 29.9261,
     "longitude": -95.695,
-    "logo": null
+    "logo": "cypress-poker-club.png"
   },
   {
     "name": "Katy Poker",
@@ -3444,7 +3075,7 @@
     "address": "5959 Westheimer Rd, Houston, TX 77057",
     "latitude": 29.7388,
     "longitude": -95.4629,
-    "logo": null
+    "logo": "vip-social-club.png"
   },
   {
     "name": "PrymeTyme Poker House",
@@ -3489,7 +3120,7 @@
     "address": "3580 Victory Blvd, Portsmouth, VA 23701",
     "latitude": 36.8286,
     "longitude": -76.3717,
-    "logo": null
+    "logo": "rivers-casino-portsmouth.png"
   },
   {
     "name": "Caesars Virginia",
@@ -3498,7 +3129,7 @@
     "address": "1 Caesar Dr, Danville, VA 24541",
     "latitude": 36.5697,
     "longitude": -79.4028,
-    "logo": null
+    "logo": "caesars-virginia.png"
   },
   {
     "name": "Hard Rock Hotel & Casino Bristol",
@@ -3507,7 +3138,7 @@
     "address": "500 Gate City Hwy, Bristol, VA 24201",
     "latitude": 36.6144,
     "longitude": -82.1674,
-    "logo": null
+    "logo": "hard-rock-hotel-casino-bristol.png"
   },
   {
     "name": "7 Cedars Casino",
@@ -3516,7 +3147,7 @@
     "address": "270756 Hwy 101, Sequim, WA 98382",
     "latitude": 48.0789,
     "longitude": -123.0904,
-    "logo": null
+    "logo": "7-cedars-casino.png"
   },
   {
     "name": "Legends Casino Hotel",
@@ -3525,7 +3156,7 @@
     "address": "580 Fort Rd, Toppenish, WA 98948",
     "latitude": 46.3623,
     "longitude": -120.2975,
-    "logo": null
+    "logo": "legends-casino-hotel.png"
   },
   {
     "name": "Little Creek Casino Resort",
@@ -3534,7 +3165,7 @@
     "address": "91 W State Rte 108, Shelton, WA 98584",
     "latitude": 47.1791,
     "longitude": -123.17,
-    "logo": null
+    "logo": "little-creek-casino-resort.png"
   },
   {
     "name": "Northern Quest Resort & Casino",
@@ -3543,7 +3174,7 @@
     "address": "100 N Hayford Rd, Airway Heights, WA 99001",
     "latitude": 47.6464,
     "longitude": -117.587,
-    "logo": null
+    "logo": "northern-quest-resort-casino.png"
   },
   {
     "name": "Chewelah Casino",
@@ -3552,7 +3183,7 @@
     "address": "2555 Smith Rd, Chewelah, WA 99109",
     "latitude": 48.2831,
     "longitude": -117.7157,
-    "logo": null
+    "logo": "chewelah-casino.png"
   },
   {
     "name": "Ace's Poker Lakewood",
@@ -3561,7 +3192,7 @@
     "address": "10707 Pacific Hwy SW, Lakewood, WA 98499",
     "latitude": 47.1543,
     "longitude": -122.4889,
-    "logo": null
+    "logo": "aces-poker-lakewood.png"
   },
   {
     "name": "Ace's Poker Yakima",
@@ -3588,7 +3219,7 @@
     "address": "2123 E 29th Ave, Spokane, WA 99223",
     "latitude": 47.6264,
     "longitude": -117.3814,
-    "logo": null
+    "logo": "lilac-lanes-casino.png"
   },
   {
     "name": "Buzz Inn Steakhouse & Casino — Arlington",
@@ -3597,7 +3228,7 @@
     "address": "4701 172nd St NE, Arlington, WA 98223",
     "latitude": 48.1688,
     "longitude": -122.1267,
-    "logo": null
+    "logo": "buzz-inn-steakhouse-casino-arlington.png"
   },
   {
     "name": "Buzz Inn Steakhouse & Casino — Snohomish",
@@ -3606,7 +3237,7 @@
     "address": "1019 1st St, Snohomish, WA 98290",
     "latitude": 47.9124,
     "longitude": -122.0957,
-    "logo": null
+    "logo": "buzz-inn-steakhouse-casino-snohomish.png"
   },
   {
     "name": "Casino Caribbean Kirkland",
@@ -3615,7 +3246,7 @@
     "address": "12709 NE 124th St, Kirkland, WA 98034",
     "latitude": 47.7171,
     "longitude": -122.1886,
-    "logo": null
+    "logo": "casino-caribbean-kirkland.png"
   },
   {
     "name": "Club 48 Poker Room",
@@ -3633,7 +3264,7 @@
     "address": "8030 W Quinault Ave, Kennewick, WA 99336",
     "latitude": 46.2211,
     "longitude": -119.2476,
-    "logo": null
+    "logo": "desert-bluffs-poker-room.png"
   },
   {
     "name": "Fortune Lacey Casino & Poker",
@@ -3642,7 +3273,7 @@
     "address": "1515 Black Lake Blvd SW, Olympia, WA 98512",
     "latitude": 47.0176,
     "longitude": -122.9316,
-    "logo": null
+    "logo": "fortune-lacey-casino-poker.png"
   },
   {
     "name": "Macau Casino — Tukwila",
@@ -3651,7 +3282,7 @@
     "address": "15600 Tukwila International Blvd, Tukwila, WA 98188",
     "latitude": 47.4748,
     "longitude": -122.2825,
-    "logo": null
+    "logo": "macau-casino-tukwila.png"
   },
   {
     "name": "Oak Harbor Card Room",
@@ -3714,7 +3345,7 @@
     "address": "1 Mardi Gras Dr, Cross Lanes, WV 25313",
     "latitude": 38.4195,
     "longitude": -81.7776,
-    "logo": null
+    "logo": "mardi-gras-casino-resort.png"
   },
   {
     "name": "Wheeling Island Hotel-Casino-Racetrack",
@@ -3723,7 +3354,7 @@
     "address": "1 S Stone St, Wheeling, WV 26003",
     "latitude": 40.0626,
     "longitude": -80.7197,
-    "logo": null
+    "logo": "wheeling-island-hotel-casino-racetrack.png"
   },
   {
     "name": "Potawatomi Hotel & Casino",
@@ -3732,7 +3363,7 @@
     "address": "1721 W Canal St, Milwaukee, WI 53233",
     "latitude": 43.0343,
     "longitude": -87.941,
-    "logo": null
+    "logo": "potawatomi-hotel-casino.png"
   },
   {
     "name": "Ho-Chunk Gaming Wisconsin Dells",
@@ -3741,7 +3372,7 @@
     "address": "S3214 Hwy 12, Baraboo, WI 53913",
     "latitude": 43.5196,
     "longitude": -89.7759,
-    "logo": null
+    "logo": "ho-chunk-gaming-wisconsin-dells.png"
   },
   {
     "name": "St. Croix Casino Turtle Lake",
@@ -3750,7 +3381,7 @@
     "address": "777 US-8, Turtle Lake, WI 54889",
     "latitude": 45.3925,
     "longitude": -92.1399,
-    "logo": null
+    "logo": "st-croix-casino-turtle-lake.png"
   },
   {
     "name": "Menominee Casino Resort",
@@ -3759,7 +3390,7 @@
     "address": "N277 Hwy 47/55, Keshena, WI 54135",
     "latitude": 44.8923,
     "longitude": -88.6383,
-    "logo": null
+    "logo": "menominee-casino-resort.png"
   },
   {
     "name": "Wind River Hotel & Casino",
@@ -3768,7 +3399,7 @@
     "address": "10269 Hwy 789, Riverton, WY 82501",
     "latitude": 43.0246,
     "longitude": -108.3855,
-    "logo": null
+    "logo": "wind-river-hotel-casino.png"
   },
   {
     "name": "Ace High Social Club",
@@ -3777,7 +3408,7 @@
     "address": "103 E Grand Ave, Laramie, WY 82070",
     "latitude": 41.3115,
     "longitude": -105.5907,
-    "logo": null
+    "logo": "ace-high-social-club.png"
   },
   {
     "name": "Outlaw Poker",

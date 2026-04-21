@@ -44,7 +44,7 @@ const slides = [
   {
     src: "/screenshots/871.jpg",
     label: "Find Card Rooms",
-    desc: "420+ card rooms across 38 states — Near Me, By State, and Favorites tabs",
+    desc: "380 card rooms across 38 states — Near Me, By State, and Favorites tabs",
     accent: "#FF453A",
   },
   {

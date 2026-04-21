@@ -484,6 +484,18 @@ fun AddSessionSheet(
     val dateDisplay = remember { SimpleDateFormat("MMM d, yyyy", Locale.US).format(Date()) }
     val dateKey = remember { SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date()) }
     val stateOptions = remember(casinoData) { casinoData.keys.toList().sorted() }
+    val allUsStates = remember {
+        listOf(
+            "Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado", "Connecticut",
+            "Delaware", "Florida", "Georgia", "Hawaii", "Idaho", "Illinois", "Indiana", "Iowa",
+            "Kansas", "Kentucky", "Louisiana", "Maine", "Maryland", "Massachusetts", "Michigan",
+            "Minnesota", "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada",
+            "New Hampshire", "New Jersey", "New Mexico", "New York", "North Carolina",
+            "North Dakota", "Ohio", "Oklahoma", "Oregon", "Pennsylvania", "Rhode Island",
+            "South Carolina", "South Dakota", "Tennessee", "Texas", "Utah", "Vermont",
+            "Virginia", "Washington", "West Virginia", "Wisconsin", "Wyoming"
+        )
+    }
 
     var venueMode by remember { mutableStateOf("Casino") }
     var selectedState by remember(casinoData) { mutableStateOf(stateOptions.firstOrNull() ?: "") }
@@ -492,7 +504,7 @@ fun AddSessionSheet(
     var selectedHomeGameLabel by remember { mutableStateOf("New home game") }
     var homeGameName by remember { mutableStateOf("") }
     var homeGameCity by remember { mutableStateOf("") }
-    var homeGameState by remember(casinoData) { mutableStateOf(stateOptions.firstOrNull() ?: "") }
+    var homeGameState by remember { mutableStateOf(allUsStates.first()) }
     var homeGameStateTouched by remember { mutableStateOf(false) }
     var sessionName by remember { mutableStateOf("") }
     var userEditedName by remember { mutableStateOf(false) }
@@ -534,7 +546,7 @@ fun AddSessionSheet(
                     selectedState = detectedState
                     selectedCasino = casinoData[detectedState]?.firstOrNull() ?: ""
                 }
-                if (!homeGameStateTouched) {
+                if (!homeGameStateTouched && detectedState in allUsStates) {
                     homeGameState = detectedState
                 }
             }
@@ -579,11 +591,11 @@ fun AddSessionSheet(
                             if (saved != null) {
                                 homeGameName = saved.name
                                 homeGameCity = saved.city
-                                homeGameState = saved.state
+                                homeGameState = saved.state.ifBlank { allUsStates.first() }
                             } else {
                                 homeGameName = ""
                                 homeGameCity = ""
-                                homeGameState = stateOptions.firstOrNull() ?: ""
+                                homeGameState = allUsStates.first()
                             }
                         }
                     )
@@ -608,8 +620,8 @@ fun AddSessionSheet(
                 )
                 Spacer(Modifier.height(8.dp))
                 DropdownSelector(
-                    label = "State / Region",
-                    options = stateOptions,
+                    label = "State",
+                    options = allUsStates,
                     selectedOption = homeGameState,
                     onOptionSelected = {
                         homeGameStateTouched = true
