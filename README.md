@@ -86,4 +86,3 @@ We don't collect personal data. See the full [Privacy Policy](docs/PRIVACY_POLIC
 
 [Bitcraft Apps](https://github.com/bitcrafterapps)
 
----
