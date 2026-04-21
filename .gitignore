@@ -30,3 +30,20 @@ android/keys/
 
 # ── OS ───────────────────────────────────────────────────────────
 .DS_Store
+
+# ── Secrets / credentials ────────────────────────────────────────
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+secrets.*
+credentials.*
+service-account*.json
+google-services.json
+firebase-adminsdk*.json
+auth.json
+.npmrc
+
