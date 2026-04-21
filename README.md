@@ -5,7 +5,7 @@
 <h1 align="center">Stax</h1>
 
 <p align="center">
-  <em>Poker Porn, No Shame.</em>
+  <em>Stack it. Snap it. Track it.</em>
 </p>
 
 <p align="center">
