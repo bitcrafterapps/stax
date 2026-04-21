@@ -143,13 +143,13 @@ struct RadiusSelectorCard: View {
                 Text("\(Int(radius)) mi")
                     .font(.subheadline).bold().foregroundColor(.staxPrimary)
             }
-            Slider(value: $radius, in: 10...200, step: 5)
+            Slider(value: $radius, in: 10...1000, step: 5)
                 .tint(.staxPrimary)
                 .onChange(of: radius) { _, _ in onChanged() }
             HStack {
                 Text("10 mi").font(.caption).foregroundColor(.staxOnSurfaceVar)
                 Spacer()
-                Text("200 mi").font(.caption).foregroundColor(.staxOnSurfaceVar)
+                Text("1000 mi").font(.caption).foregroundColor(.staxOnSurfaceVar)
             }
         }
         .padding(16)

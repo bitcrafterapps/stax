@@ -8,6 +8,10 @@ android/app/build
 android/captures
 android/.externalNativeBuild
 android/.cxx
+android/keystore.properties
+android/*.jks
+android/*.keystore
+android/keys/
 
 # Legacy root patterns (kept for safety)
 /local.properties

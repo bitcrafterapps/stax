@@ -568,6 +568,7 @@ private struct NutzGameView: View {
     @State private var feedback: String? = nil
     @State private var answerSummary: [String] = []
     @State private var roundComplete = false
+    @State private var streetStartedAt = Date()
 
     private var board: [NutzCard] { Array(roundBoard.prefix(street.boardCount)) }
     private var solution: NutzStageSolution { solveNutzStage(board: board) }
@@ -610,6 +611,7 @@ private struct NutzGameView: View {
                                 secondGuess = []
                                 self.feedback = nil
                                 answerSummary = []
+                                streetStartedAt = Date()
                             }
                         }
                         .font(.headline)
@@ -663,7 +665,7 @@ private struct NutzGameView: View {
             Text("Board").font(.caption).bold().foregroundColor(.staxPrimary)
             HStack(spacing: 8) {
                 ForEach(board, id: \.id) { card in
-                    PlayingCardView(rank: nutzRankLabel(card.rank), suit: card.suit, size: 42, selected: true)
+                    PlayingCardView(rank: nutzRankLabel(card.rank), suit: card.suit, size: 42, selected: false)
                 }
             }
         }
@@ -770,19 +772,32 @@ private struct NutzGameView: View {
 
         let nutCorrect = solution.nuts.contains(where: { $0.key == nutCombo.key })
         let secondCorrect = !secondRequired || solution.secondNuts.contains(where: { $0.key == secondCombo?.key })
-        let stagePoints = (nutCorrect ? 10 : -5) + (secondRequired ? (secondCorrect ? 8 : -4) : 0)
+        let elapsedSeconds = Date().timeIntervalSince(streetStartedAt)
+        let correctCount = [nutCorrect, secondCorrect].filter { $0 }.count
+        let answerCount = secondRequired ? 2 : 1
+        let accuracyPoints = (nutCorrect ? 10 : -5) + (secondRequired ? (secondCorrect ? 8 : -4) : 0)
+        let speedBonus = nutzSpeedBonus(
+            elapsedSeconds: elapsedSeconds,
+            correctAnswers: correctCount,
+            totalAnswers: answerCount
+        )
+        let stagePoints = accuracyPoints + speedBonus
 
         totalScore += stagePoints
-        correctAnswers += [nutCorrect, secondCorrect].filter { $0 }.count
-        totalAnswers += secondRequired ? 2 : 1
+        correctAnswers += correctCount
+        totalAnswers += answerCount
 
         answerSummary = [
             "Best made hand: \(solution.bestHandName)",
             "Nuts: \(formatNutzCombos(solution.nuts))"
-        ] + (secondRequired ? ["Second nuts: \(formatNutzCombos(solution.secondNuts))"] : [])
+        ] + (secondRequired ? ["Second nuts: \(formatNutzCombos(solution.secondNuts))"] : []) + [
+            "Response time: \(formatNutzElapsed(elapsedSeconds))\(speedBonus > 0 ? " · Speed bonus +\(speedBonus)" : "")"
+        ]
 
         feedback = "Street score \(stagePoints >= 0 ? "+" : "")\(stagePoints) · Nuts \(nutCorrect ? "correct" : "wrong")" +
-            (secondRequired ? " · 2nd nuts \(secondCorrect ? "correct" : "wrong")" : "")
+            (secondRequired ? " · 2nd nuts \(secondCorrect ? "correct" : "wrong")" : "") +
+            (speedBonus > 0 ? " · speed +\(speedBonus)" : "") +
+            " · \(formatNutzElapsed(elapsedSeconds))"
 
         if street == .river {
             roundComplete = true
@@ -808,6 +823,7 @@ private struct NutzGameView: View {
         feedback = nil
         answerSummary = []
         roundComplete = false
+        streetStartedAt = Date()
     }
 }
 
@@ -999,6 +1015,25 @@ private func formatNutzCombos(_ combos: [NutzHoleCombo]) -> String {
     guard !combos.isEmpty else { return "No distinct second nuts" }
     let visible = combos.prefix(4).map(\.label).joined(separator: ", ")
     return combos.count > 4 ? "\(visible) +\(combos.count - 4) more" : visible
+}
+
+private func nutzSpeedBonus(elapsedSeconds: TimeInterval, correctAnswers: Int, totalAnswers: Int) -> Int {
+    guard correctAnswers > 0, totalAnswers > 0 else { return 0 }
+    let timeFactor: Double
+    switch elapsedSeconds {
+    case ...5: timeFactor = 1.0
+    case ...10: timeFactor = 0.75
+    case ...20: timeFactor = 0.5
+    case ...30: timeFactor = 0.25
+    default: timeFactor = 0.0
+    }
+    let maxBonus = totalAnswers > 1 ? 8.0 : 5.0
+    let accuracyFactor = Double(correctAnswers) / Double(totalAnswers)
+    return Int((maxBonus * timeFactor * accuracyFactor).rounded())
+}
+
+private func formatNutzElapsed(_ elapsedSeconds: TimeInterval) -> String {
+    String(format: "%.1fs", elapsedSeconds)
 }
 
 private func formatNutzDate(_ date: Date) -> String {

@@ -1,4 +1,5 @@
 import SwiftUI
+import CoreLocation
 
 struct DashboardView: View {
     @ObservedObject var vm: SessionsViewModel
@@ -140,14 +141,17 @@ struct AddSessionSheet: View {
     let onConfirm: (String, String, String, String, String, String, String, String, Double, Double) -> Void
 
     @Environment(\.dismiss) private var dismiss
+    @StateObject private var locationResolver = AddSessionLocationResolver()
 
     @State private var selectedState: String = ""
     @State private var selectedCasino: String = ""
+    @State private var selectedStateTouched = false
     @State private var venueMode = "Casino"
     @State private var selectedHomeGameLabel = "New home game"
     @State private var homeGameName = ""
     @State private var homeGameCity = ""
     @State private var homeGameState = ""
+    @State private var homeGameStateTouched = false
     @State private var sessionName: String = ""
     @State private var userEditedName = false
     @State private var sessionType = "Cash"
@@ -172,6 +176,24 @@ struct AddSessionSheet: View {
     private var casinoList: [String] { casinoData[selectedState] ?? [] }
     private var homeGameOptions: [String] { ["New home game"] + homeGames.map(\.displayName) }
     private var selectedVenueName: String { venueMode == "Casino" ? selectedCasino : homeGameName.trimmingCharacters(in: .whitespacesAndNewlines) }
+    private var selectedStateBinding: Binding<String> {
+        Binding(
+            get: { selectedState },
+            set: { newValue in
+                selectedStateTouched = true
+                selectedState = newValue
+            }
+        )
+    }
+    private var homeGameStateBinding: Binding<String> {
+        Binding(
+            get: { homeGameState },
+            set: { newValue in
+                homeGameStateTouched = true
+                homeGameState = newValue
+            }
+        )
+    }
 
     private func initDefaults() {
         guard !casinoData.isEmpty else { return }
@@ -222,7 +244,7 @@ struct AddSessionSheet: View {
                     }
                     Spacer().frame(height: 16)
                     if venueMode == "Casino" {
-                        DropdownSelector(label: "State / Region", options: stateList, selected: $selectedState)
+                        DropdownSelector(label: "State / Region", options: stateList, selected: selectedStateBinding)
                             .onChange(of: selectedState) { _, new in
                                 selectedCasino = casinoData[new]?.first ?? ""
                             }
@@ -265,7 +287,7 @@ struct AddSessionSheet: View {
                             .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.white.opacity(0.18), lineWidth: 1))
                             .foregroundColor(.white)
                         Spacer().frame(height: 8)
-                        DropdownSelector(label: "State / Region", options: stateList, selected: $homeGameState)
+                        DropdownSelector(label: "State / Region", options: stateList, selected: homeGameStateBinding)
                     }
 
                     Spacer().frame(height: 24)
@@ -387,9 +409,22 @@ struct AddSessionSheet: View {
             }
         }
         .preferredColorScheme(.dark)
-        .onAppear { initDefaults() }
+        .onAppear {
+            initDefaults()
+            locationResolver.start()
+        }
         .onChange(of: casinoData) { _, _ in
             if selectedState.isEmpty { initDefaults() }
+        }
+        .onChange(of: locationResolver.detectedState) { _, new in
+            guard let new, stateList.contains(new) else { return }
+            if !selectedStateTouched {
+                selectedState = new
+                selectedCasino = casinoData[new]?.first ?? ""
+            }
+            if !homeGameStateTouched {
+                homeGameState = new
+            }
         }
         .onChange(of: selectedVenueName) { _, new in
             if !userEditedName && !new.isEmpty {
@@ -397,4 +432,49 @@ struct AddSessionSheet: View {
             }
         }
     }
+}
+
+private final class AddSessionLocationResolver: NSObject, ObservableObject, CLLocationManagerDelegate {
+    @Published var detectedState: String?
+
+    private let manager = CLLocationManager()
+    private var started = false
+
+    override init() {
+        super.init()
+        manager.delegate = self
+        manager.desiredAccuracy = kCLLocationAccuracyHundredMeters
+    }
+
+    func start() {
+        guard !started else { return }
+        started = true
+        switch manager.authorizationStatus {
+        case .authorizedAlways, .authorizedWhenInUse:
+            manager.requestLocation()
+        case .notDetermined:
+            manager.requestWhenInUseAuthorization()
+        default:
+            break
+        }
+    }
+
+    func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
+        if manager.authorizationStatus == .authorizedAlways || manager.authorizationStatus == .authorizedWhenInUse {
+            manager.requestLocation()
+        }
+    }
+
+    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        guard let location = locations.first else { return }
+        let state = CardRoomRepository.shared.getStateFromLocation(
+            latitude: location.coordinate.latitude,
+            longitude: location.coordinate.longitude
+        )
+        DispatchQueue.main.async {
+            self.detectedState = state
+        }
+    }
+
+    func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {}
 }
