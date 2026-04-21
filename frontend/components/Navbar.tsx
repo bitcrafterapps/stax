@@ -6,10 +6,10 @@ import { Menu, X } from "lucide-react";
 import StaxLogo from "./StaxLogo";
 
 const navLinks = [
-  { label: "Features", href: "#features" },
+  { label: "Features", href: "/features" },
   { label: "Screenshots", href: "/screenshots" },
-  { label: "Pricing", href: "#pricing" },
-  { label: "Download", href: "#download" },
+  { label: "Pricing", href: "/#pricing" },
+  { label: "Download", href: "/#download" },
 ];
 
 export default function Navbar() {
@@ -42,11 +42,11 @@ export default function Navbar() {
     >
       <nav className="max-w-6xl mx-auto px-4 sm:px-6 h-[68px] flex items-center justify-between gap-8">
         {/* Brand */}
-        <Link href="/" className="flex items-center gap-2.5 group shrink-0">
-          <StaxLogo size={40} />
+        <Link href="/" className="flex items-center gap-3 group shrink-0">
+          <StaxLogo size={60} />
           <span
-            className="text-[1.2rem] font-black tracking-tight transition-colors"
-            style={{ color: "#F2F2F7", letterSpacing: "-0.01em" }}
+            className="text-[1.5rem] font-black tracking-tight transition-colors"
+            style={{ color: "#F2F2F7", letterSpacing: "-0.02em" }}
           >
             STAX
           </span>
@@ -65,7 +65,7 @@ export default function Navbar() {
 
         {/* Desktop CTA */}
         <div className="hidden md:block shrink-0">
-          <Link href="#download" className="btn btn-primary" style={{ padding: "9px 20px", borderRadius: "10px", fontSize: "0.8125rem" }}>
+          <Link href="/#download" className="btn btn-primary" style={{ padding: "9px 20px", borderRadius: "10px", fontSize: "0.8125rem" }}>
             Get the App
           </Link>
         </div>
@@ -111,7 +111,7 @@ export default function Navbar() {
           ))}
           <li className="pt-4">
             <Link
-              href="#download"
+              href="/#download"
               onClick={() => setMobileOpen(false)}
               className="btn btn-primary w-full"
             >

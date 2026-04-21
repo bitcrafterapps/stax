@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import StaxLogo from "@/components/StaxLogo";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 
 export const metadata: Metadata = {
   title: "Screenshots — STAX",
@@ -116,36 +117,8 @@ const groups = [
 export default function ScreenshotsPage() {
   return (
     <div className="min-h-screen" style={{ background: "#0A0A0C" }}>
-      {/* Header */}
-      <header
-        className="sticky top-0 z-50 border-b backdrop-blur-xl"
-        style={{
-          background: "rgba(10,10,12,0.9)",
-          borderColor: "#1C1C21",
-        }}
-      >
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
-            <StaxLogo size={32} />
-            <span className="text-lg font-black text-stax-text">STAX</span>
-          </Link>
-          <div className="flex items-center gap-4">
-            <Link
-              href="/#download"
-              className="hidden sm:inline-flex px-4 py-2 rounded-xl text-sm font-semibold text-white transition-opacity hover:opacity-90"
-              style={{ background: "linear-gradient(135deg, #7C6CF6, #5B4FD4)" }}
-            >
-              Get the App
-            </Link>
-            <Link
-              href="/"
-              className="text-sm font-medium text-stax-text-muted hover:text-stax-text transition-colors"
-            >
-              ← Back
-            </Link>
-          </div>
-        </div>
-      </header>
+      <Navbar />
+      <div className="pt-[68px]">
 
       {/* Hero */}
       <div
@@ -221,6 +194,8 @@ export default function ScreenshotsPage() {
           Download STAX — Free
         </Link>
       </div>
+      </div>
+      <Footer />
     </div>
   );
 }
