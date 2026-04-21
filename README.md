@@ -27,7 +27,6 @@ Built with native Android (Jetpack Compose) and iOS (SwiftUI), backed by a Next.
 | `android/` | Native Android app (Kotlin + Jetpack Compose, Room DB) |
 | `ios/` | Native iOS app (SwiftUI, generated via XcodeGen) |
 | `frontend/` | Marketing & privacy-policy website (Next.js + Tailwind) |
-| `frontend-example/` | Reference Next.js dashboard scaffold |
 | `docs/` | PRD, privacy policy, release notes, Play Store data-safety, etc. |
 | `scripts/` | Data-generation utilities (e.g. `generate_cardrooms.py`) |
 
