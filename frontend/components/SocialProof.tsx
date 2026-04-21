@@ -131,56 +131,63 @@ export default function SocialProof() {
         </div>
 
         {/* States coverage strip */}
-        <div className="card flex flex-col sm:flex-row sm:items-center gap-4 px-5 sm:px-6 py-5 mb-14 sm:mb-20">
-          <div className="shrink-0">
-            <p
-              className="text-[10px] font-bold uppercase mb-1"
-              style={{ color: "#5C5C64", letterSpacing: "0.14em" }}
-            >
-              States Covered
-            </p>
-            <p
-              className="text-xl font-black tabular-nums"
-              style={{ color: "#7C6CF6", letterSpacing: "-0.01em" }}
-            >
-              38 States <span style={{ color: "#3A3A42", fontWeight: 400 }}>/</span> 380 Venues
-            </p>
-          </div>
-
-          <div className="sm:w-px sm:h-12 h-px w-full" style={{ background: "#1F1F26" }} />
-
-          <div className="flex flex-wrap gap-2">
-            {stateData.map((s) => (
-              <div
-                key={s.abbr}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-lg transition-colors hover:border-stax-primary/30"
-                style={{ background: "#0F0F14", border: "1px solid #1F1F26" }}
+        <div className="card flex flex-col gap-3 pt-4 pb-4 mb-14 sm:mb-20" style={{ overflow: "hidden" }}>
+          {/* Header row */}
+          <div className="flex items-center justify-between px-5 sm:px-6">
+            <div className="flex items-center gap-3">
+              <p
+                className="text-[10px] font-bold uppercase"
+                style={{ color: "#5C5C64", letterSpacing: "0.14em" }}
               >
-                <span
-                  className="text-[11px] font-black"
-                  style={{ color: "#7C6CF6", letterSpacing: "0.02em" }}
-                >
-                  {s.abbr}
-                </span>
-                <span className="text-[11px] hidden sm:inline" style={{ color: "#8E8E94" }}>
-                  {s.state}
-                </span>
-                <span
-                  className="text-[10px] font-bold tabular-nums"
-                  style={{ color: "#5C5C64" }}
-                >
-                  {s.count}
-                </span>
-              </div>
-            ))}
+                States Covered
+              </p>
+              <div className="w-px h-3.5" style={{ background: "#1F1F26" }} />
+              <p
+                className="text-[13px] font-black tabular-nums"
+                style={{ color: "#7C6CF6", letterSpacing: "-0.01em" }}
+              >
+                38 States <span style={{ color: "#3A3A42", fontWeight: 400 }}>/</span> 380 Venues
+              </p>
+            </div>
+            <p className="text-[11px] hidden sm:block" style={{ color: "#4A4A52" }}>
+              More states coming soon
+            </p>
           </div>
 
-          <p
-            className="sm:ml-auto shrink-0 text-[11px]"
-            style={{ color: "#4A4A52" }}
+          {/* Ticker */}
+          <div
+            className="relative"
+            style={{
+              maskImage: "linear-gradient(to right, transparent 0%, black 6%, black 94%, transparent 100%)",
+              WebkitMaskImage: "linear-gradient(to right, transparent 0%, black 6%, black 94%, transparent 100%)",
+            }}
           >
-            More states coming soon
-          </p>
+            <div className="ticker-track flex gap-2" style={{ width: "max-content" }}>
+              {[...stateData, ...stateData].map((s, i) => (
+                <div
+                  key={i}
+                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg shrink-0"
+                  style={{ background: "#0F0F14", border: "1px solid #1F1F26" }}
+                >
+                  <span
+                    className="text-[11px] font-black"
+                    style={{ color: "#7C6CF6", letterSpacing: "0.02em" }}
+                  >
+                    {s.abbr}
+                  </span>
+                  <span className="text-[11px]" style={{ color: "#8E8E94" }}>
+                    {s.state}
+                  </span>
+                  <span
+                    className="text-[10px] font-bold tabular-nums"
+                    style={{ color: "#5C5C64" }}
+                  >
+                    {s.count}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
 
         {/* Testimonials header */}
