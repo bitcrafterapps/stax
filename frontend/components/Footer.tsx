@@ -110,6 +110,12 @@ export default function Footer() {
           <p className="text-[12px]" style={{ color: "#4A4A52" }}>
             &copy; 2026 Bitcraft Apps. All rights reserved.
           </p>
+          <span
+            className="text-[11px] font-mono tabular-nums"
+            style={{ color: "#3A3A42" }}
+          >
+            V1.00.01
+          </span>
           <div className="flex items-center gap-5">
             <Link
               href="/privacy"
