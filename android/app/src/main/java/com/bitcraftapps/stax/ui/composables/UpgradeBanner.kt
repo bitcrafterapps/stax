@@ -1,8 +1,13 @@
 package com.bitcraftapps.stax.ui.composables
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -126,4 +131,72 @@ fun UpgradeDialog(
             }
         }
     )
+}
+
+@Composable
+fun SessionUsageBar(
+    used: Int,
+    limit: Int,
+    onUpgrade: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val fraction = (used.toFloat() / limit).coerceIn(0f, 1f)
+    val atLimit = used >= limit
+    val barColor = if (atLimit) MaterialTheme.colorScheme.error
+                   else MaterialTheme.colorScheme.primary
+
+    Card(
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
+        ),
+        modifier = modifier.fillMaxWidth()
+    ) {
+        Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = if (atLimit) "Session limit reached  •  $used / $limit sessions"
+                           else "Free plan  •  $used / $limit sessions used",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = if (atLimit) MaterialTheme.colorScheme.error
+                            else MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.weight(1f)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                TextButton(
+                    onClick = onUpgrade,
+                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp)
+                ) {
+                    Text(
+                        "Upgrade",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.height(6.dp))
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(4.dp)
+                    .background(
+                        color = MaterialTheme.colorScheme.outlineVariant,
+                        shape = RoundedCornerShape(2.dp)
+                    )
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth(fraction)
+                        .height(4.dp)
+                        .background(
+                            color = barColor,
+                            shape = RoundedCornerShape(2.dp)
+                        )
+                )
+            }
+        }
+    }
 }

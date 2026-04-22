@@ -31,7 +31,9 @@ class SubscriptionManager: ObservableObject {
             let loaded = try await Product.products(for: Self.productIds)
             products = loaded.sorted { first, _ in first.id.contains("monthly") }
         } catch {
+            #if DEBUG
             print("StoreKit: Failed to load products – \(error)")
+            #endif
         }
     }
 
@@ -72,7 +74,9 @@ class SubscriptionManager: ObservableObject {
                     hasActive = true
                 }
             } catch {
+                #if DEBUG
                 print("StoreKit: Failed to verify entitlement – \(error)")
+                #endif
             }
         }
         if !hasActive && entitlementManager.isPremium {
@@ -102,7 +106,9 @@ class SubscriptionManager: ObservableObject {
                     await self.entitlementManager.update(from: transaction)
                     await transaction.finish()
                 } catch {
+                    #if DEBUG
                     print("StoreKit: Transaction update failed – \(error)")
+                    #endif
                 }
             }
         }

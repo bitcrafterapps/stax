@@ -28,6 +28,10 @@ android/keys/
 /.idea/navEditor.xml
 /.idea/assetWizardSettings.xml
 
+# Xcode user-specific data (exposes local macOS username; causes spurious diffs)
+xcuserdata/
+*.xcuserstate
+
 # ── OS ───────────────────────────────────────────────────────────
 .DS_Store
 

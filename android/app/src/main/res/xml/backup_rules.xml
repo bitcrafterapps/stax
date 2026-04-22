@@ -1,4 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <full-backup-content>
+    <!-- API key and app config — device-specific secrets, must not travel in backups -->
     <exclude domain="sharedpref" path="StaxPrefs.xml" />
+    <!-- Subscription state — must not be restored to another device (would grant stale premium) -->
+    <exclude domain="sharedpref" path="stax_subscription.xml" />
+    <!-- User session and financial data — privacy-sensitive -->
+    <exclude domain="sharedpref" path="stax_cardrooms.xml" />
+    <exclude domain="sharedpref" path="stax_home_games.xml" />
+    <exclude domain="sharedpref" path="stax_nutz_game.xml" />
+    <exclude domain="sharedpref" path="ChipConfigs.xml" />
+    <!-- Room database — contains session records, chip configs, and card room data -->
+    <exclude domain="database" path="stax_database" />
 </full-backup-content>

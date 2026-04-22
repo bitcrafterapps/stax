@@ -1,9 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <data-extraction-rules>
     <cloud-backup>
+        <!-- API key and app config — device-specific secrets -->
         <exclude domain="sharedpref" path="StaxPrefs.xml" />
+        <!-- Subscription state — must not transfer to another device -->
+        <exclude domain="sharedpref" path="stax_subscription.xml" />
+        <!-- User session and financial data — privacy-sensitive -->
+        <exclude domain="sharedpref" path="stax_cardrooms.xml" />
+        <exclude domain="sharedpref" path="stax_home_games.xml" />
+        <exclude domain="sharedpref" path="stax_nutz_game.xml" />
+        <exclude domain="sharedpref" path="ChipConfigs.xml" />
+        <!-- Room database -->
+        <exclude domain="database" path="stax_database" />
     </cloud-backup>
     <device-transfer>
+        <!-- Subscription state — must not transfer to another device -->
+        <exclude domain="sharedpref" path="stax_subscription.xml" />
+        <!-- API key — device-specific -->
         <exclude domain="sharedpref" path="StaxPrefs.xml" />
+        <!-- User data -->
+        <exclude domain="sharedpref" path="stax_cardrooms.xml" />
+        <exclude domain="sharedpref" path="stax_home_games.xml" />
+        <exclude domain="sharedpref" path="stax_nutz_game.xml" />
+        <exclude domain="sharedpref" path="ChipConfigs.xml" />
+        <!-- Room database -->
+        <exclude domain="database" path="stax_database" />
     </device-transfer>
 </data-extraction-rules>
