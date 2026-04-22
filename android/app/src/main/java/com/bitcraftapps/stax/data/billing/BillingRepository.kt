@@ -29,6 +29,12 @@ private const val TAG = "BillingRepository"
 private const val PRODUCT_MONTHLY = "stax_premium_monthly"
 private const val PRODUCT_ANNUAL = "stax_premium_annual"
 
+// Grace buffer added to purchaseTime as a local expiry cache.
+// This does not replace server-side validation; it bounds the stale-entitlement window
+// to at most one subscription period if Google Play revokes a purchase silently.
+private const val MONTHLY_EXPIRY_BUFFER_MS = 31L * 24 * 60 * 60 * 1000   // 31 days
+private const val ANNUAL_EXPIRY_BUFFER_MS  = 366L * 24 * 60 * 60 * 1000  // 366 days
+
 val LocalBillingRepository = compositionLocalOf<BillingRepository> {
     error("No BillingRepository provided")
 }
@@ -175,7 +181,10 @@ class BillingRepository(
                 } == true
         }
 
-        entitlementManager.setPremium(isInTrial = isInTrial, expiryMs = Long.MAX_VALUE)
+        val isAnnual = purchase.products.any { it == PRODUCT_ANNUAL }
+        val buffer = if (isAnnual) ANNUAL_EXPIRY_BUFFER_MS else MONTHLY_EXPIRY_BUFFER_MS
+        val expiryMs = purchase.purchaseTime + buffer
+        entitlementManager.setPremium(isInTrial = isInTrial, expiryMs = expiryMs)
     }
 
     fun queryExistingPurchases() {

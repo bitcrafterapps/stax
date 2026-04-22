@@ -80,17 +80,19 @@ import coil.compose.rememberAsyncImagePainter
 import com.bitcraftapps.stax.R
 import com.bitcraftapps.stax.data.CardRoomRepository
 import com.bitcraftapps.stax.data.HomeGameVenue
-import com.bitcraftapps.stax.data.billing.Feature
-import com.bitcraftapps.stax.data.billing.LimitResult
 import com.bitcraftapps.stax.data.billing.LocalEntitlementManager
+import com.bitcraftapps.stax.data.billing.MAX_FREE_SESSIONS
 import com.bitcraftapps.stax.data.billing.SubscriptionState
 import com.bitcraftapps.stax.ui.theme.StaxHeaderGradient
 import com.bitcraftapps.stax.data.CasinoFolder
 import com.bitcraftapps.stax.ui.composables.DropdownSelector
 import com.bitcraftapps.stax.ui.composables.StaxEmptyState
 import com.bitcraftapps.stax.ui.composables.StaxScreenHeader
+import com.bitcraftapps.stax.ui.composables.SessionUsageBar
 import com.bitcraftapps.stax.ui.composables.UpgradeBanner
 import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.Priority
+import com.google.android.gms.tasks.CancellationTokenSource
 import kotlinx.coroutines.launch
 import java.io.File
 import java.text.SimpleDateFormat
@@ -107,35 +109,14 @@ fun DashboardScreen(
     homeGames: List<HomeGameVenue> = emptyList(),
     onSaveHomeGame: (String, String, String) -> Unit = { _, _, _ -> },
     logoMap: Map<String, String> = emptyMap(),
+    onTotalSessionsChange: (Int) -> Unit = {},
 ) {
-    var showAddSessionDialog by remember { mutableStateOf(false) }
     val entitlementManager = LocalEntitlementManager.current
     val totalSessions = casinoFolders.sumOf { it.sessionCount }
-
-    if (showAddSessionDialog) {
-        AddSessionDialog(
-            casinoData = casinoData,
-            homeGames = homeGames,
-            onConfirm = { name, casinoName, sessionType, game, gameType, stakes, antes, buyIn, cashOut ->
-                val limitResult = entitlementManager.checkLimit(
-                    Feature.SESSION_CREATE,
-                    totalSessions = totalSessions
-                )
-                if (limitResult is LimitResult.Blocked) {
-                    showAddSessionDialog = false
-                    onNavigateToPaywall()
-                } else {
-                    onAddSession(name, casinoName, sessionType, game, gameType, stakes, antes, buyIn, cashOut)
-                    showAddSessionDialog = false
-                }
-            },
-            onSaveHomeGame = onSaveHomeGame,
-            onDismiss = { showAddSessionDialog = false }
-        )
-    }
-
     val subscriptionState by entitlementManager.subscriptionState.collectAsState()
     val isPremium by entitlementManager.isPremium.collectAsState()
+
+    LaunchedEffect(totalSessions) { onTotalSessionsChange(totalSessions) }
 
     Column(modifier = Modifier.fillMaxSize()) {
         Row(
@@ -157,10 +138,11 @@ fun DashboardScreen(
             )
         }
 
-        // Contextual upsell banners
-        if (!isPremium && totalSessions >= 3) {
-            UpgradeBanner(
-                message = "You've used 3 of 3 free sessions. Unlock unlimited.",
+        // Free mode session counter + upsell banners
+        if (!isPremium) {
+            SessionUsageBar(
+                used = totalSessions,
+                limit = MAX_FREE_SESSIONS,
                 onUpgrade = onNavigateToPaywall,
                 modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
             )
@@ -364,13 +346,11 @@ fun AddSessionDialog(
                 ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
         if (!hasLocationPermission) return@LaunchedEffect
 
-        LocationServices.getFusedLocationProviderClient(context).lastLocation.addOnSuccessListener { location ->
-            if (location == null) return@addOnSuccessListener
+        fun applyLocation(lat: Double, lon: Double) {
             scope.launch {
                 val detectedState = CardRoomRepository(context)
-                    .getStateFromLocation(location.latitude, location.longitude)
+                    .getStateFromLocation(lat, lon)
                     ?.takeIf { it in stateOptions } ?: return@launch
-
                 if (!selectedStateTouched) {
                     selectedState = detectedState
                     selectedCasino = casinoData[detectedState]?.firstOrNull() ?: ""
@@ -378,6 +358,20 @@ fun AddSessionDialog(
                 if (!homeGameStateTouched) {
                     homeGameState = detectedState
                 }
+            }
+        }
+
+        val fusedClient = LocationServices.getFusedLocationProviderClient(context)
+        fusedClient.lastLocation.addOnSuccessListener { location ->
+            if (location != null) {
+                applyLocation(location.latitude, location.longitude)
+            } else {
+                // lastLocation is null; request a fresh fix
+                val cancelToken = CancellationTokenSource()
+                fusedClient.getCurrentLocation(Priority.PRIORITY_BALANCED_POWER_ACCURACY, cancelToken.token)
+                    .addOnSuccessListener { fresh ->
+                        if (fresh != null) applyLocation(fresh.latitude, fresh.longitude)
+                    }
             }
         }
     }

@@ -7,7 +7,7 @@ struct AboutView: View {
     @EnvironmentObject private var entitlementManager: EntitlementManager
     @Environment(\.showPaywall) private var showPaywall
 
-    @State private var apiKey: String = UserDefaults.standard.string(forKey: "openai_api_key") ?? ""
+    @State private var apiKey: String = KeychainHelper.load(forKey: KeychainHelper.Key.openAIApiKey) ?? ""
     @State private var showApiKey = false
     @State private var showChipConfig = false
     @State private var stackedChips = 0
@@ -114,7 +114,7 @@ struct AboutView: View {
                                 .textInputAutocapitalization(.never)
 
                                 Button {
-                                    UserDefaults.standard.set(apiKey, forKey: "openai_api_key")
+                                    KeychainHelper.save(apiKey, forKey: KeychainHelper.Key.openAIApiKey)
                                     UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder),
                                                                     to: nil, from: nil, for: nil)
                                 } label: {

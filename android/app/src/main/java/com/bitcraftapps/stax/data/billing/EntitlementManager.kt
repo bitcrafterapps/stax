@@ -95,11 +95,7 @@ class EntitlementManager(context: Context) {
         if (_isPremium.value) return LimitResult.Allowed
 
         return when (feature) {
-            Feature.SCAN -> {
-                val scans = getDailyScans()
-                if (scans < MAX_FREE_SCANS_PER_DAY) LimitResult.Allowed
-                else LimitResult.Blocked(Feature.SCAN)
-            }
+            Feature.SCAN -> LimitResult.Blocked(Feature.SCAN)
             Feature.AI_SCAN -> LimitResult.Blocked(Feature.AI_SCAN)
             Feature.SESSION_CREATE -> {
                 val count = totalSessions ?: 0

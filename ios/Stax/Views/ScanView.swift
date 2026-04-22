@@ -259,7 +259,7 @@ struct ScanCameraView: View {
 
     private func performScan() {
         guard openAiEnabled else { return }
-        let apiKey = UserDefaults.standard.string(forKey: "openai_api_key") ?? ""
+        let apiKey = KeychainHelper.load(forKey: KeychainHelper.Key.openAIApiKey) ?? ""
         guard !apiKey.isEmpty else {
             infoMessage = "Add an API key in About → OpenAI settings."
             DispatchQueue.main.asyncAfter(deadline: .now() + 3) { infoMessage = nil }
@@ -376,7 +376,7 @@ struct CameraPreviewView: UIViewRepresentable {
             guard let data = photo.fileDataRepresentation(),
                   let img = UIImage(data: data) else { return }
 
-            let apiKey = UserDefaults.standard.string(forKey: "openai_api_key") ?? ""
+            let apiKey = KeychainHelper.load(forKey: KeychainHelper.Key.openAIApiKey) ?? ""
             let sessionType = UserDefaults.standard.string(forKey: "scan_session_type") ?? "Cash"
             let hints = ChipConfigRepository().load(casino: "Default", gameType: sessionType)
                 .map { chip -> String in

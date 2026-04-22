@@ -336,7 +336,7 @@ struct PaywallView: View {
             Text("·").foregroundColor(.staxOnSurfaceVar)
             Link("Terms", destination: URL(string: "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/")!)
             Text("·").foregroundColor(.staxOnSurfaceVar)
-            Link("Privacy", destination: URL(string: "https://example.com/privacy")!)
+            Link("Privacy", destination: URL(string: "https://staxapp.io/privacy")!)
         }
         .font(.caption)
         .foregroundColor(.staxOnSurfaceVar)

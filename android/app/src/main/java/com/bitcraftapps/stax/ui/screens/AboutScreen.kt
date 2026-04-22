@@ -30,7 +30,6 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilledTonalButton
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
@@ -57,6 +56,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.security.crypto.EncryptedSharedPreferences
+import androidx.security.crypto.MasterKey
+import com.bitcraftapps.stax.BuildConfig
 import com.bitcraftapps.stax.R
 import com.bitcraftapps.stax.data.billing.LocalEntitlementManager
 import com.bitcraftapps.stax.data.billing.SubscriptionState
@@ -73,6 +75,7 @@ fun AboutScreen(
     onNavigateToChipConfiguration: () -> Unit,
     onNavigateToReports: () -> Unit,
     onNavigateToNutzGame: () -> Unit,
+    onNavigateToHelp: () -> Unit = {},
     onNavigateToPaywall: () -> Unit = {}
 ) {
     val context = LocalContext.current
@@ -177,7 +180,7 @@ fun AboutScreen(
         )
         Spacer(modifier = Modifier.height(20.dp))
 
-        // STAX Premium section
+        // STAX Premium section (compact)
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = MaterialTheme.shapes.large,
@@ -188,113 +191,144 @@ fun AboutScreen(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                    .padding(horizontal = 14.dp, vertical = 10.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Text(
-                    "STAX Premium",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                when (val state = subscriptionState) {
-                    is SubscriptionState.Free -> {
-                        Text(
-                            "Free Plan",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Button(
-                            onClick = onNavigateToPaywall,
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = ButtonDefaults.buttonColors(containerColor = StaxPrimary)
-                        ) {
-                            Text("Upgrade to Premium")
-                        }
-                    }
-                    is SubscriptionState.Premium -> {
-                        if (state.isInTrial) {
-                            val daysLeft = entitlementManager.getTrialDaysRemaining()
-                            Text(
-                                "Trial — $daysLeft days remaining",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                            Button(
-                                onClick = onNavigateToPaywall,
-                                modifier = Modifier.fillMaxWidth(),
-                                colors = ButtonDefaults.buttonColors(containerColor = StaxPrimary)
-                            ) {
-                                Text("Upgrade Now")
-                            }
-                        } else {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                Surface(
-                                    shape = MaterialTheme.shapes.small,
-                                    color = StaxPrimary.copy(alpha = 0.15f)
-                                ) {
-                                    Text(
-                                        "Premium ✓",
-                                        style = MaterialTheme.typography.labelLarge,
-                                        fontWeight = FontWeight.SemiBold,
-                                        color = StaxPrimary,
-                                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
-                                    )
-                                }
-                            }
-                            OutlinedButton(
-                                onClick = {
-                                    val uri = Uri.parse("https://play.google.com/store/account/subscriptions?package=com.bitcraftapps.stax")
-                                    context.startActivity(Intent(Intent.ACTION_VIEW, uri))
-                                },
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                Text("Manage Subscription")
-                            }
-                        }
-                    }
-                    is SubscriptionState.Expired -> {
-                        Text(
-                            "Subscription Expired",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.error
-                        )
-                        Button(
-                            onClick = onNavigateToPaywall,
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = ButtonDefaults.buttonColors(containerColor = StaxPrimary)
-                        ) {
-                            Text("Resubscribe")
-                        }
-                    }
-                }
-
-                // Debug toggle (temporary — remove once gates verified)
-                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                // Title row: "STAX Premium" + plan badge on the right
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
-                        "Debug: Toggle Premium",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        "STAX Premium",
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onSurface
                     )
-                    val isPremiumNow = subscriptionState is SubscriptionState.Premium
-                    Switch(
-                        checked = isPremiumNow,
-                        onCheckedChange = { enabled ->
-                            if (enabled) {
-                                entitlementManager.setPremium(isInTrial = false, expiryMs = Long.MAX_VALUE)
-                            } else {
-                                entitlementManager.setFree()
+                    when (val state = subscriptionState) {
+                        is SubscriptionState.Free -> {
+                            Surface(
+                                shape = MaterialTheme.shapes.small,
+                                color = MaterialTheme.colorScheme.surfaceContainerHighest
+                            ) {
+                                Text(
+                                    "Free",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+                                )
                             }
                         }
-                    )
+                        is SubscriptionState.Premium -> {
+                            if (state.isInTrial) {
+                                val daysLeft = entitlementManager.getTrialDaysRemaining()
+                                Surface(
+                                    shape = MaterialTheme.shapes.small,
+                                    color = MaterialTheme.colorScheme.primaryContainer
+                                ) {
+                                    Text(
+                                        "Trial • $daysLeft days",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+                                    )
+                                }
+                            } else {
+                                Surface(
+                                    shape = MaterialTheme.shapes.small,
+                                    color = StaxPrimary.copy(alpha = 0.15f)
+                                ) {
+                                    Text(
+                                        "Premium ✓",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = StaxPrimary,
+                                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+                                    )
+                                }
+                            }
+                        }
+                        is SubscriptionState.Expired -> {
+                            Surface(
+                                shape = MaterialTheme.shapes.small,
+                                color = MaterialTheme.colorScheme.errorContainer
+                            ) {
+                                Text(
+                                    "Expired",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onErrorContainer,
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+                                )
+                            }
+                        }
+                    }
+                }
+
+                // Action row: action button + debug toggle inline
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    when (val state = subscriptionState) {
+                        is SubscriptionState.Free -> {
+                            Button(
+                                onClick = onNavigateToPaywall,
+                                modifier = Modifier.weight(1f),
+                                colors = ButtonDefaults.buttonColors(containerColor = StaxPrimary),
+                                contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 12.dp, vertical = 6.dp)
+                            ) {
+                                Text("Upgrade to Premium", style = MaterialTheme.typography.labelMedium)
+                            }
+                        }
+                        is SubscriptionState.Premium -> {
+                            if (state.isInTrial) {
+                                Button(
+                                    onClick = onNavigateToPaywall,
+                                    modifier = Modifier.weight(1f),
+                                    colors = ButtonDefaults.buttonColors(containerColor = StaxPrimary),
+                                    contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 12.dp, vertical = 6.dp)
+                                ) {
+                                    Text("Upgrade Now", style = MaterialTheme.typography.labelMedium)
+                                }
+                            } else {
+                                OutlinedButton(
+                                    onClick = {
+                                        val uri = Uri.parse("https://play.google.com/store/account/subscriptions?package=com.bitcraftapps.stax")
+                                        context.startActivity(Intent(Intent.ACTION_VIEW, uri))
+                                    },
+                                    modifier = Modifier.weight(1f),
+                                    contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 12.dp, vertical = 6.dp)
+                                ) {
+                                    Text("Manage Subscription", style = MaterialTheme.typography.labelMedium)
+                                }
+                            }
+                        }
+                        is SubscriptionState.Expired -> {
+                            Button(
+                                onClick = onNavigateToPaywall,
+                                modifier = Modifier.weight(1f),
+                                colors = ButtonDefaults.buttonColors(containerColor = StaxPrimary),
+                                contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 12.dp, vertical = 6.dp)
+                            ) {
+                                Text("Resubscribe", style = MaterialTheme.typography.labelMedium)
+                            }
+                        }
+                    }
+                    if (BuildConfig.DEBUG) {
+                        val isPremiumNow = subscriptionState is SubscriptionState.Premium
+                        Switch(
+                            checked = isPremiumNow,
+                            onCheckedChange = { enabled ->
+                                if (enabled) {
+                                    entitlementManager.setPremium(isInTrial = false, expiryMs = Long.MAX_VALUE)
+                                } else {
+                                    entitlementManager.setFree()
+                                }
+                            }
+                        )
+                    }
                 }
             }
         }
@@ -327,6 +361,12 @@ fun AboutScreen(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text("Nutz Game")
+            }
+            Button(
+                onClick = onNavigateToHelp,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Help")
             }
         }
         Spacer(modifier = Modifier.height(24.dp))
@@ -384,8 +424,8 @@ fun SettingsDialog(onDismiss: () -> Unit, onSave: (String) -> Unit) {
                     onValueChange = { apiKey = it },
                     label = { Text("Secret key") },
                     modifier = Modifier.fillMaxWidth(),
-                    singleLine = false,
-                    minLines = 2
+                    singleLine = true,
+                    visualTransformation = androidx.compose.ui.text.input.PasswordVisualTransformation()
                 )
             }
         },
@@ -405,17 +445,24 @@ fun SettingsDialog(onDismiss: () -> Unit, onSave: (String) -> Unit) {
     )
 }
 
-private fun getApiKey(context: Context): String? {
-    val sharedPreferences = context.getSharedPreferences("StaxPrefs", Context.MODE_PRIVATE)
-    return sharedPreferences.getString("openai_api_key", null)
+private fun getEncryptedPrefs(context: Context): android.content.SharedPreferences {
+    val masterKey = MasterKey.Builder(context)
+        .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+        .build()
+    return EncryptedSharedPreferences.create(
+        context,
+        "StaxPrefs",
+        masterKey,
+        EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+        EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+    )
 }
 
+private fun getApiKey(context: Context): String? =
+    getEncryptedPrefs(context).getString("openai_api_key", null)
+
 private fun saveApiKey(context: Context, apiKey: String) {
-    val sharedPreferences = context.getSharedPreferences("StaxPrefs", Context.MODE_PRIVATE)
-    with(sharedPreferences.edit()) {
-        putString("openai_api_key", apiKey)
-        apply()
-    }
+    getEncryptedPrefs(context).edit().putString("openai_api_key", apiKey).apply()
 }
 
 private object ChipClickSoundPlayer {

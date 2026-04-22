@@ -2,7 +2,13 @@ package com.bitcraftapps.stax.ui.screens
 
 import android.annotation.SuppressLint
 import android.content.Context
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import android.content.Intent
 import android.location.Location
@@ -32,6 +38,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Directions
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.NearMe
 import androidx.compose.material.icons.filled.Search
@@ -316,7 +323,7 @@ fun FindScreen(onCardRoomClick: (CardRoomWithDistance) -> Unit = {}) {
                         } else {
                             EmptyResults(
                                 searchMode = searchMode,
-                                radiusMiles = radiusMiles.roundToInt(),
+                                radiusMiles = if (radiusMiles >= 5000f) 1001 else radiusMiles.roundToInt(),
                                 stateName = selectedState
                             )
                         }
@@ -419,15 +426,31 @@ private fun RadiusSelector(
     radiusMiles: Float,
     onRadiusChange: (Float) -> Unit
 ) {
+    val presetValues = listOf(100f, 500f, 1000f, 5000f)
+    val presetLabels = listOf("100 mi", "500 mi", "1000 mi", "1000+")
+
+    val sliderValue = radiusMiles.coerceIn(10f, 100f)
+    val displayText = if (radiusMiles >= 5000f) "1000+ mi" else "${radiusMiles.roundToInt()} mi"
+
+    var expanded by remember { mutableStateOf(false) }
+    val chevronAngle by animateFloatAsState(
+        targetValue = if (expanded) 180f else 0f,
+        label = "chevron"
+    )
+
     Card(
         shape = RoundedCornerShape(18.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.85f)
         )
     ) {
-        Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
+        Column {
+            // ── Header row — always visible, tap to toggle ──
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { expanded = !expanded }
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -436,30 +459,79 @@ private fun RadiusSelector(
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-                Text(
-                    "${radiusMiles.roundToInt()} mi",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Text(
+                        displayText,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Icon(
+                        imageVector = Icons.Default.KeyboardArrowDown,
+                        contentDescription = if (expanded) "Collapse" else "Expand",
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier
+                            .size(20.dp)
+                            .rotate(chevronAngle)
+                    )
+                }
             }
-            Slider(
-                value = radiusMiles,
-                onValueChange = onRadiusChange,
-                valueRange = 10f..1000f,
-                steps = 0,
-                colors = SliderDefaults.colors(
-                    thumbColor = MaterialTheme.colorScheme.primary,
-                    activeTrackColor = MaterialTheme.colorScheme.primary,
-                    inactiveTrackColor = MaterialTheme.colorScheme.outlineVariant
-                )
-            )
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
+
+            // ── Collapsible body ──
+            AnimatedVisibility(
+                visible = expanded,
+                enter = expandVertically(),
+                exit = shrinkVertically()
             ) {
-                Text("10 mi", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                Text("1000 mi", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Column(
+                    modifier = Modifier.padding(
+                        start = 16.dp, end = 16.dp, bottom = 12.dp
+                    )
+                ) {
+                    // Preset chips
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        presetValues.forEachIndexed { idx, preset ->
+                            FilterChip(
+                                selected = radiusMiles == preset,
+                                onClick = { onRadiusChange(preset) },
+                                label = {
+                                    Text(
+                                        presetLabels[idx],
+                                        style = MaterialTheme.typography.labelSmall
+                                    )
+                                },
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
+                    }
+                    Spacer(Modifier.height(4.dp))
+
+                    // Fine-grained slider (10–100 miles)
+                    Slider(
+                        value = sliderValue,
+                        onValueChange = { onRadiusChange(it) },
+                        valueRange = 10f..100f,
+                        steps = 0,
+                        colors = SliderDefaults.colors(
+                            thumbColor = MaterialTheme.colorScheme.primary,
+                            activeTrackColor = MaterialTheme.colorScheme.primary,
+                            inactiveTrackColor = MaterialTheme.colorScheme.outlineVariant
+                        )
+                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text("10 mi", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text("100 mi", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                }
             }
         }
     }
@@ -801,7 +873,8 @@ private fun EmptyResults(
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = if (searchMode == SearchMode.NEAR_ME) {
-                        "No card rooms found within $radiusMiles miles. Try increasing the radius or search by state."
+                        val radiusDisplay = if (radiusMiles > 1000) "1000+" else "$radiusMiles"
+                        "No card rooms found within $radiusDisplay miles. Try increasing the radius or search by state."
                     } else {
                         "No card rooms listed for $stateName yet. Try a different state."
                     },

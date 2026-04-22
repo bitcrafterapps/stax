@@ -50,6 +50,7 @@ import com.bitcraftapps.stax.data.billing.Feature
 import com.bitcraftapps.stax.data.billing.LimitResult
 import com.bitcraftapps.stax.data.billing.LocalBillingRepository
 import com.bitcraftapps.stax.data.billing.LocalEntitlementManager
+import com.bitcraftapps.stax.data.billing.MAX_FREE_SESSIONS
 import com.bitcraftapps.stax.ui.screens.AboutScreen
 import com.bitcraftapps.stax.ui.screens.AddSessionDialog
 import com.bitcraftapps.stax.ui.screens.CameraScreen
@@ -61,6 +62,7 @@ import com.bitcraftapps.stax.ui.screens.FullScreenImageViewer
 import com.bitcraftapps.stax.ui.screens.PaywallScreen
 import com.bitcraftapps.stax.ui.screens.PhotoGalleryScreen
 import com.bitcraftapps.stax.ui.screens.ReportsScreen
+import com.bitcraftapps.stax.ui.screens.HelpScreen
 import com.bitcraftapps.stax.ui.screens.NutzGameScreen
 import com.bitcraftapps.stax.ui.screens.ScanScreen
 import com.bitcraftapps.stax.ui.screens.SessionDetailScreen
@@ -91,6 +93,7 @@ sealed class Screen(
             "casino_sessions/$casinoName/$source"
     }
     object ChipConfiguration : Screen("chip_configuration", "Chip Configuration")
+    object Help : Screen("help", "Help")
     object Paywall : Screen("paywall")
 
     object SessionDetail : Screen("session/{sessionId}") {
@@ -123,6 +126,8 @@ fun AppNavigation(photosJson: MutableState<String>) {
     val entitlementManager = LocalEntitlementManager.current
     val billingRepository = LocalBillingRepository.current
     var showAddSessionDialog by remember { mutableStateOf(false) }
+    var photosSessionCount by remember { mutableStateOf(0) }
+    val isPremiumNav by entitlementManager.isPremium.collectAsState()
 
     fun navigateToPaywall() {
         navController.navigate(Screen.Paywall.route)
@@ -183,16 +188,25 @@ fun AppNavigation(photosJson: MutableState<String>) {
         },
         floatingActionButton = {
             if (currentDestination?.route == Screen.Photos.route) {
+                val atSessionLimit = !isPremiumNav && photosSessionCount >= MAX_FREE_SESSIONS
                 FloatingActionButton(
-                    onClick = { showAddSessionDialog = true },
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = MaterialTheme.colorScheme.onPrimary
+                    onClick = {
+                        if (atSessionLimit) navigateToPaywall()
+                        else showAddSessionDialog = true
+                    },
+                    containerColor = if (atSessionLimit)
+                        MaterialTheme.colorScheme.surfaceContainerHighest
+                    else
+                        MaterialTheme.colorScheme.primary,
+                    contentColor = if (atSessionLimit)
+                        MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
+                    else
+                        MaterialTheme.colorScheme.onPrimary
                 ) {
                     Icon(Icons.Filled.Add, contentDescription = "Add Session")
                 }
             }
         }
-        // showAddSessionDialog is controlled via FAB; paywall check happens in DashboardScreen/SessionsScreen onConfirm
     ) { innerPadding ->
         if (showAddSessionDialog) {
             val viewModel: CasinoFoldersViewModel = viewModel(
@@ -207,12 +221,23 @@ fun AppNavigation(photosJson: MutableState<String>) {
                 }
             )
             val casinoData by viewModel.casinoData.collectAsState()
+            val casinoFolders by viewModel.casinoFolders.collectAsState()
+            val totalSessions = casinoFolders.sumOf { it.sessionCount }
             AddSessionDialog(
                 casinoData = casinoData,
                 homeGames = viewModel.homeGames.collectAsState().value,
                 onConfirm = { name, casinoName, sessionType, game, gameType, stakes, antes, buyIn, cashOut ->
-                    viewModel.addSession(name, casinoName, sessionType, game, gameType, stakes, antes, buyIn, cashOut)
-                    showAddSessionDialog = false
+                    val limitResult = entitlementManager.checkLimit(
+                        Feature.SESSION_CREATE,
+                        totalSessions = totalSessions
+                    )
+                    if (limitResult is LimitResult.Blocked) {
+                        showAddSessionDialog = false
+                        navigateToPaywall()
+                    } else {
+                        viewModel.addSession(name, casinoName, sessionType, game, gameType, stakes, antes, buyIn, cashOut)
+                        showAddSessionDialog = false
+                    }
                 },
                 onSaveHomeGame = { name, city, state -> viewModel.saveHomeGame(name, city, state) },
                 onDismiss = { showAddSessionDialog = false }
@@ -278,7 +303,8 @@ fun AppNavigation(photosJson: MutableState<String>) {
                     homeGames = homeGames,
                     onSaveHomeGame = { name, city, state -> viewModel.saveHomeGame(name, city, state) },
                     logoMap = logoMap,
-                    onNavigateToPaywall = ::navigateToPaywall
+                    onNavigateToPaywall = ::navigateToPaywall,
+                    onTotalSessionsChange = { photosSessionCount = it }
                 )
             }
             composable(Screen.Sessions.route) {
@@ -376,8 +402,14 @@ fun AppNavigation(photosJson: MutableState<String>) {
                     onNavigateToNutzGame = {
                         navController.navigate(Screen.NutzGame.route)
                     },
+                    onNavigateToHelp = {
+                        navController.navigate(Screen.Help.route)
+                    },
                     onNavigateToPaywall = ::navigateToPaywall
                 )
+            }
+            composable(Screen.Help.route) {
+                HelpScreen(onNavigateBack = { navController.popBackStack() })
             }
             composable(Screen.Reports.route) {
                 val viewModel: SessionsViewModel = viewModel(

@@ -67,7 +67,8 @@ android {
         }
         release {
             isDebuggable = false
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             if (hasReleaseSigning) {
                 signingConfig = signingConfigs.getByName("release")
             }
@@ -86,6 +87,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.1"
@@ -144,6 +146,9 @@ dependencies {
 
     // Google Play Billing (non-ktx: avoids kotlin-stdlib 2.2.x conflict with Room kapt)
     implementation("com.android.billingclient:billing:8.3.0")
+
+    // Jetpack Security — EncryptedSharedPreferences for API key storage
+    implementation("androidx.security:security-crypto:1.1.0-alpha06")
 
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.2.1")

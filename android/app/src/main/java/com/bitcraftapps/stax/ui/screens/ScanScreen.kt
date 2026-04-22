@@ -6,6 +6,9 @@ import android.content.SharedPreferences
 import android.graphics.Bitmap
 import android.graphics.RectF
 import android.util.Log
+import androidx.security.crypto.EncryptedSharedPreferences
+import androidx.security.crypto.MasterKey
+import com.bitcraftapps.stax.BuildConfig
 import android.view.MotionEvent
 import android.graphics.Matrix
 import androidx.camera.core.Camera
@@ -20,6 +23,8 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -72,11 +77,8 @@ import com.bitcraftapps.stax.data.ChipConfigRepository
 import com.bitcraftapps.stax.data.ChipDetection
 import com.bitcraftapps.stax.data.ChipDetector
 import com.bitcraftapps.stax.data.OpenAiService
-import com.bitcraftapps.stax.data.billing.Feature
-import com.bitcraftapps.stax.data.billing.LimitResult
 import com.bitcraftapps.stax.data.billing.LocalEntitlementManager
-import com.bitcraftapps.stax.ui.composables.UpgradeBanner
-import com.bitcraftapps.stax.ui.composables.UpgradeDialog
+import com.bitcraftapps.stax.ui.theme.StaxPrimary
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
@@ -92,6 +94,14 @@ import java.util.concurrent.Executors
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun ScanScreen(onNavigateToPaywall: () -> Unit = {}) {
+    val entitlementManager = LocalEntitlementManager.current
+    val isPremium by entitlementManager.isPremium.collectAsState()
+
+    if (!isPremium) {
+        ScanLockedView(onNavigateToPaywall = onNavigateToPaywall)
+        return
+    }
+
     val cameraPermissionState = rememberPermissionState(permission = Manifest.permission.CAMERA)
 
     LaunchedEffect(key1 = true) {
@@ -135,6 +145,113 @@ fun ScanScreen(onNavigateToPaywall: () -> Unit = {}) {
 }
 
 @Composable
+private fun ScanLockedView(onNavigateToPaywall: () -> Unit) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(
+                Brush.verticalGradient(
+                    listOf(
+                        Color(0xFF0D0820),
+                        Color(0xFF000000)
+                    )
+                )
+            ),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(20.dp),
+            modifier = Modifier.padding(horizontal = 40.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(96.dp)
+                    .background(
+                        color = StaxPrimary.copy(alpha = 0.15f),
+                        shape = CircleShape
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Lock,
+                    contentDescription = null,
+                    modifier = Modifier.size(44.dp),
+                    tint = StaxPrimary
+                )
+            }
+
+            Text(
+                text = "Chip Scanning",
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold,
+                color = Color.White,
+                textAlign = TextAlign.Center
+            )
+
+            Text(
+                text = "STAX Premium",
+                style = MaterialTheme.typography.labelLarge,
+                color = StaxPrimary,
+                textAlign = TextAlign.Center
+            )
+
+            Spacer(modifier = Modifier.height(4.dp))
+
+            Text(
+                text = "Use on-device AI to instantly count your chip stack — or get a cloud estimate via OpenAI. Both are included with Premium.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = Color.White.copy(alpha = 0.65f),
+                textAlign = TextAlign.Center
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Feature bullets
+            ScanFeatureBullet(icon = "🤖", text = "On-device AI chip detection (offline)")
+            ScanFeatureBullet(icon = "☁️", text = "Cloud estimate via OpenAI")
+            ScanFeatureBullet(icon = "📸", text = "Capture training photos to improve accuracy")
+            ScanFeatureBullet(icon = "🎯", text = "Cash game and tournament chip configs")
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Button(
+                onClick = onNavigateToPaywall,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
+                shape = RoundedCornerShape(16.dp),
+                colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+                    containerColor = StaxPrimary
+                )
+            ) {
+                Text(
+                    "Unlock Premium",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun ScanFeatureBullet(icon: String, text: String) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Text(icon, style = MaterialTheme.typography.titleMedium)
+        Text(
+            text = text,
+            style = MaterialTheme.typography.bodySmall,
+            color = Color.White.copy(alpha = 0.80f)
+        )
+    }
+}
+
+@Composable
 fun CameraView(onNavigateToPaywall: () -> Unit = {}) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -146,7 +263,6 @@ fun CameraView(onNavigateToPaywall: () -> Unit = {}) {
     var imageWidth by remember { mutableStateOf(0) }
     var imageHeight by remember { mutableStateOf(0) }
     var showTrainDialog by remember { mutableStateOf(false) }
-    var showScanBlockedDialog by remember { mutableStateOf(false) }
     var chipValue by remember { mutableStateOf("") }
     var isScanning by remember { mutableStateOf(false) }
     val lastBitmap = remember { mutableStateOf<Bitmap?>(null) }
@@ -386,15 +502,6 @@ fun CameraView(onNavigateToPaywall: () -> Unit = {}) {
                         modifier = Modifier.fillMaxWidth()
                     )
                     Spacer(modifier = Modifier.height(12.dp))
-                    // Show upgrade banner when daily limit is reached
-                    if (!isPremium && entitlementManager.getDailyScans() >= 5) {
-                        UpgradeBanner(
-                            message = "You've used all 5 free scans today. Upgrade for unlimited.",
-                            onUpgrade = onNavigateToPaywall
-                        )
-                        Spacer(modifier = Modifier.height(10.dp))
-                    }
-
                     val hasResult = chipTotalFromOpenAi != null || detections.isNotEmpty()
                     Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                         Button(
@@ -405,12 +512,6 @@ fun CameraView(onNavigateToPaywall: () -> Unit = {}) {
                                     detections = emptyList()
                                     infoMessage = ""
                                 } else {
-                                    // Check daily scan limit before executing
-                                    val limitResult = entitlementManager.checkLimit(Feature.SCAN)
-                                    if (limitResult is LimitResult.Blocked) {
-                                        showScanBlockedDialog = true
-                                        return@Button
-                                    }
                                     entitlementManager.recordScan()
                                     isScanning = true
                                     if (openAiEnabled && isPremium) {
@@ -465,17 +566,6 @@ fun CameraView(onNavigateToPaywall: () -> Unit = {}) {
                 }
             }
 
-            if (showScanBlockedDialog) {
-                UpgradeDialog(
-                    feature = Feature.SCAN,
-                    onUpgrade = {
-                        showScanBlockedDialog = false
-                        onNavigateToPaywall()
-                    },
-                    onDismiss = { showScanBlockedDialog = false }
-                )
-            }
-
             if (showTrainDialog) {
                 TrainDialog(
                     onDismiss = { showTrainDialog = false },
@@ -507,8 +597,17 @@ fun CameraView(onNavigateToPaywall: () -> Unit = {}) {
 }
 
 private fun getApiKey(context: Context): String? {
-    val sharedPreferences = context.getSharedPreferences("StaxPrefs", Context.MODE_PRIVATE)
-    return sharedPreferences.getString("openai_api_key", null)
+    val masterKey = MasterKey.Builder(context)
+        .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+        .build()
+    val prefs = EncryptedSharedPreferences.create(
+        context,
+        "StaxPrefs",
+        masterKey,
+        EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+        EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+    )
+    return prefs.getString("openai_api_key", null)
 }
 
 private fun getOpenAiEnabled(context: Context): Boolean {
@@ -541,7 +640,7 @@ fun saveTrainingImage(context: Context, bitmap: Bitmap, label: String): Boolean 
         FileOutputStream(file).use { out ->
             bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out)
         }
-        Log.d("saveTrainingImage", "Saved to ${file.absolutePath}")
+        if (BuildConfig.DEBUG) Log.d("saveTrainingImage", "Saved to ${file.absolutePath}")
         true
     } catch (e: Exception) {
         Log.e("saveTrainingImage", "Error saving training image", e)

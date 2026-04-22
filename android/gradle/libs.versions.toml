@@ -18,7 +18,7 @@ ktor = "2.3.11"
 lifecycleViewmodelCompose = "2.8.0"
 material3 = "1.2.1"
 ksp = "2.0.0-1.0.21"
-accompanist-permissions = "0.32.0"
+accompanist-permissions = "0.34.0"
 colorpicker-compose = "1.0.0"
 
 

@@ -71,12 +71,16 @@ import com.bitcraftapps.stax.data.SessionsViewModel
 import com.bitcraftapps.stax.data.billing.Feature
 import com.bitcraftapps.stax.data.billing.LimitResult
 import com.bitcraftapps.stax.data.billing.LocalEntitlementManager
+import com.bitcraftapps.stax.data.billing.MAX_FREE_SESSIONS
 import com.bitcraftapps.stax.ui.composables.DropdownSelector
+import com.bitcraftapps.stax.ui.composables.SessionUsageBar
 import com.bitcraftapps.stax.ui.composables.StaxEmptyState
 import com.bitcraftapps.stax.ui.theme.StaxHeaderGradient
 import com.bitcraftapps.stax.ui.theme.StaxLoss
 import com.bitcraftapps.stax.ui.theme.StaxProfit
 import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.Priority
+import com.google.android.gms.tasks.CancellationTokenSource
 import kotlinx.coroutines.launch
 import java.text.NumberFormat
 import java.text.SimpleDateFormat
@@ -110,6 +114,7 @@ fun SessionsScreen(
 ) {
     var showSheet by remember { mutableStateOf(false) }
     val entitlementManager = LocalEntitlementManager.current
+    val isPremium by entitlementManager.isPremium.collectAsState()
     val casinoData by sessionsViewModel.casinoData.collectAsState()
     var selectedFilter by remember { mutableStateOf("All") }
 
@@ -127,12 +132,26 @@ fun SessionsScreen(
 
     val currency = NumberFormat.getCurrencyInstance(Locale.US)
 
+    val atSessionLimit = !isPremium && sessions.size >= MAX_FREE_SESSIONS
+
     Scaffold(
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { showSheet = true },
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary
+                onClick = {
+                    if (atSessionLimit) {
+                        onNavigateToPaywall()
+                    } else {
+                        showSheet = true
+                    }
+                },
+                containerColor = if (atSessionLimit)
+                    MaterialTheme.colorScheme.surfaceContainerHighest
+                else
+                    MaterialTheme.colorScheme.primary,
+                contentColor = if (atSessionLimit)
+                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
+                else
+                    MaterialTheme.colorScheme.onPrimary
             ) {
                 Icon(Icons.Filled.Add, contentDescription = "Add session")
             }
@@ -163,6 +182,16 @@ fun SessionsScreen(
                     Text("All play, buy-ins, and results", style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
+            }
+
+            // Free mode session usage bar
+            if (!isPremium) {
+                SessionUsageBar(
+                    used = sessions.size,
+                    limit = com.bitcraftapps.stax.data.billing.MAX_FREE_SESSIONS,
+                    onUpgrade = onNavigateToPaywall,
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                )
             }
 
             Column(modifier = Modifier.weight(1f).padding(horizontal = 16.dp)) {
@@ -549,13 +578,11 @@ fun AddSessionSheet(
                 ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
         if (!hasLocationPermission) return@LaunchedEffect
 
-        LocationServices.getFusedLocationProviderClient(context).lastLocation.addOnSuccessListener { location ->
-            if (location == null) return@addOnSuccessListener
+        fun applyLocation(lat: Double, lon: Double) {
             scope.launch {
                 val detectedState = CardRoomRepository(context)
-                    .getStateFromLocation(location.latitude, location.longitude)
+                    .getStateFromLocation(lat, lon)
                     ?.takeIf { it in stateOptions } ?: return@launch
-
                 if (!selectedStateTouched) {
                     selectedState = detectedState
                     selectedCasino = casinoData[detectedState]?.firstOrNull() ?: ""
@@ -563,6 +590,19 @@ fun AddSessionSheet(
                 if (!homeGameStateTouched && detectedState in allUsStates) {
                     homeGameState = detectedState
                 }
+            }
+        }
+
+        val fusedClient = LocationServices.getFusedLocationProviderClient(context)
+        fusedClient.lastLocation.addOnSuccessListener { location ->
+            if (location != null) {
+                applyLocation(location.latitude, location.longitude)
+            } else {
+                val cancelToken = CancellationTokenSource()
+                fusedClient.getCurrentLocation(Priority.PRIORITY_BALANCED_POWER_ACCURACY, cancelToken.token)
+                    .addOnSuccessListener { fresh ->
+                        if (fresh != null) applyLocation(fresh.latitude, fresh.longitude)
+                    }
             }
         }
     }
