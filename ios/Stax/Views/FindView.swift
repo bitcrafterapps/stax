@@ -4,6 +4,9 @@ import MapKit
 
 struct FindView: View {
     @StateObject private var vm = FindViewModel()
+    @EnvironmentObject private var entitlementManager: EntitlementManager
+    @Environment(\.showPaywall) private var showPaywall
+    @State private var showFavoritesLimitToast = false
 
     var body: some View {
         NavigationStack {
@@ -80,7 +83,22 @@ struct FindView: View {
                                             item: item,
                                             isFavorite: vm.favorites.contains(item.room.address),
                                             isHome: item.room.address == vm.homeCasino,
-                                            onFavorite: { vm.toggleFavorite(item.room.address) },
+                                            onFavorite: {
+                                                let alreadyFav = vm.favorites.contains(item.room.address)
+                                                if alreadyFav {
+                                                    vm.toggleFavorite(item.room.address)
+                                                } else {
+                                                    let result = entitlementManager.checkLimit(
+                                                        for: .favorites,
+                                                        favoritesCount: vm.favorites.count
+                                                    )
+                                                    if case .blocked = result {
+                                                        showFavoritesLimitToast = true
+                                                    } else {
+                                                        vm.toggleFavorite(item.room.address)
+                                                    }
+                                                }
+                                            },
                                             onHome: { vm.toggleHome(item.room.address) }
                                         )
                                     }
@@ -103,6 +121,12 @@ struct FindView: View {
             } else if vm.locationPermission == .authorizedWhenInUse || vm.locationPermission == .authorizedAlways {
                 vm.search()
             }
+        }
+        .alert("Favorites Limit Reached", isPresented: $showFavoritesLimitToast) {
+            Button("Upgrade") { showPaywall() }
+            Button("Maybe Later", role: .cancel) {}
+        } message: {
+            Text("Free accounts can save up to \(FreeTierLimits.maxFavorites) favorites. Upgrade to Premium for unlimited favorites.")
         }
         } // NavigationStack
         .navigationBarHidden(true)

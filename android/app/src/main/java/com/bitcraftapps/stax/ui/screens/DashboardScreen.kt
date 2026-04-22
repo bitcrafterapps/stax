@@ -80,11 +80,16 @@ import coil.compose.rememberAsyncImagePainter
 import com.bitcraftapps.stax.R
 import com.bitcraftapps.stax.data.CardRoomRepository
 import com.bitcraftapps.stax.data.HomeGameVenue
+import com.bitcraftapps.stax.data.billing.Feature
+import com.bitcraftapps.stax.data.billing.LimitResult
+import com.bitcraftapps.stax.data.billing.LocalEntitlementManager
+import com.bitcraftapps.stax.data.billing.SubscriptionState
 import com.bitcraftapps.stax.ui.theme.StaxHeaderGradient
 import com.bitcraftapps.stax.data.CasinoFolder
 import com.bitcraftapps.stax.ui.composables.DropdownSelector
 import com.bitcraftapps.stax.ui.composables.StaxEmptyState
 import com.bitcraftapps.stax.ui.composables.StaxScreenHeader
+import com.bitcraftapps.stax.ui.composables.UpgradeBanner
 import com.google.android.gms.location.LocationServices
 import kotlinx.coroutines.launch
 import java.io.File
@@ -98,24 +103,39 @@ fun DashboardScreen(
     onCasinoClick: (String) -> Unit,
     casinoData: Map<String, List<String>>,
     onAddSession: (String, String, String, String, String, String, String, Double, Double) -> Unit,
+    onNavigateToPaywall: () -> Unit = {},
     homeGames: List<HomeGameVenue> = emptyList(),
     onSaveHomeGame: (String, String, String) -> Unit = { _, _, _ -> },
     logoMap: Map<String, String> = emptyMap(),
 ) {
     var showAddSessionDialog by remember { mutableStateOf(false) }
+    val entitlementManager = LocalEntitlementManager.current
+    val totalSessions = casinoFolders.sumOf { it.sessionCount }
 
     if (showAddSessionDialog) {
         AddSessionDialog(
             casinoData = casinoData,
             homeGames = homeGames,
             onConfirm = { name, casinoName, sessionType, game, gameType, stakes, antes, buyIn, cashOut ->
-                onAddSession(name, casinoName, sessionType, game, gameType, stakes, antes, buyIn, cashOut)
-                showAddSessionDialog = false
+                val limitResult = entitlementManager.checkLimit(
+                    Feature.SESSION_CREATE,
+                    totalSessions = totalSessions
+                )
+                if (limitResult is LimitResult.Blocked) {
+                    showAddSessionDialog = false
+                    onNavigateToPaywall()
+                } else {
+                    onAddSession(name, casinoName, sessionType, game, gameType, stakes, antes, buyIn, cashOut)
+                    showAddSessionDialog = false
+                }
             },
             onSaveHomeGame = onSaveHomeGame,
             onDismiss = { showAddSessionDialog = false }
         )
     }
+
+    val subscriptionState by entitlementManager.subscriptionState.collectAsState()
+    val isPremium by entitlementManager.isPremium.collectAsState()
 
     Column(modifier = Modifier.fillMaxSize()) {
         Row(
@@ -136,6 +156,27 @@ fun DashboardScreen(
                 subtitle = "Browse sessions by venue"
             )
         }
+
+        // Contextual upsell banners
+        if (!isPremium && totalSessions >= 3) {
+            UpgradeBanner(
+                message = "You've used 3 of 3 free sessions. Unlock unlimited.",
+                onUpgrade = onNavigateToPaywall,
+                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+            )
+        }
+        val trialState = subscriptionState
+        if (trialState is SubscriptionState.Premium && trialState.isInTrial) {
+            val daysLeft = entitlementManager.getTrialDaysRemaining()
+            if (daysLeft <= 2) {
+                UpgradeBanner(
+                    message = "Your free trial ends in $daysLeft days",
+                    onUpgrade = onNavigateToPaywall,
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                )
+            }
+        }
+
         if (casinoFolders.isEmpty()) {
             Box(
                 modifier = Modifier

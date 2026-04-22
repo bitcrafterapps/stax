@@ -14,9 +14,12 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.collectAsState
+import com.bitcraftapps.stax.data.billing.MAX_FREE_CHIP_CONFIG_CASINOS
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -32,6 +35,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.bitcraftapps.stax.data.ChipConfig
 import com.bitcraftapps.stax.data.ChipConfigRepository
+import com.bitcraftapps.stax.data.billing.Feature
+import com.bitcraftapps.stax.data.billing.LocalEntitlementManager
+import com.bitcraftapps.stax.ui.composables.UpgradeBanner
 import com.bitcraftapps.stax.ui.theme.StaxHeaderGradient
 import com.github.skydoves.colorpicker.compose.BrightnessSlider
 import com.github.skydoves.colorpicker.compose.HsvColorPicker
@@ -41,10 +47,13 @@ import com.github.skydoves.colorpicker.compose.rememberColorPickerController
 @Composable
 fun ChipConfigurationScreen(
     casinoData: Map<String, List<String>>,
-    onNavigateBack: () -> Unit
+    onNavigateBack: () -> Unit,
+    onNavigateToPaywall: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val repository = remember { ChipConfigRepository(context) }
+    val entitlementManager = LocalEntitlementManager.current
+    val isPremium by entitlementManager.isPremium.collectAsState()
     var selectedState by remember(casinoData) { mutableStateOf(casinoData.keys.firstOrNull() ?: "") }
     var expandedState by remember { mutableStateOf(false) }
     var selectedCasino by remember(selectedState) { mutableStateOf(casinoData[selectedState]?.firstOrNull() ?: "") }
@@ -53,6 +62,11 @@ fun ChipConfigurationScreen(
     var showChipConfigDialog by remember { mutableStateOf(false) }
     var showResetConfirmDialog by remember { mutableStateOf(false) }
     var chipConfigVersion by remember { mutableStateOf(0) }
+
+    // Compute all unique casinos (flattened) to determine index of selected one
+    val allCasinos = remember(casinoData) { casinoData.values.flatten().distinct() }
+    val casinoIndex = remember(selectedCasino, allCasinos) { allCasinos.indexOf(selectedCasino).coerceAtLeast(0) }
+    val isLockedForFree = !isPremium && casinoIndex >= MAX_FREE_CHIP_CONFIG_CASINOS
 
     val casinoName = selectedCasino.ifBlank { "Default" }
     val chipConfigs = remember(casinoName, type, chipConfigVersion) {
@@ -160,16 +174,41 @@ fun ChipConfigurationScreen(
                 )
             }
 
-            ChipGrid(chipConfigs, showDollar = type == "Cash")
+            Box {
+                ChipGrid(chipConfigs, showDollar = type == "Cash")
+                if (isLockedForFree) {
+                    Box(
+                        modifier = Modifier
+                            .matchParentSize()
+                            .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.75f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Lock,
+                            contentDescription = "Locked",
+                            modifier = Modifier.size(40.dp),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
+
+            if (isLockedForFree) {
+                UpgradeBanner(
+                    message = "Upgrade to configure all casinos",
+                    onUpgrade = onNavigateToPaywall
+                )
+            }
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 Button(
-                    onClick = { showChipConfigDialog = true },
+                    onClick = { if (!isLockedForFree) showChipConfigDialog = true },
                     modifier = Modifier.weight(1f),
-                    shape = MaterialTheme.shapes.medium
+                    shape = MaterialTheme.shapes.medium,
+                    enabled = !isLockedForFree
                 ) {
                     Icon(Icons.Default.Edit, contentDescription = null, modifier = Modifier.size(16.dp))
                     Spacer(modifier = Modifier.width(6.dp))

@@ -46,6 +46,10 @@ import com.bitcraftapps.stax.data.CasinoSessionsViewModelFactory
 import com.bitcraftapps.stax.data.Photo
 import com.bitcraftapps.stax.data.PhotoGalleryViewModel
 import com.bitcraftapps.stax.data.SessionsViewModel
+import com.bitcraftapps.stax.data.billing.Feature
+import com.bitcraftapps.stax.data.billing.LimitResult
+import com.bitcraftapps.stax.data.billing.LocalBillingRepository
+import com.bitcraftapps.stax.data.billing.LocalEntitlementManager
 import com.bitcraftapps.stax.ui.screens.AboutScreen
 import com.bitcraftapps.stax.ui.screens.AddSessionDialog
 import com.bitcraftapps.stax.ui.screens.CameraScreen
@@ -54,6 +58,7 @@ import com.bitcraftapps.stax.ui.screens.ChipConfigurationScreen
 import com.bitcraftapps.stax.ui.screens.DashboardScreen
 import com.bitcraftapps.stax.ui.screens.FindScreen
 import com.bitcraftapps.stax.ui.screens.FullScreenImageViewer
+import com.bitcraftapps.stax.ui.screens.PaywallScreen
 import com.bitcraftapps.stax.ui.screens.PhotoGalleryScreen
 import com.bitcraftapps.stax.ui.screens.ReportsScreen
 import com.bitcraftapps.stax.ui.screens.NutzGameScreen
@@ -86,6 +91,7 @@ sealed class Screen(
             "casino_sessions/$casinoName/$source"
     }
     object ChipConfiguration : Screen("chip_configuration", "Chip Configuration")
+    object Paywall : Screen("paywall")
 
     object SessionDetail : Screen("session/{sessionId}") {
         fun createRoute(sessionId: Long) = "session/$sessionId"
@@ -114,7 +120,13 @@ fun AppNavigation(photosJson: MutableState<String>) {
     val navController = rememberNavController()
     val context = LocalContext.current
     val application = context.applicationContext as Application
+    val entitlementManager = LocalEntitlementManager.current
+    val billingRepository = LocalBillingRepository.current
     var showAddSessionDialog by remember { mutableStateOf(false) }
+
+    fun navigateToPaywall() {
+        navController.navigate(Screen.Paywall.route)
+    }
 
     val navItems = listOf(Screen.Photos, Screen.Sessions, Screen.Find, Screen.Scan, Screen.About)
     val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -180,6 +192,7 @@ fun AppNavigation(photosJson: MutableState<String>) {
                 }
             }
         }
+        // showAddSessionDialog is controlled via FAB; paywall check happens in DashboardScreen/SessionsScreen onConfirm
     ) { innerPadding ->
         if (showAddSessionDialog) {
             val viewModel: CasinoFoldersViewModel = viewModel(
@@ -218,6 +231,24 @@ fun AppNavigation(photosJson: MutableState<String>) {
                     }
                 })
             }
+            composable(Screen.Paywall.route) {
+                val billingRepo = LocalBillingRepository.current
+                PaywallScreen(
+                    onDismiss = { navController.popBackStack() },
+                    onSubscribe = { productId ->
+                        val products = billingRepo.products.value
+                        val productDetails = products.firstOrNull { it.productId == productId }
+                        if (productDetails != null) {
+                            val offerDetails = productDetails.subscriptionOfferDetails
+                            val offerToken = offerDetails?.firstOrNull()?.offerToken ?: ""
+                            billingRepo.launchPurchaseFlow(context as android.app.Activity, productDetails, offerToken)
+                        }
+                    },
+                    onRestore = {
+                        billingRepo.restorePurchases()
+                    }
+                )
+            }
             composable(Screen.Photos.route) {
                 val viewModel: CasinoFoldersViewModel = viewModel(
                     factory = object : ViewModelProvider.Factory {
@@ -246,7 +277,8 @@ fun AppNavigation(photosJson: MutableState<String>) {
                     },
                     homeGames = homeGames,
                     onSaveHomeGame = { name, city, state -> viewModel.saveHomeGame(name, city, state) },
-                    logoMap = logoMap
+                    logoMap = logoMap,
+                    onNavigateToPaywall = ::navigateToPaywall
                 )
             }
             composable(Screen.Sessions.route) {
@@ -275,7 +307,8 @@ fun AppNavigation(photosJson: MutableState<String>) {
                         navController.navigate(Screen.CasinoSessions.createRoute(casinoName, "sessions"))
                     },
                     sessionsViewModel = viewModel,
-                    logoMap = sessionsLogoMap
+                    logoMap = sessionsLogoMap,
+                    onNavigateToPaywall = ::navigateToPaywall
                 )
             }
             composable(Screen.Find.route) {
@@ -303,6 +336,17 @@ fun AppNavigation(photosJson: MutableState<String>) {
                         isFavorite = room.address in favorites,
                         isHomeCasino = room.address == homeCasino,
                         onToggleFavorite = {
+                            val alreadyFavorite = room.address in favorites
+                            if (!alreadyFavorite) {
+                                val limitResult = entitlementManager.checkLimit(
+                                    Feature.FAVORITES,
+                                    favoritesCount = favorites.size
+                                )
+                                if (limitResult is LimitResult.Blocked) {
+                                    // Snackbar shown via a side effect — for now skip adding
+                                    return@CardRoomDetailScreen
+                                }
+                            }
                             favorites = repo.toggleFavorite(room.address)
                             homeCasino = repo.getHomeCasino()
                         },
@@ -319,7 +363,7 @@ fun AppNavigation(photosJson: MutableState<String>) {
                 }
             }
             composable(Screen.Scan.route) {
-                ScanScreen()
+                ScanScreen(onNavigateToPaywall = ::navigateToPaywall)
             }
             composable(Screen.About.route) {
                 AboutScreen(
@@ -331,7 +375,8 @@ fun AppNavigation(photosJson: MutableState<String>) {
                     },
                     onNavigateToNutzGame = {
                         navController.navigate(Screen.NutzGame.route)
-                    }
+                    },
+                    onNavigateToPaywall = ::navigateToPaywall
                 )
             }
             composable(Screen.Reports.route) {
@@ -373,7 +418,8 @@ fun AppNavigation(photosJson: MutableState<String>) {
 
                 ChipConfigurationScreen(
                     casinoData = casinoData,
-                    onNavigateBack = { navController.popBackStack() }
+                    onNavigateBack = { navController.popBackStack() },
+                    onNavigateToPaywall = ::navigateToPaywall
                 )
             }
             composable(
@@ -451,6 +497,7 @@ fun AppNavigation(photosJson: MutableState<String>) {
                     onNavigateToCamera = {
                         navController.navigate(Screen.Camera.createRoute(sessionId))
                     },
+                    onNavigateToPaywall = ::navigateToPaywall,
                     onNavigateToSessionDetail = {
                         navController.navigate(Screen.SessionDetail.createRoute(sessionId))
                     },

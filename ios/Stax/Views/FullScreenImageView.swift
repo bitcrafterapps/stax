@@ -1,8 +1,10 @@
 import SwiftUI
+import UIKit
 
 struct FullScreenImageView: View {
     let initialPhoto: Photo
     @ObservedObject var photoRepo: PhotoRepository
+    @EnvironmentObject private var entitlementManager: EntitlementManager
 
     @Environment(\.dismiss) private var dismiss
     @State private var currentIndex: Int
@@ -65,7 +67,7 @@ struct FullScreenImageView: View {
                             }
                             Button {
                                 if let img = UIImage(contentsOfFile: photoRepo.fullPath(for: currentPhoto)) {
-                                    shareImage = img
+                                    shareImage = entitlementManager.isPremium ? img : img.addingWatermark()
                                     showShare = true
                                 }
                             } label: {
@@ -222,4 +224,41 @@ struct ShareSheet: UIViewControllerRepresentable {
     }
 
     func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
+}
+
+// MARK: – Watermark helper
+
+extension UIImage {
+    func addingWatermark() -> UIImage {
+        let text = "Tracked with STAX"
+        let padding: CGFloat = 12
+        let font = UIFont.boldSystemFont(ofSize: max(size.width * 0.04, 14))
+        let attrs: [NSAttributedString.Key: Any] = [
+            .font: font,
+            .foregroundColor: UIColor.white.withAlphaComponent(0.85)
+        ]
+        let textSize = (text as NSString).size(withAttributes: attrs)
+
+        let renderer = UIGraphicsImageRenderer(size: size)
+        return renderer.image { ctx in
+            draw(in: CGRect(origin: .zero, size: size))
+
+            let bgRect = CGRect(
+                x: size.width - textSize.width - padding * 2 - 4,
+                y: size.height - textSize.height - padding * 2 - 4,
+                width: textSize.width + padding * 2,
+                height: textSize.height + padding
+            )
+            UIColor.black.withAlphaComponent(0.45).setFill()
+            UIBezierPath(roundedRect: bgRect, cornerRadius: 6).fill()
+
+            let textRect = CGRect(
+                x: bgRect.origin.x + padding,
+                y: bgRect.origin.y + padding / 2,
+                width: textSize.width,
+                height: textSize.height
+            )
+            (text as NSString).draw(in: textRect, withAttributes: attrs)
+        }
+    }
 }

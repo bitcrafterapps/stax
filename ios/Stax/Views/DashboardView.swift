@@ -3,6 +3,8 @@ import CoreLocation
 
 struct DashboardView: View {
     @ObservedObject var vm: SessionsViewModel
+    @EnvironmentObject private var entitlementManager: EntitlementManager
+    @Environment(\.showPaywall) private var showPaywall
     @State private var showAddSession = false
     @State private var selectedCasino: String? = nil
 
@@ -15,6 +17,29 @@ struct DashboardView: View {
 
                 VStack(spacing: 0) {
                     StaxHeader(title: "Casino / Card Rooms", subtitle: "Browse sessions by venue")
+
+                    // Trial countdown banner
+                    if entitlementManager.isInTrial && entitlementManager.getTrialDaysRemaining() <= 2 {
+                        let days = entitlementManager.getTrialDaysRemaining()
+                        HStack(spacing: 10) {
+                            Image(systemName: "clock.badge.exclamationmark.fill")
+                                .foregroundColor(.staxPrimary)
+                            Text("Your free trial ends in \(days) \(days == 1 ? "day" : "days")")
+                                .font(.caption.bold())
+                                .foregroundColor(.white)
+                            Spacer()
+                            Button("Upgrade") { showPaywall() }
+                                .font(.caption.bold())
+                                .foregroundColor(.white)
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 5)
+                                .background(Color.staxPrimary)
+                                .cornerRadius(8)
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 10)
+                        .background(Color.staxPrimaryContainer)
+                    }
 
                     if vm.casinoFolders.isEmpty {
                         StaxEmptyState(
@@ -42,7 +67,12 @@ struct DashboardView: View {
 
                 // FAB
                 Button {
-                    showAddSession = true
+                    let result = entitlementManager.checkLimit(for: .sessionCreate, totalSessions: vm.sessions.count)
+                    if case .blocked = result {
+                        showPaywall()
+                    } else {
+                        showAddSession = true
+                    }
                 } label: {
                     Image(systemName: "plus")
                         .font(.title2.bold())

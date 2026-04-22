@@ -1,16 +1,19 @@
 package com.bitcraftapps.stax.ui.screens
 
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.media.AudioAttributes
 import android.media.AudioFormat
 import android.media.AudioTrack
+import android.net.Uri
 import android.os.Build
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -23,12 +26,20 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -43,9 +54,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.bitcraftapps.stax.R
+import com.bitcraftapps.stax.data.billing.LocalEntitlementManager
+import com.bitcraftapps.stax.data.billing.SubscriptionState
+import com.bitcraftapps.stax.ui.theme.StaxPrimary
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.PI
@@ -57,12 +72,15 @@ import kotlin.math.sin
 fun AboutScreen(
     onNavigateToChipConfiguration: () -> Unit,
     onNavigateToReports: () -> Unit,
-    onNavigateToNutzGame: () -> Unit
+    onNavigateToNutzGame: () -> Unit,
+    onNavigateToPaywall: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     var showSettingsDialog by remember { mutableStateOf(false) }
     var stackedChips by remember { mutableStateOf(0) }
+    val entitlementManager = LocalEntitlementManager.current
+    val subscriptionState by entitlementManager.subscriptionState.collectAsState()
     var stackRunId by remember { mutableStateOf(0) }
     val versionName = remember {
         try {
@@ -157,7 +175,131 @@ fun AboutScreen(
             textAlign = TextAlign.Center,
             modifier = Modifier.fillMaxWidth()
         )
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(20.dp))
+
+        // STAX Premium section
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = MaterialTheme.shapes.large,
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.80f)
+            )
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Text(
+                    "STAX Premium",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                when (val state = subscriptionState) {
+                    is SubscriptionState.Free -> {
+                        Text(
+                            "Free Plan",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Button(
+                            onClick = onNavigateToPaywall,
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.buttonColors(containerColor = StaxPrimary)
+                        ) {
+                            Text("Upgrade to Premium")
+                        }
+                    }
+                    is SubscriptionState.Premium -> {
+                        if (state.isInTrial) {
+                            val daysLeft = entitlementManager.getTrialDaysRemaining()
+                            Text(
+                                "Trial — $daysLeft days remaining",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                            Button(
+                                onClick = onNavigateToPaywall,
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = ButtonDefaults.buttonColors(containerColor = StaxPrimary)
+                            ) {
+                                Text("Upgrade Now")
+                            }
+                        } else {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Surface(
+                                    shape = MaterialTheme.shapes.small,
+                                    color = StaxPrimary.copy(alpha = 0.15f)
+                                ) {
+                                    Text(
+                                        "Premium ✓",
+                                        style = MaterialTheme.typography.labelLarge,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = StaxPrimary,
+                                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
+                                    )
+                                }
+                            }
+                            OutlinedButton(
+                                onClick = {
+                                    val uri = Uri.parse("https://play.google.com/store/account/subscriptions?package=com.bitcraftapps.stax")
+                                    context.startActivity(Intent(Intent.ACTION_VIEW, uri))
+                                },
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text("Manage Subscription")
+                            }
+                        }
+                    }
+                    is SubscriptionState.Expired -> {
+                        Text(
+                            "Subscription Expired",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                        Button(
+                            onClick = onNavigateToPaywall,
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.buttonColors(containerColor = StaxPrimary)
+                        ) {
+                            Text("Resubscribe")
+                        }
+                    }
+                }
+
+                // Debug toggle (temporary — remove once gates verified)
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        "Debug: Toggle Premium",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    val isPremiumNow = subscriptionState is SubscriptionState.Premium
+                    Switch(
+                        checked = isPremiumNow,
+                        onCheckedChange = { enabled ->
+                            if (enabled) {
+                                entitlementManager.setPremium(isInTrial = false, expiryMs = Long.MAX_VALUE)
+                            } else {
+                                entitlementManager.setFree()
+                            }
+                        }
+                    )
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(20.dp))
         Column(
             modifier = Modifier.fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(12.dp)
