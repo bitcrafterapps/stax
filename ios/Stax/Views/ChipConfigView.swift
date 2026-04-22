@@ -2,6 +2,8 @@ import SwiftUI
 
 struct ChipConfigView: View {
     @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var entitlementManager: EntitlementManager
+    @Environment(\.showPaywall) private var showPaywall
 
     private let repo = ChipConfigRepository()
     @State private var selectedState: String = ""
@@ -23,6 +25,16 @@ struct ChipConfigView: View {
     private var casinoList: [String] { casinoData[selectedState] ?? [] }
     private var casinoName: String { selectedCasino.isEmpty ? "Default" : selectedCasino }
     private var showDollar: Bool { gameType == "Cash" }
+    private var selectedCasinoIndex: Int {
+        casinoList.firstIndex(of: selectedCasino) ?? 0
+    }
+    private var casinoIsLocked: Bool {
+        guard !entitlementManager.isPremium else { return false }
+        if case .allowed = entitlementManager.checkLimit(for: .chipConfig, casinoIndex: selectedCasinoIndex) {
+            return false
+        }
+        return true
+    }
 
     var body: some View {
         NavigationStack {
@@ -39,8 +51,20 @@ struct ChipConfigView: View {
                             }
 
                         // Casino picker
-                        DropdownSelector(label: "Casino / Card Room", options: casinoList, selected: $selectedCasino)
-                            .onChange(of: selectedCasino) { _, _ in reloadChips() }
+                        VStack(alignment: .leading, spacing: 4) {
+                            DropdownSelector(label: "Casino / Card Room", options: casinoList, selected: $selectedCasino)
+                                .onChange(of: selectedCasino) { _, _ in reloadChips() }
+                            if casinoIsLocked {
+                                HStack(spacing: 4) {
+                                    Image(systemName: "lock.fill")
+                                        .font(.caption2)
+                                        .foregroundColor(.staxPrimary)
+                                    Text("PRO — Upgrade to edit this casino's chips")
+                                        .font(.caption2)
+                                        .foregroundColor(.staxPrimary)
+                                }
+                            }
+                        }
 
                         // Cash / Tourney toggle
                         HStack(spacing: 0) {
@@ -58,49 +82,83 @@ struct ChipConfigView: View {
                         .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.white.opacity(0.15), lineWidth: 1))
 
                         // Chip grid
-                        LazyVGrid(columns: [GridItem(.adaptive(minimum: 72), spacing: 12)], spacing: 12) {
-                            ForEach(chips) { chip in
-                                VStack(spacing: 4) {
-                                    CasinoChipView(chip: chip, size: 64, showDollar: showDollar)
-                                    Text(chip.colorName)
-                                        .font(.caption2)
-                                        .foregroundColor(.staxOnSurfaceVar)
-                                        .lineLimit(1)
-                                }
-                                .onTapGesture {
-                                    editingChip = chip
-                                    showEditDialog = true
-                                }
-                                .contextMenu {
-                                    Button(role: .destructive) {
-                                        chips.removeAll { $0.id == chip.id }
-                                        saveChips()
-                                    } label: {
-                                        Label("Delete Chip", systemImage: "trash")
-                                    }
-                                }
-                            }
-
-                            // Add chip button
-                            Button {
-                                let newId = (chips.map(\.id).max() ?? 0) + 1
-                                editingChip = ChipConfig(id: newId, colorHex: 0xFFAAAAAA, value: "5", colorName: "grey")
-                                showEditDialog = true
-                            } label: {
-                                VStack(spacing: 4) {
-                                    ZStack {
-                                        Circle().fill(Color.staxSurface)
-                                            .frame(width: 64, height: 64)
-                                        Image(systemName: "plus")
-                                            .font(.title2)
+                        ZStack {
+                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 72), spacing: 12)], spacing: 12) {
+                                ForEach(chips) { chip in
+                                    VStack(spacing: 4) {
+                                        CasinoChipView(chip: chip, size: 64, showDollar: showDollar)
+                                        Text(chip.colorName)
+                                            .font(.caption2)
                                             .foregroundColor(.staxOnSurfaceVar)
+                                            .lineLimit(1)
                                     }
-                                    Text("Add")
-                                        .font(.caption2)
-                                        .foregroundColor(.staxOnSurfaceVar)
+                                    .onTapGesture {
+                                        guard !casinoIsLocked else { return }
+                                        editingChip = chip
+                                        showEditDialog = true
+                                    }
+                                    .contextMenu {
+                                        if !casinoIsLocked {
+                                            Button(role: .destructive) {
+                                                chips.removeAll { $0.id == chip.id }
+                                                saveChips()
+                                            } label: {
+                                                Label("Delete Chip", systemImage: "trash")
+                                            }
+                                        }
+                                    }
+                                }
+
+                                if !casinoIsLocked {
+                                    // Add chip button
+                                    Button {
+                                        let newId = (chips.map(\.id).max() ?? 0) + 1
+                                        editingChip = ChipConfig(id: newId, colorHex: 0xFFAAAAAA, value: "5", colorName: "grey")
+                                        showEditDialog = true
+                                    } label: {
+                                        VStack(spacing: 4) {
+                                            ZStack {
+                                                Circle().fill(Color.staxSurface)
+                                                    .frame(width: 64, height: 64)
+                                                Image(systemName: "plus")
+                                                    .font(.title2)
+                                                    .foregroundColor(.staxOnSurfaceVar)
+                                            }
+                                            Text("Add")
+                                                .font(.caption2)
+                                                .foregroundColor(.staxOnSurfaceVar)
+                                        }
+                                    }
+                                    .buttonStyle(.plain)
                                 }
                             }
-                            .buttonStyle(.plain)
+                            .disabled(casinoIsLocked)
+
+                            // Lock overlay for premium casino slots
+                            if casinoIsLocked {
+                                RoundedRectangle(cornerRadius: 12)
+                                    .fill(Color.black.opacity(0.55))
+                                VStack(spacing: 8) {
+                                    Image(systemName: "lock.fill")
+                                        .font(.system(size: 32))
+                                        .foregroundColor(.staxPrimary)
+                                    Text("Premium Only")
+                                        .font(.headline.bold())
+                                        .foregroundColor(.white)
+                                    Text("Upgrade to configure all casinos")
+                                        .font(.caption)
+                                        .foregroundColor(.staxOnSurfaceVar)
+                                        .multilineTextAlignment(.center)
+                                        .padding(.horizontal, 16)
+                                }
+                            }
+                        }
+
+                        if casinoIsLocked {
+                            UpgradeBanner(
+                                message: "Upgrade to configure chips for all casinos",
+                                onUpgrade: { showPaywall() }
+                            )
                         }
 
                         // Action buttons row
@@ -114,9 +172,10 @@ struct ChipConfigView: View {
                                     .foregroundColor(.white)
                                     .frame(maxWidth: .infinity)
                                     .padding(.vertical, 14)
-                                    .background(Color.staxPrimary)
+                                    .background(casinoIsLocked ? Color.staxPrimary.opacity(0.35) : Color.staxPrimary)
                                     .cornerRadius(14)
                             }
+                            .disabled(casinoIsLocked)
 
                             Button { showResetConfirm = true } label: {
                                 Label("Defaults", systemImage: "arrow.clockwise")
@@ -124,9 +183,10 @@ struct ChipConfigView: View {
                                     .foregroundColor(.white)
                                     .frame(maxWidth: .infinity)
                                     .padding(.vertical, 14)
-                                    .background(Color.staxPrimary)
+                                    .background(casinoIsLocked ? Color.staxPrimary.opacity(0.35) : Color.staxPrimary)
                                     .cornerRadius(14)
                             }
+                            .disabled(casinoIsLocked)
                         }
                     }
                     .padding(16)

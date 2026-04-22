@@ -6,6 +6,8 @@ struct PhotoGalleryView: View {
     @ObservedObject var vm: SessionsViewModel
     let session: Session
 
+    @EnvironmentObject private var entitlementManager: EntitlementManager
+    @Environment(\.showPaywall) private var showPaywall
     @ObservedObject private var photoRepo = PhotoRepository.shared
 
     @State private var selectedPhotoItem: [PhotosPickerItem] = []
@@ -14,6 +16,7 @@ struct PhotoGalleryView: View {
     @State private var showPhotosPicker = false
     @State private var showingImage: Photo? = nil
     @State private var cameraImage: UIImage? = nil
+    @State private var showPhotoLimitAlert = false
 
     private let columns = [GridItem(.flexible(), spacing: 3), GridItem(.flexible(), spacing: 3), GridItem(.flexible(), spacing: 3)]
 
@@ -58,12 +61,23 @@ struct PhotoGalleryView: View {
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
-                    showPhotoSource = true
+                    let result = entitlementManager.checkLimit(for: .photoAdd, sessionPhotoCount: photos.count)
+                    if case .blocked = result {
+                        showPhotoLimitAlert = true
+                    } else {
+                        showPhotoSource = true
+                    }
                 } label: {
                     Image(systemName: "photo.badge.plus")
                 }
                 .foregroundColor(.staxPrimary)
             }
+        }
+        .alert("Photo Limit Reached", isPresented: $showPhotoLimitAlert) {
+            Button("Upgrade") { showPaywall() }
+            Button("Maybe Later", role: .cancel) {}
+        } message: {
+            Text("Free accounts can add up to \(FreeTierLimits.maxPhotosPerSession) photos per session. Upgrade to Premium for unlimited photos.")
         }
         .confirmationDialog("Add Photos", isPresented: $showPhotoSource, titleVisibility: .visible) {
             Button("Take Photo") { showCamera = true }

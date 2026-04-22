@@ -2,6 +2,9 @@ import SwiftUI
 
 struct MainTabView: View {
     @StateObject private var vm = SessionsViewModel()
+    @EnvironmentObject private var entitlementManager: EntitlementManager
+    @EnvironmentObject private var subscriptionManager: SubscriptionManager
+    @State private var showPaywall = false
 
     var body: some View {
         TabView {
@@ -32,5 +35,11 @@ struct MainTabView: View {
         }
         .tint(.staxPrimary)
         .preferredColorScheme(.dark)
+        .environment(\.showPaywall, ShowPaywallAction { showPaywall = true })
+        .sheet(isPresented: $showPaywall) {
+            PaywallView()
+                .environmentObject(entitlementManager)
+                .environmentObject(subscriptionManager)
+        }
     }
 }

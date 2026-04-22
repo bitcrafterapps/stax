@@ -68,6 +68,9 @@ import com.bitcraftapps.stax.data.CardRoomRepository
 import com.bitcraftapps.stax.data.HomeGameVenue
 import com.bitcraftapps.stax.data.Session
 import com.bitcraftapps.stax.data.SessionsViewModel
+import com.bitcraftapps.stax.data.billing.Feature
+import com.bitcraftapps.stax.data.billing.LimitResult
+import com.bitcraftapps.stax.data.billing.LocalEntitlementManager
 import com.bitcraftapps.stax.ui.composables.DropdownSelector
 import com.bitcraftapps.stax.ui.composables.StaxEmptyState
 import com.bitcraftapps.stax.ui.theme.StaxHeaderGradient
@@ -102,9 +105,11 @@ fun SessionsScreen(
     onSaveHomeGame: (String, String, String) -> Unit = { _, _, _ -> },
     onCasinoClick: (String) -> Unit,
     sessionsViewModel: SessionsViewModel,
-    logoMap: Map<String, String> = emptyMap()
+    logoMap: Map<String, String> = emptyMap(),
+    onNavigateToPaywall: () -> Unit = {}
 ) {
     var showSheet by remember { mutableStateOf(false) }
+    val entitlementManager = LocalEntitlementManager.current
     val casinoData by sessionsViewModel.casinoData.collectAsState()
     var selectedFilter by remember { mutableStateOf("All") }
 
@@ -199,8 +204,17 @@ fun SessionsScreen(
                 onDismiss = { showSheet = false },
                 onSaveHomeGame = onSaveHomeGame,
                 onConfirm = { name, casino, date, type, game, gameType, stakes, antes, buyIn, cashOut ->
-                    onAddSession(name, casino, date, type, game, gameType, stakes, antes, buyIn, cashOut)
-                    showSheet = false
+                    val limitResult = entitlementManager.checkLimit(
+                        Feature.SESSION_CREATE,
+                        totalSessions = sessions.size
+                    )
+                    if (limitResult is LimitResult.Blocked) {
+                        showSheet = false
+                        onNavigateToPaywall()
+                    } else {
+                        onAddSession(name, casino, date, type, game, gameType, stakes, antes, buyIn, cashOut)
+                        showSheet = false
+                    }
                 }
             )
         }

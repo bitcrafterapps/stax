@@ -33,6 +33,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.outlined.CameraAlt
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -51,6 +52,7 @@ import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -70,6 +72,11 @@ import com.bitcraftapps.stax.data.ChipConfigRepository
 import com.bitcraftapps.stax.data.ChipDetection
 import com.bitcraftapps.stax.data.ChipDetector
 import com.bitcraftapps.stax.data.OpenAiService
+import com.bitcraftapps.stax.data.billing.Feature
+import com.bitcraftapps.stax.data.billing.LimitResult
+import com.bitcraftapps.stax.data.billing.LocalEntitlementManager
+import com.bitcraftapps.stax.ui.composables.UpgradeBanner
+import com.bitcraftapps.stax.ui.composables.UpgradeDialog
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
@@ -84,7 +91,7 @@ import java.util.concurrent.Executors
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
-fun ScanScreen() {
+fun ScanScreen(onNavigateToPaywall: () -> Unit = {}) {
     val cameraPermissionState = rememberPermissionState(permission = Manifest.permission.CAMERA)
 
     LaunchedEffect(key1 = true) {
@@ -92,7 +99,7 @@ fun ScanScreen() {
     }
 
     if (cameraPermissionState.status.isGranted) {
-        CameraView()
+        CameraView(onNavigateToPaywall = onNavigateToPaywall)
     } else {
         Column(
             modifier = Modifier
@@ -128,21 +135,24 @@ fun ScanScreen() {
 }
 
 @Composable
-fun CameraView() {
+fun CameraView(onNavigateToPaywall: () -> Unit = {}) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
+    val entitlementManager = LocalEntitlementManager.current
 
     var detections by remember { mutableStateOf<List<ChipDetection>>(emptyList()) }
     var imageWidth by remember { mutableStateOf(0) }
     var imageHeight by remember { mutableStateOf(0) }
     var showTrainDialog by remember { mutableStateOf(false) }
+    var showScanBlockedDialog by remember { mutableStateOf(false) }
     var chipValue by remember { mutableStateOf("") }
     var isScanning by remember { mutableStateOf(false) }
     val lastBitmap = remember { mutableStateOf<Bitmap?>(null) }
     var trainingSummary by remember { mutableStateOf("") }
     var infoMessage by remember { mutableStateOf("") }
+    val isPremium by entitlementManager.isPremium.collectAsState()
     var openAiEnabled by remember { mutableStateOf(getOpenAiEnabled(context)) }
     var chipTotalFromOpenAi by remember { mutableStateOf<String?>(null) }
     var camera by remember { mutableStateOf<Camera?>(null) }
@@ -342,11 +352,22 @@ fun CameraView() {
                         Text(
                             "Cloud estimate (OpenAI)",
                             style = MaterialTheme.typography.labelLarge,
-                            color = MaterialTheme.colorScheme.onSurface
+                            color = if (isPremium) MaterialTheme.colorScheme.onSurface
+                                    else MaterialTheme.colorScheme.onSurfaceVariant
                         )
+                        if (!isPremium) {
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Icon(
+                                imageVector = Icons.Default.Lock,
+                                contentDescription = "Premium feature",
+                                modifier = Modifier.size(14.dp),
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
                         Spacer(modifier = Modifier.width(12.dp))
                         Switch(
-                            checked = openAiEnabled,
+                            checked = openAiEnabled && isPremium,
+                            enabled = isPremium,
                             onCheckedChange = {
                                 openAiEnabled = it
                                 setOpenAiEnabled(context, it)
@@ -365,6 +386,15 @@ fun CameraView() {
                         modifier = Modifier.fillMaxWidth()
                     )
                     Spacer(modifier = Modifier.height(12.dp))
+                    // Show upgrade banner when daily limit is reached
+                    if (!isPremium && entitlementManager.getDailyScans() >= 5) {
+                        UpgradeBanner(
+                            message = "You've used all 5 free scans today. Upgrade for unlimited.",
+                            onUpgrade = onNavigateToPaywall
+                        )
+                        Spacer(modifier = Modifier.height(10.dp))
+                    }
+
                     val hasResult = chipTotalFromOpenAi != null || detections.isNotEmpty()
                     Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                         Button(
@@ -375,8 +405,15 @@ fun CameraView() {
                                     detections = emptyList()
                                     infoMessage = ""
                                 } else {
+                                    // Check daily scan limit before executing
+                                    val limitResult = entitlementManager.checkLimit(Feature.SCAN)
+                                    if (limitResult is LimitResult.Blocked) {
+                                        showScanBlockedDialog = true
+                                        return@Button
+                                    }
+                                    entitlementManager.recordScan()
                                     isScanning = true
-                                    if (openAiEnabled) {
+                                    if (openAiEnabled && isPremium) {
                                         val apiKey = getApiKey(context)
                                         if (apiKey.isNullOrEmpty()) {
                                             coroutineScope.launch {
@@ -426,6 +463,17 @@ fun CameraView() {
                         }
                     }
                 }
+            }
+
+            if (showScanBlockedDialog) {
+                UpgradeDialog(
+                    feature = Feature.SCAN,
+                    onUpgrade = {
+                        showScanBlockedDialog = false
+                        onNavigateToPaywall()
+                    },
+                    onDismiss = { showScanBlockedDialog = false }
+                )
             }
 
             if (showTrainDialog) {

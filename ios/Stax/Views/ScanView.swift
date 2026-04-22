@@ -2,6 +2,8 @@ import SwiftUI
 import AVFoundation
 
 struct ScanView: View {
+    @EnvironmentObject private var entitlementManager: EntitlementManager
+    @Environment(\.showPaywall) private var showPaywall
     @State private var cameraPermission: AVAuthorizationStatus = AVCaptureDevice.authorizationStatus(for: .video)
 
     var body: some View {
@@ -9,7 +11,10 @@ struct ScanView: View {
             Color.staxBackground.ignoresSafeArea()
 
             if cameraPermission == .authorized {
-                ScanCameraView()
+                ScanCameraView(
+                    entitlementManager: entitlementManager,
+                    onShowPaywall: { showPaywall() }
+                )
             } else if cameraPermission == .notDetermined {
                 VStack(spacing: 20) {
                     Image(systemName: "camera.viewfinder")
@@ -65,6 +70,9 @@ struct ScanView: View {
 // MARK: – Camera view with OpenAI scanning
 
 struct ScanCameraView: View {
+    let entitlementManager: EntitlementManager
+    let onShowPaywall: () -> Void
+
     @State private var sessionType = "Cash"
     @State private var openAiEnabled = UserDefaults.standard.bool(forKey: "openai_enabled")
     @State private var isScanning = false
@@ -73,6 +81,7 @@ struct ScanCameraView: View {
     @State private var capturedImage: UIImage? = nil
     @State private var showTrainDialog = false
     @State private var trainLabel = ""
+    @State private var showScanLimitAlert = false
 
     private let chipRepo = ChipConfigRepository()
     private var chipHints: String {
@@ -112,6 +121,14 @@ struct ScanCameraView: View {
             VStack(spacing: 0) {
                 Spacer()
                 VStack(spacing: 14) {
+                    // Scan limit banner for free users at limit
+                    if !entitlementManager.isPremium && entitlementManager.getDailyScans() >= FreeTierLimits.maxScansPerDay {
+                        UpgradeBanner(
+                            message: "You've used all \(FreeTierLimits.maxScansPerDay) free scans today. Upgrade for unlimited.",
+                            onUpgrade: { onShowPaywall() }
+                        )
+                    }
+
                     // Cash / Tourney toggle
                     HStack(spacing: 8) {
                         FilterChipRow(options: ["Cash", "Tourney"], selected: Binding(
@@ -139,17 +156,28 @@ struct ScanCameraView: View {
                     HStack {
                         Text("Cloud estimate (OpenAI)")
                             .font(.subheadline)
-                            .foregroundColor(.white)
+                            .foregroundColor(entitlementManager.isPremium ? .white : .white.opacity(0.45))
                         Spacer()
-                        Toggle("", isOn: Binding(
-                            get: { openAiEnabled },
-                            set: {
-                                openAiEnabled = $0
-                                UserDefaults.standard.set($0, forKey: "openai_enabled")
+                        if entitlementManager.isPremium {
+                            Toggle("", isOn: Binding(
+                                get: { openAiEnabled },
+                                set: {
+                                    openAiEnabled = $0
+                                    UserDefaults.standard.set($0, forKey: "openai_enabled")
+                                }
+                            ))
+                            .tint(.staxPrimary)
+                            .labelsHidden()
+                        } else {
+                            HStack(spacing: 4) {
+                                Image(systemName: "lock.fill")
+                                    .font(.caption)
+                                    .foregroundColor(.staxOnSurfaceVar)
+                                Text("Premium")
+                                    .font(.caption)
+                                    .foregroundColor(.staxOnSurfaceVar)
                             }
-                        ))
-                        .tint(.staxPrimary)
-                        .labelsHidden()
+                        }
                     }
 
                     // Scan / Rescan button
@@ -160,7 +188,7 @@ struct ScanCameraView: View {
                                 infoMessage = nil
                                 capturedImage = nil
                             } else {
-                                performScan()
+                                guardedScan()
                             }
                         } label: {
                             Text(hasResult ? "Rescan" : "Scan")
@@ -194,6 +222,12 @@ struct ScanCameraView: View {
                 )
             }
         }
+        .alert("Daily Limit Reached", isPresented: $showScanLimitAlert) {
+            Button("Upgrade") { onShowPaywall() }
+            Button("Maybe Later", role: .cancel) {}
+        } message: {
+            Text("You've used all \(FreeTierLimits.maxScansPerDay) free scans for today. Upgrade to Premium for unlimited scanning.")
+        }
         .alert("Training Label", isPresented: $showTrainDialog) {
             TextField("Chip value", text: $trainLabel)
                 .keyboardType(.numberPad)
@@ -209,6 +243,17 @@ struct ScanCameraView: View {
             Button("Cancel", role: .cancel) { trainLabel = "" }
         } message: {
             Text("Enter the chip value for this training image.")
+        }
+    }
+
+    private func guardedScan() {
+        let result = entitlementManager.checkLimit(for: .scan)
+        switch result {
+        case .blocked:
+            showScanLimitAlert = true
+        case .allowed, .softCap:
+            entitlementManager.recordScan()
+            performScan()
         }
     }
 

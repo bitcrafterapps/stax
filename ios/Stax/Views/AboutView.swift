@@ -1,8 +1,12 @@
 import SwiftUI
 import AVFoundation
+import StoreKit
 
 struct AboutView: View {
     @ObservedObject var vm: SessionsViewModel
+    @EnvironmentObject private var entitlementManager: EntitlementManager
+    @Environment(\.showPaywall) private var showPaywall
+
     @State private var apiKey: String = UserDefaults.standard.string(forKey: "openai_api_key") ?? ""
     @State private var showApiKey = false
     @State private var showChipConfig = false
@@ -74,6 +78,9 @@ struct AboutView: View {
 
                         // Settings cards
                         VStack(spacing: 12) {
+
+                            // STAX Premium section
+                            premiumSection
 
                             // OpenAI API Key
                             VStack(alignment: .leading, spacing: 12) {
@@ -211,6 +218,133 @@ struct AboutView: View {
         .sheet(isPresented: $showChipConfig) {
             ChipConfigView()
         }
+    }
+
+    // MARK: – Premium section
+
+    @ViewBuilder
+    private var premiumSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Image(systemName: "crown.fill")
+                    .foregroundColor(.staxPrimary)
+                Text("STAX Premium")
+                    .font(.subheadline).bold().foregroundColor(.white)
+                Spacer()
+            }
+
+            switch entitlementManager.subscriptionState {
+            case .free:
+                HStack {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Free Plan")
+                            .font(.subheadline).foregroundColor(.white)
+                        Text("Upgrade to unlock all features")
+                            .font(.caption).foregroundColor(.staxOnSurfaceVar)
+                    }
+                    Spacer()
+                    Button("Upgrade") { showPaywall() }
+                        .font(.subheadline.bold())
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 8)
+                        .background(Color.staxPrimary)
+                        .cornerRadius(10)
+                }
+
+            case .premium(let inTrial, _):
+                if inTrial {
+                    let days = entitlementManager.getTrialDaysRemaining()
+                    HStack {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Trial — \(days) \(days == 1 ? "day" : "days") remaining")
+                                .font(.subheadline).foregroundColor(.white)
+                            Text("All features unlocked")
+                                .font(.caption).foregroundColor(.staxProfit)
+                        }
+                        Spacer()
+                        Button("Upgrade Now") { showPaywall() }
+                            .font(.caption.bold())
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 7)
+                            .background(Color.staxPrimary)
+                            .cornerRadius(10)
+                    }
+                } else {
+                    HStack {
+                        VStack(alignment: .leading, spacing: 2) {
+                            HStack(spacing: 4) {
+                                Text("Premium")
+                                    .font(.subheadline.bold()).foregroundColor(.white)
+                                Image(systemName: "checkmark.seal.fill")
+                                    .font(.caption).foregroundColor(.staxProfit)
+                            }
+                            Text("All features unlocked")
+                                .font(.caption).foregroundColor(.staxProfit)
+                        }
+                        Spacer()
+                        Button("Manage") {
+                            Task {
+                                guard let scene = UIApplication.shared.connectedScenes
+                                    .first(where: { $0.activationState == .foregroundActive }) as? UIWindowScene
+                                else { return }
+                                try? await AppStore.showManageSubscriptions(in: scene)
+                            }
+                        }
+                        .font(.caption.bold())
+                        .foregroundColor(.staxPrimary)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 7)
+                        .background(Color.staxPrimary.opacity(0.15))
+                        .cornerRadius(10)
+                    }
+                }
+
+            case .expired:
+                HStack {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Subscription Expired")
+                            .font(.subheadline).foregroundColor(.staxLoss)
+                        Text("Resubscribe to restore access")
+                            .font(.caption).foregroundColor(.staxOnSurfaceVar)
+                    }
+                    Spacer()
+                    Button("Resubscribe") { showPaywall() }
+                        .font(.subheadline.bold())
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 8)
+                        .background(Color.staxPrimary)
+                        .cornerRadius(10)
+                }
+            }
+
+            #if DEBUG
+            Divider().background(Color.white.opacity(0.12))
+            HStack {
+                Text("Debug: Premium")
+                    .font(.caption)
+                    .foregroundColor(.staxOnSurfaceVar)
+                Spacer()
+                Toggle("", isOn: Binding(
+                    get: { entitlementManager.isPremium },
+                    set: { on in
+                        if on {
+                            entitlementManager.setDebugPremium()
+                        } else {
+                            entitlementManager.setFree()
+                        }
+                    }
+                ))
+                .tint(.staxPrimary)
+                .labelsHidden()
+            }
+            #endif
+        }
+        .padding(16)
+        .background(Color.staxSurface)
+        .cornerRadius(18)
     }
 
 }

@@ -17,6 +17,8 @@ struct CasinoGroup: Identifiable {
 
 struct SessionsView: View {
     @ObservedObject var vm: SessionsViewModel
+    @EnvironmentObject private var entitlementManager: EntitlementManager
+    @Environment(\.showPaywall) private var showPaywall
     @State private var showAddSession = false
     @State private var selectedFilter = "All"
 
@@ -60,6 +62,14 @@ struct SessionsView: View {
                             totalPL: totalPL
                         )
 
+                        // Free-tier session limit upsell banner
+                        if !entitlementManager.isPremium && vm.sessions.count >= FreeTierLimits.maxSessions {
+                            UpgradeBanner(
+                                message: "You've used \(FreeTierLimits.maxSessions) of \(FreeTierLimits.maxSessions) free sessions. Unlock unlimited.",
+                                onUpgrade: { showPaywall() }
+                            )
+                        }
+
                         if casinoGroups.isEmpty {
                             Spacer()
                             StaxEmptyState(title: "No sessions", message: "Tap + to create your first session.")
@@ -86,7 +96,14 @@ struct SessionsView: View {
                 }
 
                 // FAB
-                Button { showAddSession = true } label: {
+                Button {
+                    let result = entitlementManager.checkLimit(for: .sessionCreate, totalSessions: vm.sessions.count)
+                    if case .blocked = result {
+                        showPaywall()
+                    } else {
+                        showAddSession = true
+                    }
+                } label: {
                     Image(systemName: "plus")
                         .font(.title2.bold())
                         .foregroundColor(.white)

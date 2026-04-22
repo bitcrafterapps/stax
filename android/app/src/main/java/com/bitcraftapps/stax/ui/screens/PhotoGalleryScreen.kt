@@ -74,7 +74,11 @@ import androidx.core.content.FileProvider
 import coil.compose.rememberAsyncImagePainter
 import com.bitcraftapps.stax.data.Photo
 import com.bitcraftapps.stax.data.Session
+import com.bitcraftapps.stax.data.billing.Feature
+import com.bitcraftapps.stax.data.billing.LimitResult
+import com.bitcraftapps.stax.data.billing.LocalEntitlementManager
 import com.bitcraftapps.stax.ui.composables.RatingBar
+import com.bitcraftapps.stax.ui.composables.UpgradeDialog
 import com.bitcraftapps.stax.ui.theme.StaxHeaderGradient
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
@@ -94,10 +98,13 @@ fun PhotoGalleryScreen(
     onNavigateToSessionDetail: () -> Unit,
     onAddPhotoFromGallery: (Uri) -> Unit,
     onDeletePhoto: (Photo) -> Unit,
-    onPhotoClick: (Photo) -> Unit
+    onPhotoClick: (Photo) -> Unit,
+    onNavigateToPaywall: () -> Unit = {}
 ) {
     val context = LocalContext.current
+    val entitlementManager = LocalEntitlementManager.current
     var photoToDelete by remember { mutableStateOf<Photo?>(null) }
+    var showPhotoLimitDialog by remember { mutableStateOf(false) }
     val multiplePhotoPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetMultipleContents(),
         onResult = { uris: List<@JvmSuppressWildcards Uri> ->
@@ -142,7 +149,13 @@ fun PhotoGalleryScreen(
                     },
                     actions = {
                         IconButton(onClick = {
-                            if (cameraPermissionState.status.isGranted) {
+                            val limitResult = entitlementManager.checkLimit(
+                                Feature.PHOTO_ADD,
+                                sessionPhotoCount = photos.size
+                            )
+                            if (limitResult is LimitResult.Blocked) {
+                                showPhotoLimitDialog = true
+                            } else if (cameraPermissionState.status.isGranted) {
                                 onNavigateToCamera()
                             } else {
                                 cameraPermissionState.launchPermissionRequest()
@@ -154,7 +167,17 @@ fun PhotoGalleryScreen(
                                 tint = Color.White
                             )
                         }
-                        IconButton(onClick = { showPhotoSourceDialog = true }) {
+                        IconButton(onClick = {
+                            val limitResult = entitlementManager.checkLimit(
+                                Feature.PHOTO_ADD,
+                                sessionPhotoCount = photos.size
+                            )
+                            if (limitResult is LimitResult.Blocked) {
+                                showPhotoLimitDialog = true
+                            } else {
+                                showPhotoSourceDialog = true
+                            }
+                        }) {
                             Icon(
                                 Icons.Default.PhotoLibrary,
                                 contentDescription = "Open Gallery",
@@ -356,6 +379,17 @@ fun PhotoGalleryScreen(
                 }
             }
         }
+    }
+
+    if (showPhotoLimitDialog) {
+        UpgradeDialog(
+            feature = Feature.PHOTO_ADD,
+            onUpgrade = {
+                showPhotoLimitDialog = false
+                onNavigateToPaywall()
+            },
+            onDismiss = { showPhotoLimitDialog = false }
+        )
     }
 }
 
