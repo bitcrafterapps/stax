@@ -49,6 +49,49 @@ struct UpgradeBanner: View {
     }
 }
 
+// MARK: – Session usage progress bar for free users
+
+struct SessionUsageBar: View {
+    let used: Int
+    let limit: Int
+    let onUpgrade: () -> Void
+
+    private var atLimit: Bool { used >= limit }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(spacing: 0) {
+                Image(systemName: atLimit ? "exclamationmark.circle.fill" : "chart.bar.fill")
+                    .font(.caption)
+                    .foregroundColor(atLimit ? .staxLoss : .staxPrimary)
+                    .padding(.trailing, 6)
+                Text(atLimit ? "Session limit reached" : "Free plan · \(used) / \(limit) sessions used")
+                    .font(.caption.bold())
+                    .foregroundColor(atLimit ? .staxLoss : .white)
+                Spacer()
+                Button("Upgrade") { onUpgrade() }
+                    .font(.caption.bold())
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 5)
+                    .background(Color.staxPrimary)
+                    .cornerRadius(8)
+            }
+            ProgressView(value: Double(min(used, limit)), total: Double(limit))
+                .tint(atLimit ? .staxLoss : .staxPrimary)
+                .scaleEffect(x: 1, y: 1.6, anchor: .center)
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 10)
+        .background(Color.staxSurfaceHigh)
+        .cornerRadius(14)
+        .overlay(
+            RoundedRectangle(cornerRadius: 14)
+                .stroke(atLimit ? Color.staxLoss.opacity(0.35) : Color.staxPrimary.opacity(0.25), lineWidth: 1)
+        )
+    }
+}
+
 // MARK: – Feature-specific upgrade alert
 
 struct UpgradeAlert: View {

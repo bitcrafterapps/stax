@@ -62,10 +62,11 @@ struct SessionsView: View {
                             totalPL: totalPL
                         )
 
-                        // Free-tier session limit upsell banner
-                        if !entitlementManager.isPremium && vm.sessions.count >= FreeTierLimits.maxSessions {
-                            UpgradeBanner(
-                                message: "You've used \(FreeTierLimits.maxSessions) of \(FreeTierLimits.maxSessions) free sessions. Unlock unlimited.",
+                        // Session usage bar for free users
+                        if !entitlementManager.isPremium {
+                            SessionUsageBar(
+                                used: vm.sessions.count,
+                                limit: FreeTierLimits.maxSessions,
                                 onUpgrade: { showPaywall() }
                             )
                         }
@@ -96,19 +97,19 @@ struct SessionsView: View {
                 }
 
                 // FAB
+                let atSessionLimit = !entitlementManager.isPremium && vm.sessions.count >= FreeTierLimits.maxSessions
                 Button {
-                    let result = entitlementManager.checkLimit(for: .sessionCreate, totalSessions: vm.sessions.count)
-                    if case .blocked = result {
+                    if atSessionLimit {
                         showPaywall()
                     } else {
                         showAddSession = true
                     }
                 } label: {
-                    Image(systemName: "plus")
+                    Image(systemName: atSessionLimit ? "lock.fill" : "plus")
                         .font(.title2.bold())
-                        .foregroundColor(.white)
+                        .foregroundColor(atSessionLimit ? .white.opacity(0.6) : .white)
                         .frame(width: 56, height: 56)
-                        .background(Color.staxPrimary)
+                        .background(atSessionLimit ? Color.staxSurfaceHigh : Color.staxPrimary)
                         .clipShape(Circle())
                         .shadow(color: .black.opacity(0.4), radius: 8, x: 0, y: 4)
                 }

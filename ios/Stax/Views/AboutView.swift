@@ -198,6 +198,27 @@ struct AboutView: View {
                                 .cornerRadius(18)
                             }
                             .buttonStyle(.plain)
+
+                            NavigationLink(destination: HelpView()) {
+                                HStack {
+                                    Image(systemName: "questionmark.circle.fill")
+                                        .foregroundColor(.staxPrimary)
+                                        .font(.title3)
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text("Help")
+                                            .font(.subheadline).bold().foregroundColor(.white)
+                                        Text("How to use every feature in STAX")
+                                            .font(.caption).foregroundColor(.staxOnSurfaceVar)
+                                    }
+                                    Spacer()
+                                    Image(systemName: "chevron.right")
+                                        .foregroundColor(.staxOnSurfaceVar)
+                                }
+                                .padding(16)
+                                .background(Color.staxSurface)
+                                .cornerRadius(18)
+                            }
+                            .buttonStyle(.plain)
                         }
                         .padding(.horizontal, 16)
 
@@ -220,131 +241,125 @@ struct AboutView: View {
         }
     }
 
-    // MARK: – Premium section
+    // MARK: – Premium section (compact)
 
     @ViewBuilder
     private var premiumSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack {
+        VStack(alignment: .leading, spacing: 8) {
+            // Row 1: title + plan badge
+            HStack(spacing: 6) {
                 Image(systemName: "crown.fill")
                     .foregroundColor(.staxPrimary)
-                Text("STAX Premium")
-                    .font(.subheadline).bold().foregroundColor(.white)
-                Spacer()
-            }
-
-            switch entitlementManager.subscriptionState {
-            case .free:
-                HStack {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("Free Plan")
-                            .font(.subheadline).foregroundColor(.white)
-                        Text("Upgrade to unlock all features")
-                            .font(.caption).foregroundColor(.staxOnSurfaceVar)
-                    }
-                    Spacer()
-                    Button("Upgrade") { showPaywall() }
-                        .font(.subheadline.bold())
-                        .foregroundColor(.white)
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 8)
-                        .background(Color.staxPrimary)
-                        .cornerRadius(10)
-                }
-
-            case .premium(let inTrial, _):
-                if inTrial {
-                    let days = entitlementManager.getTrialDaysRemaining()
-                    HStack {
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("Trial — \(days) \(days == 1 ? "day" : "days") remaining")
-                                .font(.subheadline).foregroundColor(.white)
-                            Text("All features unlocked")
-                                .font(.caption).foregroundColor(.staxProfit)
-                        }
-                        Spacer()
-                        Button("Upgrade Now") { showPaywall() }
-                            .font(.caption.bold())
-                            .foregroundColor(.white)
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 7)
-                            .background(Color.staxPrimary)
-                            .cornerRadius(10)
-                    }
-                } else {
-                    HStack {
-                        VStack(alignment: .leading, spacing: 2) {
-                            HStack(spacing: 4) {
-                                Text("Premium")
-                                    .font(.subheadline.bold()).foregroundColor(.white)
-                                Image(systemName: "checkmark.seal.fill")
-                                    .font(.caption).foregroundColor(.staxProfit)
-                            }
-                            Text("All features unlocked")
-                                .font(.caption).foregroundColor(.staxProfit)
-                        }
-                        Spacer()
-                        Button("Manage") {
-                            Task {
-                                guard let scene = UIApplication.shared.connectedScenes
-                                    .first(where: { $0.activationState == .foregroundActive }) as? UIWindowScene
-                                else { return }
-                                try? await AppStore.showManageSubscriptions(in: scene)
-                            }
-                        }
-                        .font(.caption.bold())
-                        .foregroundColor(.staxPrimary)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 7)
-                        .background(Color.staxPrimary.opacity(0.15))
-                        .cornerRadius(10)
-                    }
-                }
-
-            case .expired:
-                HStack {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("Subscription Expired")
-                            .font(.subheadline).foregroundColor(.staxLoss)
-                        Text("Resubscribe to restore access")
-                            .font(.caption).foregroundColor(.staxOnSurfaceVar)
-                    }
-                    Spacer()
-                    Button("Resubscribe") { showPaywall() }
-                        .font(.subheadline.bold())
-                        .foregroundColor(.white)
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 8)
-                        .background(Color.staxPrimary)
-                        .cornerRadius(10)
-                }
-            }
-
-            #if DEBUG
-            Divider().background(Color.white.opacity(0.12))
-            HStack {
-                Text("Debug: Premium")
                     .font(.caption)
-                    .foregroundColor(.staxOnSurfaceVar)
+                Text("STAX Premium")
+                    .font(.subheadline.bold()).foregroundColor(.white)
                 Spacer()
+                planBadge
+            }
+
+            // Row 2: action button + debug toggle
+            HStack(spacing: 8) {
+                actionButton
+                #if DEBUG
                 Toggle("", isOn: Binding(
                     get: { entitlementManager.isPremium },
                     set: { on in
-                        if on {
-                            entitlementManager.setDebugPremium()
-                        } else {
-                            entitlementManager.setFree()
-                        }
+                        if on { entitlementManager.setDebugPremium() }
+                        else  { entitlementManager.setFree() }
                     }
                 ))
                 .tint(.staxPrimary)
                 .labelsHidden()
+                .frame(width: 50)
+                #endif
             }
-            #endif
         }
-        .padding(16)
+        .padding(12)
         .background(Color.staxSurface)
         .cornerRadius(18)
+    }
+
+    @ViewBuilder
+    private var planBadge: some View {
+        switch entitlementManager.subscriptionState {
+        case .free:
+            Text("Free")
+                .font(.caption.bold())
+                .foregroundColor(.staxOnSurfaceVar)
+                .padding(.horizontal, 8).padding(.vertical, 3)
+                .background(Color.white.opacity(0.08))
+                .cornerRadius(6)
+        case .premium(let inTrial, _):
+            if inTrial {
+                let days = entitlementManager.getTrialDaysRemaining()
+                Text("Trial · \(days)d")
+                    .font(.caption.bold())
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 8).padding(.vertical, 3)
+                    .background(Color.staxPrimary.opacity(0.20))
+                    .cornerRadius(6)
+            } else {
+                HStack(spacing: 3) {
+                    Text("Premium")
+                    Image(systemName: "checkmark")
+                }
+                .font(.caption.bold())
+                .foregroundColor(.staxPrimary)
+                .padding(.horizontal, 8).padding(.vertical, 3)
+                .background(Color.staxPrimary.opacity(0.15))
+                .cornerRadius(6)
+            }
+        case .expired:
+            Text("Expired")
+                .font(.caption.bold())
+                .foregroundColor(.staxLoss)
+                .padding(.horizontal, 8).padding(.vertical, 3)
+                .background(Color.staxLoss.opacity(0.12))
+                .cornerRadius(6)
+        }
+    }
+
+    @ViewBuilder
+    private var actionButton: some View {
+        switch entitlementManager.subscriptionState {
+        case .free:
+            Button("Upgrade to Premium") { showPaywall() }
+                .font(.caption.bold())
+                .foregroundColor(.white)
+                .padding(.horizontal, 12).padding(.vertical, 7)
+                .background(Color.staxPrimary)
+                .cornerRadius(10)
+        case .premium(let inTrial, _):
+            if inTrial {
+                Button("Upgrade Now") { showPaywall() }
+                    .font(.caption.bold())
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 12).padding(.vertical, 7)
+                    .background(Color.staxPrimary)
+                    .cornerRadius(10)
+            } else {
+                Button("Manage") {
+                    Task {
+                        guard let scene = UIApplication.shared.connectedScenes
+                            .first(where: { $0.activationState == .foregroundActive }) as? UIWindowScene
+                        else { return }
+                        try? await AppStore.showManageSubscriptions(in: scene)
+                    }
+                }
+                .font(.caption.bold())
+                .foregroundColor(.staxPrimary)
+                .padding(.horizontal, 12).padding(.vertical, 7)
+                .background(Color.staxPrimary.opacity(0.15))
+                .cornerRadius(10)
+            }
+        case .expired:
+            Button("Resubscribe") { showPaywall() }
+                .font(.caption.bold())
+                .foregroundColor(.white)
+                .padding(.horizontal, 12).padding(.vertical, 7)
+                .background(Color.staxPrimary)
+                .cornerRadius(10)
+        }
     }
 
 }

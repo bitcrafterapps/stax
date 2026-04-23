@@ -10,7 +10,9 @@ struct ScanView: View {
         ZStack {
             Color.staxBackground.ignoresSafeArea()
 
-            if cameraPermission == .authorized {
+            if !entitlementManager.isPremium {
+                ScanLockedView(onShowPaywall: { showPaywall() })
+            } else if cameraPermission == .authorized {
                 ScanCameraView(
                     entitlementManager: entitlementManager,
                     onShowPaywall: { showPaywall() }
@@ -81,7 +83,6 @@ struct ScanCameraView: View {
     @State private var capturedImage: UIImage? = nil
     @State private var showTrainDialog = false
     @State private var trainLabel = ""
-    @State private var showScanLimitAlert = false
 
     private let chipRepo = ChipConfigRepository()
     private var chipHints: String {
@@ -121,14 +122,6 @@ struct ScanCameraView: View {
             VStack(spacing: 0) {
                 Spacer()
                 VStack(spacing: 14) {
-                    // Scan limit banner for free users at limit
-                    if !entitlementManager.isPremium && entitlementManager.getDailyScans() >= FreeTierLimits.maxScansPerDay {
-                        UpgradeBanner(
-                            message: "You've used all \(FreeTierLimits.maxScansPerDay) free scans today. Upgrade for unlimited.",
-                            onUpgrade: { onShowPaywall() }
-                        )
-                    }
-
                     // Cash / Tourney toggle
                     HStack(spacing: 8) {
                         FilterChipRow(options: ["Cash", "Tourney"], selected: Binding(
@@ -222,12 +215,6 @@ struct ScanCameraView: View {
                 )
             }
         }
-        .alert("Daily Limit Reached", isPresented: $showScanLimitAlert) {
-            Button("Upgrade") { onShowPaywall() }
-            Button("Maybe Later", role: .cancel) {}
-        } message: {
-            Text("You've used all \(FreeTierLimits.maxScansPerDay) free scans for today. Upgrade to Premium for unlimited scanning.")
-        }
         .alert("Training Label", isPresented: $showTrainDialog) {
             TextField("Chip value", text: $trainLabel)
                 .keyboardType(.numberPad)
@@ -247,14 +234,7 @@ struct ScanCameraView: View {
     }
 
     private func guardedScan() {
-        let result = entitlementManager.checkLimit(for: .scan)
-        switch result {
-        case .blocked:
-            showScanLimitAlert = true
-        case .allowed, .softCap:
-            entitlementManager.recordScan()
-            performScan()
-        }
+        performScan()
     }
 
     private func performScan() {
@@ -283,6 +263,75 @@ struct ScanCameraView: View {
 
 extension Notification.Name {
     static let staxTakePhoto = Notification.Name("staxTakePhoto")
+}
+
+// MARK: – Scan locked view (non-premium)
+
+struct ScanLockedView: View {
+    let onShowPaywall: () -> Void
+
+    var body: some View {
+        VStack(spacing: 28) {
+            Spacer()
+
+            ZStack {
+                Circle()
+                    .fill(Color.staxPrimary.opacity(0.12))
+                    .frame(width: 110, height: 110)
+                Image(systemName: "camera.viewfinder")
+                    .font(.system(size: 52))
+                    .foregroundColor(.staxPrimary)
+            }
+
+            VStack(spacing: 8) {
+                Text("Chip Scanning is Premium")
+                    .font(.title3.bold())
+                    .foregroundColor(.white)
+                Text("Instantly count chip stack values using on-device AI or OpenAI's vision model.")
+                    .font(.subheadline)
+                    .foregroundColor(.staxOnSurfaceVar)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 32)
+            }
+
+            VStack(alignment: .leading, spacing: 12) {
+                featureRow("On-device AI chip stack counting")
+                featureRow("OpenAI cloud estimation")
+                featureRow("Cash & tournament chip modes")
+                featureRow("Training mode for better accuracy")
+            }
+            .padding(20)
+            .background(Color.staxSurface)
+            .cornerRadius(18)
+            .padding(.horizontal, 28)
+
+            Button {
+                onShowPaywall()
+            } label: {
+                Text("Unlock Premium")
+                    .font(.headline)
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 16)
+                    .background(Color.staxPrimary)
+                    .cornerRadius(16)
+            }
+            .padding(.horizontal, 28)
+
+            Spacer()
+        }
+    }
+
+    private func featureRow(_ text: String) -> some View {
+        HStack(spacing: 12) {
+            Image(systemName: "checkmark.circle.fill")
+                .foregroundColor(.staxPrimary)
+                .font(.subheadline)
+            Text(text)
+                .font(.subheadline)
+                .foregroundColor(.white)
+        }
+    }
 }
 
 // MARK: – Chip total display

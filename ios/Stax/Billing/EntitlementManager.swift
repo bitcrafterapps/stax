@@ -64,7 +64,6 @@ class EntitlementManager: ObservableObject {
 
         switch feature {
         case .scan:
-            if getDailyScans() < FreeTierLimits.maxScansPerDay { return .allowed }
             return .blocked(.scan)
 
         case .aiScan:
